@@ -1,4 +1,4 @@
-name: p1_org_country_weapon
+name: Wikidata筛选组织机构、国家和武器装备
 description: 输入wikidata dump文件（gz/json）过滤出 组织机构、国家、武器装备三类条目
 arguments: 1
 consts:

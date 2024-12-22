@@ -1,4 +1,4 @@
-name: list database tables in MySQL, transform columns info, add metadata
+name: 关系数据库获取表信息
 arguments: 0
 consts:
   mysql1:

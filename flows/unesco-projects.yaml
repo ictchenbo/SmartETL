@@ -1,4 +1,4 @@
-name: 加载联合国教科文组织的项目数据
+name: 联合国教科文组织项目数据处理
 description: 对联合国教科文组织的项目清单CSV文件进行字段重命名和简单处理 方便入库
 arguments: 0
 finish_signal: true

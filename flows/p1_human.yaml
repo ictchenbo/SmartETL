@@ -1,4 +1,4 @@
-name: p1 human
+name: Wikidata人物实体筛选
 description: 输入wikidata dump文件（gz/json）过滤出人物（Q5）条目，同时生成wikidata数据的id-name映射文件
 arguments: 1
 

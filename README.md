@@ -26,9 +26,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 3. 内置40+各类数据处理任务，开箱即用，具体在[这里](flows)查看
 4. 内置10+特色数据资源集成处理，所见即所得：
    - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
-   - [wikidata 维基数据](flows/p1_wikidata_graph.yaml)
+   - [wikidata 维基数据](flows/p1_graph_simple.yaml)
    - [GDELT 谷歌全球社会事件数据库 （流式，直接下载）](flows/gdelt.yaml)
-   - [GTD 全球恐怖主义事件库](flows/gtd_local.yaml)
+   - [GTD 全球恐怖主义事件库](flows/gtd.yaml)
    - [民调数据（经济学人美国大选专题）](flows/polls.yaml)
    - [预测市场数据](flows/futures.yaml)
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
@@ -104,7 +104,7 @@ nodes:
 processor: Chain(rename1, group, g_total_cost, print)
 ```
 
-- 示例2：输入wikidata dump文件（gz/json）生成id-name映射文件（方便根据ID查询名称），同时对数据结构进行简化，[查看详情](flows/p1_idname_simple.yaml)
+- 示例2：输入wikidata dump文件（gz/json）生成id-name映射文件（方便根据ID查询名称），同时对数据结构进行简化，[查看详情](flows/p1_base.yaml)
 ```yaml
 name: p1_idname_simple
 arguments: 1
@@ -123,7 +123,7 @@ nodes:
 processor: Fork(chain1, chain2)
 ```
 
-- 示例3：基于wikidata生成简单图谱结构，包含Item/Property/Item_Property/Property_Property四张表 [查看详情](flows/p1_wikidata_graph.yaml)
+- 示例3：基于wikidata生成简单图谱结构，包含Item/Property/Item_Property/Property_Property四张表 [查看详情](flows/p1_graph_simple.yaml)
 ```yaml
 name: p1_wikidata_graph
 description: transform wikidata dump to graph, including item/property/item_property/property_property
@@ -314,12 +314,12 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 - 2024.10.15
 1. 修改CkWriter参数为 username tcp_port 明确使用TCP端口（默认9000，而不是HTTP端口8123）
 2. 新增字段值 String -> Json 算子 `FieldJson(key)`
-3. 新增加载json文件到ClickHouse流程[查看](flows/db_import_mongo.yaml)
-4. 新增ClickHouse表复制的流程[查看](flows/db_copy_clickhouse.yaml)
+3. 新增加载json文件到ClickHouse流程[查看](flows/db_mongo_import.yaml)
+4. 新增ClickHouse表复制的流程[查看](flows/db_ck_transfer.yaml)
 
 - 2024.10.14
 1. 新增 MongoWriter
-2. 新增 MongoDB表复制流程[查看](flows/db_copy_mongo.yaml)
+2. 新增 MongoDB表复制流程[查看](flows/db_mongo_transfer.yaml)
 
 - 2024.10.02
 1. WriteJson WriterCSV增加编码参数设置

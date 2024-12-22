@@ -1,4 +1,4 @@
-name: load json to mongodb
+name: MongoDB数据导入
 description: JSON文件导入MongoDB数据库
 arguments: 1
 consts:

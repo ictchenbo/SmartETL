@@ -1,0 +1,22 @@
+name: load json to clickhouse
+arguments: 2
+consts:
+  click1:
+    host: 10.208.57.5
+    tcp_port: 59000
+    database: goinv3_2410
+
+loader: Json('data/news/news_' + arg1 + '.json')
+
+nodes:
+  count: Count
+  print: Print
+  select: SelectVal('nodes')
+  flat: Flat
+  select2: Select('title')
+  rename: RenameFields(title='content')
+  addi: AddFields(time=arg2, push_type='message',message_id='0002')
+  counter: Count
+  writer: database.CKWriter(**click1, table='user_push')
+
+processor: Chain(select, flat, select, flat, select2, addi, rename, writer, count)

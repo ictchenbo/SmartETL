@@ -3,7 +3,6 @@
 
 @dependencies pandas
 """
-from typing import Iterable, Any
 
 from wikidata_filter.loader.base import DataProvider
 

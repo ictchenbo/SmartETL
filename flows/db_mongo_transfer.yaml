@@ -1,4 +1,4 @@
-name: copy mongo table from one server to another
+name: MongoDB数据库表迁移/拷贝
 description: MongoDB数据库表迁移/拷贝
 arguments: 1
 consts:

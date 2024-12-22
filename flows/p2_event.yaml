@@ -1,5 +1,5 @@
-name: p2_event
-description: 输入wikidata简化后JSON数据(如`p1_idname_simple.yaml`的输出) 过滤出事件相关item
+name: Wikidata事件筛选
+description: 输入wikidata简化后JSON数据(如`p1_base.yaml`的输出) 过滤出事件相关item
 arguments: 0
 
 loader: JsonLine('test_data/p1.json')

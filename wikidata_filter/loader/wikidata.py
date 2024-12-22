@@ -1,7 +1,6 @@
 import json
 
-from wikidata_filter.loader.file import File
-from wikidata_filter.loader.text import Text
+from wikidata_filter.loader.text import TextBase, Text
 
 
 class WikidataJsonDump(Text):
@@ -40,14 +39,12 @@ def to_dict(elem, target: dict):
             target[etag] = e.text
 
 
-class WikidataXmlIncr(File):
+class WikidataXmlIncr(TextBase):
     """
     Wikidata增量数据，仅提供XML格式，<page></page>表示一个最近修改的实体，page/revision/text为对应的Json
     """
-    def __init__(self, input_file: str, encoding='utf8'):
-        super().__init__()
-        self.instream = open(input_file, encoding=encoding, mode='rb')
-        self.hold = True
+    def __init__(self, input_file: str):
+        super().__init__(input_file)
 
     def iter(self):
         import lxml.etree as ET

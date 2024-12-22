@@ -1,4 +1,4 @@
-name: process news from mongodb
+name: 新闻数据处理并建立向量索引
 description: 从MongoDB轮询读取新闻，进行主题分类、地点识别，建立ES全文索引和Qdrant向量化索引。ES索引mapping查看`config/es-mappings/news.json`
 arguments: 0
 consts:

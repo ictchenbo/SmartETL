@@ -1,5 +1,5 @@
-name: LD项目技术评估，包括颠覆性指数、热度指数、新兴指数，对技术进行预测分析
-description: 从MySQL中读取词，进行4个指数计算
+name: LD项目技术评估
+description: 从MySQL中读取技术词，进行4个指数计算，评估热度指数、新兴指数、颠覆性指数和预测指数
 arguments: 0
 consts:
   mysql:

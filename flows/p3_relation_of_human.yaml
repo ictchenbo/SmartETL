@@ -1,5 +1,5 @@
-name: p3_relation_human_human
-description: 基于`p2_human.yaml`过滤的人物实体，生成人物-人物关系数据，
+name: Wikidata人物关系（阶段三）
+description: 基于`p2_human.yaml`过滤的人物实体，生成人物-人物关系数据
 arguments: 3
 
 loader: JsonLine(arg1)

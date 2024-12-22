@@ -1,16 +1,17 @@
 name: load json to clickhouse
-description: JSON文件导入ClckHouse数据库
 arguments: 2
 consts:
   click1:
     host: localhost
-    tcp_port: 9000
+    port: 58124
+    database: goinv3_2409
 
 loader: JsonArray(arg1)
 
 nodes:
   print: Print
   counter: Count
+  js: ToJson('names')
   writer: database.CKWriter(**click1, table=arg2)
 
-processor: Chain(counter, writer)
+processor: Chain(counter, js, writer)

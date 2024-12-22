@@ -1,4 +1,4 @@
-name: p1_wikidata_graph
+name: Wikidata图谱构建
 description: transform wikidata dump to graph, including item/property/item_property/property_property
 arguments: 1
 

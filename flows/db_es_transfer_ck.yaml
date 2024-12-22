@@ -1,0 +1,24 @@
+name: copy data from ES index to Clickhouse table
+arguments: 2
+consts:
+  es_config:
+    host: '10.208.61.113'
+    port: 9200
+    username: elastic
+    password: 123456
+  ck_config:
+    host: '10.208.57.5'
+    tcp_port: 9000
+    database: goinv3
+    buffer_size: 1000
+
+loader: database.ES(**es_config, index=arg1)
+
+nodes:
+  id_set: util.sets.from_csv('data/entity_id.csv')
+  matcher: "=lambda item: item.get('mongo_id') not in id_set"
+  filter: Filter(matcher=matcher)
+  counter: Count(ticks=1000, label='Row-Filter')
+  writer: database.CKWriter(**ck_config, table=arg2)
+
+processor: Chain(filter, counter, writer)

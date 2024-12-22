@@ -1,4 +1,4 @@
-name: 加载联合国教科文组织的项目数据
+name: 联合国教科文组织项目数据处理V2
 description: 加载联合国教科文组织的项目清单CSV文件，按受益国家分组，统计项目数量、总预算、总支出
 arguments: 0
 finish_signal: true

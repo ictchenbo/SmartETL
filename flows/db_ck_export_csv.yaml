@@ -1,0 +1,10 @@
+name: read clickhouse table id
+
+loader: database.CK(host='10.208.57.5', port=59000, database='goin_kjqb_230202_v_3_0', table='entity_share_data_shard', select='mongo_id, name')
+
+nodes:
+  n1: Select('mongo_id')
+  n2: Count(ticks=100000, label='ID')
+  n3: WriteCSV('data/entity_id.csv', append=True)
+
+processor: Chain(n2, n2, n3)

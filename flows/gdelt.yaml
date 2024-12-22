@@ -1,4 +1,4 @@
-name: GDELT_follow
+name: GDELT数据采集
 description: download GDELT continuously, write to json file. you can change the writer to some databases.
 arguments: 0
 

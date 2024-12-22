@@ -1,4 +1,4 @@
-name: write wikipedia to ES
+name: Wikipedia入ES
 description: 对预处理后的维基百科页面建立ES索引
 arguments: 2
 consts:

@@ -1,5 +1,6 @@
 import time
 from typing import Iterable, Any
+from types import GeneratorType
 from random import random
 from wikidata_filter.util.dates import current_time
 
@@ -91,4 +92,8 @@ class Function(DataProvider):
 
     def iter(self):
         res = self.function(*self.args, **self.kwargs)
-        yield res
+        if isinstance(res, GeneratorType):
+            for item in res:
+                yield item
+        else:
+            yield res

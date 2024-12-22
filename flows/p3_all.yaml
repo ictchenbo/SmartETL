@@ -1,5 +1,5 @@
-name: p3_all
-description: 基于P1（如`p1_idname_simple.yaml`）或P2处理结果（如`p2_human.yaml`）填充实体摘要、属性名称、繁简体转换
+name: Wikidata实体信息填充（阶段三）
+description: 基于P1（如`p1_base.yaml`）或P2处理结果（如`p2_human.yaml`）填充实体摘要、属性名称、繁简体转换
 arguments: 0
 consts:
   wiki_base: "data/"

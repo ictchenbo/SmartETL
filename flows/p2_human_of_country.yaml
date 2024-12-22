@@ -1,4 +1,4 @@
-name: p3_human_country
+name: Wikidata人物实体按国家筛选（阶段二）
 description: 基于`p2_human.yaml`过滤的人物实体，进一步过滤指定国家的人。需要提供国家实体的ID，以英文逗号分隔
 arguments: 2
 

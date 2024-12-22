@@ -8,7 +8,7 @@ consts:
     collection: data_stat
 
 nodes:
-  loader: web.api.URLSimple('http://10.60.1.145:8080/goinv3/api/v1/dashboard/_count')
+  loader: web.api.Get('http://10.60.1.145:8080/goinv3/api/v1/dashboard/_count')
 #  date1: util.dates.current_time('%Y%m%d%H%M%S')
   select: Select('data', 'status')
   add_fields: AddFields(app='goinv3', key='dashboard')

@@ -1,5 +1,5 @@
-name: p2_country_all
-description: 输入wikidata简化后JSON数据(如`p1_idname_simple.yaml`的输出) 过滤出国家实体并填充实体摘要、属性名称、繁简体转换 获得直接可用的国家实体JSON
+name: Wikidata国家实体的全处理
+description: 输入wikidata简化后JSON数据(如`p1_base.yaml`的输出) 过滤出国家实体并填充实体摘要、属性名称、繁简体转换 获得直接可用的国家实体JSON
 arguments: 0
 consts:
   P31:

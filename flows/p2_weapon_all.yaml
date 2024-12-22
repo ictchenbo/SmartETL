@@ -1,5 +1,5 @@
-name: p2_weapon_all
-description: 输入wikidata简化后JSON数据(如`p1_idname_simple.yaml`的输出) 过滤出武器装备实体并填充实体摘要、属性名称、繁简体转换
+name: Wikidata武器装备实体的全处理
+description: 输入wikidata简化后JSON数据(如`p1_base.yaml`的输出) 过滤出武器装备实体并填充实体摘要、属性名称、繁简体转换
 arguments: 0
 consts:
   weapon_types:

@@ -1,0 +1,16 @@
+name: load json to clickhouse
+arguments: 1
+consts:
+  click1:
+    host: 10.208.57.5
+    tcp_port: 59000
+    database: gdelt
+
+loader: database.CK(**click1, table=arg1)
+
+nodes:
+  print: Print
+  counter: Count
+  writer: WriteJson(arg1+'.json')
+
+processor: Chain(writer, counter)

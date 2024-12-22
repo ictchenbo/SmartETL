@@ -51,7 +51,7 @@ class JsonIterator:
 6. 字段更新 `UpdateFields(**kwargs)` Upsert模式
 7. 字段填充 `InjectField(kv,inject_path, reference_path)`
 8. 对调KV `ReverseKV()`
-9. 基于规则的转换 `RuleBasedTransform(rules)`
+9. 基于规则的转换 `MapRules(rules)`
 10. 字段扁平化 `Flat(key, flat_mode='value')` 通过flat_mode指定扁平化模式 支持对数组、字典类型的字段或整个输入进行扁平化
 11. 扁平化转换 `FlatMap(mapper)` 对mapper结果进行扁平化
 12. 字段作为JSON加载 `FieldJson(key)`

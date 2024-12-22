@@ -1,5 +1,5 @@
 from datetime import datetime
-from wikidata_filter.loader.base import DataProvider
+from wikidata_filter.loader.file import File
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
 
@@ -9,16 +9,16 @@ except ImportError:
     raise ImportError("failed to import openpyxl  needed by Excel parsing")
 
 
-class ExcelStream(DataProvider):
+class ExcelStream(File):
     """Excel流式读取，适合大文件"""
     def __init__(self, input_file: str, sheets: list = None, with_header: bool = True):
         self.input_file = input_file
         self.sheets = sheets
         self.with_header = with_header
 
-        self.wb = openpyxl.load_workbook(self.input_file, read_only=True)
+        self.instream = openpyxl.load_workbook(self.input_file, read_only=True)
 
-        sheet_names = self.wb.sheetnames
+        sheet_names = self.instream.sheetnames
         if self.sheets:
             sheet_names = [i if isinstance(i, str) else sheet_names[i] for i in self.sheets]
         # print("sheet_names", sheet_names)
@@ -36,7 +36,7 @@ class ExcelStream(DataProvider):
 
     def iter(self):
         for sheet_name in self.sheet_names:
-            sheet = self.wb.get_sheet_by_name(sheet_name)
+            sheet = self.instream.get_sheet_by_name(sheet_name)
 
             header = None
             for row in sheet.iter_rows(values_only=True):

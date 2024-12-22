@@ -1,28 +1,19 @@
-name: write wikipedia to ES
-description: 对预处理后的维基百科页面建立ES索引
-arguments: 1
+name: Wikidata入ES
+description: 对预处理后的wikidata item建立ES索引，输入为Wikidata数据处理的阶段一/阶段二/阶段三数据
+arguments: 0
 consts:
   es_config:
-    host: '10.208.61.113'
+    host: 10.208.61.117
     port: 9200
-    username: elastic
-    password: *******
-    index: goinv3_document_wikidata
-  remove_fields:
-    - site
-    - categories
-    - sections
-    - pageID
-    - isDisambiguation
-    - isRedirect
-    - isStub
-    - redirectTo
+    index: goinv3_entity_human
 
-loader: JsonLine(arg1)
+loader: JsonLine('p2_human.json')
 
 nodes:
-  n1: RemoveFields(*remove_fields)
-  n2: RenameFields(plaintext='text')
+  n1: Select('id', 'labels', 'descriptions', 'aliases', 'modified')
+  n2: RenameFields(modified='modified_time')
+  set_types: AddFields(types='human')
   n3: database.ESWriter(**es_config)
+  count: Count
 
-processor: Chain(n1, n2, n3)
+processor: Chain(n1, n2, set_types, n3, count)

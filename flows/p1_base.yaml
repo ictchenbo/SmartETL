@@ -1,4 +1,4 @@
-name: p1_idname_simple
+name: Wikidata预处理阶段一
 description: 输入wikidata dump文件（gz/json）简化数据结构并id-name映射文件 输入参数：dump文件路径；输出：test_data/p1.json
 arguments: 1
 
