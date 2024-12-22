@@ -17,6 +17,9 @@ consts:
     collection: chunk
   chatglm4: http://10.208.63.29:8888
   bge_large_zh: http://10.208.63.29:8001/embed
+  gogpt_13b: http://10.208.63.29:8890
+  baichuan_13b: http://10.208.63.29:8891
+
   renames:
     content.title: title
     content.content: content
@@ -24,10 +27,11 @@ consts:
     event_time_date: publish_time
 
 nodes:
-  loader: database.MongoLoader(**mongo1, sortby="_id", limit=1000)
+  print: Print
+  loader: database.Mongo(**mongo1, sortby="_id", limit=1)
 
-  prompt1: util.files.text('config/prompt/news_classify.txt')
-  prompt2: util.files.text('config/prompt/news_country_rec.txt')
+  prompt1: util.files.read_text('config/prompt/news_classify.txt')
+  prompt2: util.files.read_text('config/prompt/news_country_rec.txt')
 
   select: Select('id', 'content.title', 'content.content', 'url', 'event_time_date')
   rename: RenameFields(**renames)
@@ -36,20 +40,28 @@ nodes:
   remove: RemoveFields('cont')
   chain1: Chain(select, rename, concat, short_content, remove)
 
-  class1: model.GoGPT(api_base=chatglm4, field='short_content', prompt=prompt1, target_key='tag1')
-  class2: model.GoGPT(api_base=chatglm4, field='short_content', prompt=prompt2, target_key='tag2')
+  class1: model.GoGPT(api_base=chatglm4, field='short_content', prompt=prompt1)
+  rename1: RenameFields(_llm='tag1')
+  llm1: Chain(class1, rename1)
 
+  class2: model.GoGPT(api_base=chatglm4, field='short_content', prompt=prompt2)
+  rename2: RenameFields(_llm='tag2')
+  llm2: Chain(class2, rename2)
+
+  tags: nlp.tags.TagSplit('tag1', 'tag2')
   remove2: RemoveFields('short_content')
-  tags: nlp.splitter.TagSplit('tag1', 'tag2')
-  writer: database.ESWriter(**es_config)
-
+  add_ts: AddTS('inserted_time')
+  write_es: database.ESWriter(**es_config)
   counter: Count(ticks=10)
+  write1: Chain(llm1, llm2, remove2, tags, add_ts, write_es, counter)
 
   chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
   flat: Flat(key='chunks', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
-  write_qd: database.Qdrant(**qdrant_config)
-  write2: Chain(chunk, flat, vector, write_qd)
+  write_qd: database.qdrant.Qdrant(**qdrant_config)
+  write2: Chain(chunk, print, flat, print, vector)
+
+  group: Fork(write1, write2)
 
 loader: TimedLoader(loader, interval=3600)
-processor: Chain(chain1, class1, class2, remove2, tags, writer, write2, counter)
+processor: Chain(chain1, print, write2)

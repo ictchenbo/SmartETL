@@ -1,12 +1,12 @@
 if __name__ == '__main__':
     import sys
 
-    from wikidata_filter import run
+    from wikidata_filter.flow_engine import run
     from wikidata_filter.loader import JsonLine
     from wikidata_filter.iterator import *
     from wikidata_filter.iterator.wikidata import *
     from wikidata_filter.iterator.matcher.wikidata import WikidataMatchNew
-    from wikidata_filter.util.dicts import from_json, from_csv
+    from wikidata_filter.util.dicts import from_json
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     chains = Chain(
         Filter(WikidataMatchNew({"P31": ["Q18643213", "Q728", "Q7978115", "Q2031121", "Q17205", "Q1186981", "Q216916"]})),
-        PropsFilter(props_set=from_csv('config/props_weapon.txt')),
+        PropsFilter(props_set_file='config/props_weapon.txt'),
         ObjectNameInject(id_name_cache),
         ItemAbstractInject(kv),
         ChineseSimple(),

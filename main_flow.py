@@ -1,6 +1,7 @@
 import os.path
 
-from wikidata_filter import run_flow, ProcessFlow
+from wikidata_filter.flow_builder import FlowBuilder
+from wikidata_filter.flow_engine import run_flow
 
 
 if __name__ == '__main__':
@@ -27,9 +28,9 @@ if __name__ == '__main__':
     filename = args.filename
 
     if args.loader and args.processor:
-        flow = ProcessFlow.from_cmd(filename, *unknown, loader=args.loader, processor=args.processor)
+        flow = FlowBuilder.from_cmd(filename, *unknown, loader=args.loader, processor=args.processor)
     elif os.path.exists(filename):
-        flow = ProcessFlow.from_file(filename, *unknown)
+        flow = FlowBuilder.from_file(filename, *unknown)
     else:
         parser.print_help(__file__)
         print("either filename or loader+processor should be provided")

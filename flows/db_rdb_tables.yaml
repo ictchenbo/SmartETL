@@ -1,4 +1,4 @@
-name: 关系数据库获取表信息
+name: 对指定的关系数据库及db获取table列表信息，可用于Text2SQL、TableSearch等
 arguments: 0
 consts:
   mysql1:
@@ -23,12 +23,12 @@ nodes:
   map_nullable: MapUtil('wikidata_filter.util.db_util.dtype_bool', key='nullable')
   group_by_table: Group(by='table_name', emit_fast=True)
   rename2: RenameFields(key='name', values='columns')
-  add_fields: AddFields(version='1.0', tags=['technology'], owner='system', source='test', comment='')
+  add_fields: AddFields(version='1.0', tags=['landinn', 'technology'], owner='system', source='兰亭', comment='')
   ts1: AddTS('created_time')
   ts2: AddTS('modified_time')
   add_id: PrefixID('ld_mysql_', 'name')
 
-  writer: WriteJson('data/mysql.tables.jsonl')
+  writer: WriteJson('test_data/landinn.tables.jsonl')
 
 loader: database.meta.DBTables(loader_mysql)
 processor: Chain(rename, flat_cols, rename1, map_type, map_nullable, group_by_table, rename2, add_fields, ts1, ts2, add_id, writer, counter)

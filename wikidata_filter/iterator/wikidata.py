@@ -157,14 +157,14 @@ class SimplifyProps(DictProcessorBase):
 
 class PropsFilter(DictProcessorBase):
     """
-    对属性进行过滤 仅保留指定的属性列表
+    对Item属性按照属性Key进行过滤
     """
-    def __init__(self, props_set: set = None, props_list_file: str = None):
+    def __init__(self, props_set: set = None, props_set_file: str = None):
         super().__init__()
         props_set = props_set or set()
-        if props_list_file:
-            from wikidata_filter.util import SetFromCSV
-            props_set.update(SetFromCSV(props_list_file))
+        if props_set_file:
+            from wikidata_filter.util.sets import from_csv
+            props_set.update(from_csv(props_set_file))
         self.props_set = props_set
 
     def on_data(self, item: dict, *args):
@@ -180,10 +180,10 @@ class PropsFilter(DictProcessorBase):
 
 class ValuesFilter(PropsFilter):
     """
-    对属性值进行过滤 仅保留指定对象的属性
+    对Item属性按照属性Value进行过滤
     """
-    def __init__(self, props_set: set = None, props_list_file: str = None):
-        super().__init__(props_set=props_set, props_list_file=props_list_file)
+    def __init__(self, props_set: set = None, props_set_file: str = None):
+        super().__init__(props_set=props_set, props_set_file=props_set_file)
 
     def __call__(self, item: dict):
         new_claims = {}

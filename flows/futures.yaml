@@ -10,11 +10,11 @@ consts:
 loader: JsonFree('test_data/futures-1105.json')
 
 nodes:
+  date1: util.dates.current_date()
   print: Print
   counter: Count
-  fm1: FormatFields('_id', date1='241105')
-  fm2: FormatFields('publish_time', date2='2024-11-05')
+  fm1: FormatFields('_id', date1=date1[2:].replace('-',''))
+  fm2: FormatFields('publish_time', date2=date1)
   writer: database.MongoWriter(**mongo1)
-
 
 processor: Chain(fm1, fm2, writer, counter)
