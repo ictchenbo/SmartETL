@@ -1,0 +1,34 @@
+name: 解析各类文档入库
+description: 加载文件夹，解析各文件，获取文档，进行chunk&embed&index
+arguments: 0
+consts:
+  es_config:
+    host: 10.208.61.117
+    port: 9200
+    index: goinv3_document_news
+    buffer_size: 10
+  qdrant_config:
+    host: 10.60.1.145
+    port: 6333
+    collection: chunk
+  bge_large_zh: http://10.208.63.29:8001/embed
+
+loader: Directory('data/news', 'all')
+
+nodes:
+  print: Print
+  count1: Count(label='json')
+
+  flat: Flat(key='nodes', inherit_props=True)
+  count2: Count(label='doc')
+
+  chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
+  flat_chunk: Flat(key='chunks', inherit_props=True)
+  count3: Count(label='chunk')
+  vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
+  write_qd: database.qdrant.Qdrant(**qdrant_config)
+#  chain_vector: vector
+
+  rm_content: RemoveFields('title')
+
+processor: Chain(count1, flat, print, flat, print, count2, chunk, flat_chunk, print)

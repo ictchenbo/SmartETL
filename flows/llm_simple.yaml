@@ -1,12 +1,16 @@
 name: 大模型调用处理
 description: 调用Kimi（月之暗面）/Siliconflow平台的大模型处理输入的问题 支持配置数据字段field，服务Key api_key，模型model，代理proxy，温度temp，topk，topp参数
 arguments: 0
+consts:
+  kimi_key: xxxx
+  siliconflow_key: xxxx
+  proxy: 'http://localhost:8001'
 
 loader: Text('test_data/llm_inputs.txt')
 
 nodes:
-  llm1: model.Moonshot(api_key='***')
-  llm2: model.Siliconflow(api_key='***',model='THUDM/glm-4-9b-chat',proxy='http://localhost:8001')
+  llm1: model.Moonshot(api_key=kimi_key)
+  llm2: model.Siliconflow(api_key=siliconflow_key,model='THUDM/glm-4-9b-chat',proxy=proxy)
   print: Print
 
 processor: Chain(llm2, print)
