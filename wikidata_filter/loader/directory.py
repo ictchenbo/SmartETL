@@ -2,30 +2,32 @@ import os
 from typing import Iterable, Any
 
 from wikidata_filter.loader.base import DataProvider
-from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree
-from .xls import ExcelStream
-from .parquet import Parquet
-from .docx import Doc, Docx
-from .pptx import PPT, PPTX
-from .pdf import PDF
+from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml
 from .html import HTML
+# from .xls import ExcelStream
+# from .parquet import Parquet
+# from .docx import Doc, Docx
+# from .pptx import PPT, PPTX
+# from .pdf import PDF
 
 
 LOADERS = {
     '.txt': Text,
     '.csv': CSV,
-    '.xls': ExcelStream,
+    '.yaml': Yaml,
+    '.yml': Yaml,
     '.json': Json,
     '.jsonl': JsonLine,
     '.jsona': JsonArray,
     '.jsonf': JsonFree,
-    '.parquet': Parquet,
-    '.doc': Doc,
-    '.docx': Docx,
-    '.pdf': PDF,
     '.html': HTML,
-    '.ppt': PPT,
-    '.pptx': PPTX
+    # '.xls': ExcelStream,
+    # '.parquet': Parquet,
+    # '.doc': Doc,
+    # '.docx': Docx,
+    # '.pdf': PDF,
+    # '.ppt': PPT,
+    # '.pptx': PPTX
 }
 
 
@@ -53,6 +55,7 @@ class Directory(DataProvider):
         self.extra_args = kwargs
 
     def match_file(self, filename: str):
+        # print(filename)
         if self.all_file:
             return True
         for si in self.suffix:

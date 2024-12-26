@@ -38,6 +38,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
    - [科情-技术评估预测](flows/technology_score.yaml)
+   - [漏洞POC描述及POC生成](flows/nl2poc/vul_nuclei_http_poc_desc.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -52,6 +53,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - OST
    - OMG
    - [json](flows/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
+   - [yaml](flows/nl2poc/vul_nuclei_http_poc_desc.yaml)
    - [parquet](flows/file_parquet.yaml)
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
    - MySQL
@@ -63,14 +65,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 7. 提供大模型主要处理，支持访问OpenAI兼容接口进行生成、文本向量化
 
 ## New！
-- 2024.12.22
-1. 梳理全部流程，修正组件引用错误
-2. 流程、组件管理器及流引擎部分代码重构，命名更加清晰明确
-3. 实现yaml文件的引用（`from`）
-
-- 2024.12.21
-1. 全部算子重新梳理，整理算子清单，重命名，修正部分逻辑，修改yaml文件
-2. 支持命令行定义流程
+- 2024-12-26
+1. 新增两个安全领域数据处理流程（基于大模型的poc描述、poc生成）
+2. Fix SelectVal代码问题
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -180,17 +177,6 @@ processor: Fork(chain_entity, chain_property)
 关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
 
 
-**项目扩展模式**： 
-1. 基于源码的扩展： 
-- 直接在本项目中修改已有实现或更加更多实现，可在`wikidata_filter`模块下进行 
-- 在本项目顶层（与`wikidata_filter`模块并行）添加更多模块 
-- 新建项目引用当前项目进行组件开发，并在`wikidata_filter`模块下添加引用（比如添加`wikidata_filter.addon`引入相关组件）。需要注意避免组件的循环引用。 
-
-2. 【计划中】基于组件的方式
-新建项目引用当前项目进行组件开发，在新项目中启动，需要在框架中注册组件
-【计划中】下一步实现项目打包、安装包上传仓库。
-
-   
 ## 使用者文档 User Guide
 
 YAML Flow [Flow 格式说明](docs/yaml-flow.md)
@@ -207,6 +193,15 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2024.12.22
+1. 梳理全部流程，修正组件引用错误
+2. 流程、组件管理器及流引擎部分代码重构，命名更加清晰明确
+3. 实现yaml文件的引用（`from`）
+
+- 2024.12.21
+1. 全部算子重新梳理，整理算子清单，重命名，修正部分逻辑，修改yaml文件
+2. 支持命令行定义流程
+
 - 2024.12.19
 1. 新增多个有用的转换算子 `MapMulti` `MapUtil` `MapFill`，均继承自`Map`
 2. `WriteText` `WriteJson`支持gzip压缩，减小文件大小、提高写文件效率

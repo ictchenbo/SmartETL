@@ -45,7 +45,7 @@ class SelectVal(DictProcessorBase):
                         keyval[k] = v
             else:
                 print("SelectVal Warning: field value must be dict when inherit_props is True")
-            return keyval
+        return keyval
 
     def __str__(self):
         return f"{self.name}('{self.key}', inherit_props={self.inherit_props})"

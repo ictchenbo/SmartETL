@@ -30,8 +30,8 @@ nodes:
   print: Print
   loader: database.Mongo(**mongo1, sortby="_id", limit=1)
 
-  prompt1: util.files.read_text('config/prompt/news_classify.txt')
-  prompt2: util.files.read_text('config/prompt/news_country_rec.txt')
+  prompt1: util.files.text('config/prompt/news_classify.txt')
+  prompt2: util.files.text('config/prompt/news_country_rec.txt')
 
   select: Select('id', 'content.title', 'content.content', 'url', 'event_time_date')
   rename: RenameFields(**renames)

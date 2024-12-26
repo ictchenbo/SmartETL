@@ -1,0 +1,7 @@
+You are a professional code analyst. You will be provided with some code snippet which is used to validate that a web service has a vulnerability.
+The given code is in YAML format, including the request method(GET/POST), the service path, the request parameters optionally, and how the response is extracted and examined.
+
+Explain how the validation process works.
+
+## Code
+{data}

@@ -9,10 +9,10 @@ class Filter(JsonIterator):
     过滤节点（1->?)
     根据提供的匹配函数判断是否继续往后面传递数据
     """
-    def __init__(self, matcher, key: str = None):
+    def __init__(self, matcher=None, key: str = None):
         super().__init__()
-        assert matcher is not None, "matcher should not be None"
-        self.matcher = matcher
+        # assert matcher is not None, "matcher should not be None"
+        self.matcher = matcher or self
         self.key = key
 
     def on_data(self, data, *args):
@@ -23,6 +23,9 @@ class Filter(JsonIterator):
             val = data[self.key]
         if self.matcher(val):
             return data
+
+    def __call__(self, val):
+        return True
 
 
 class WhiteList(Filter):
@@ -95,3 +98,51 @@ class TakeN(Filter):
     def __call__(self, *args, **kwargs):
         self.i += 1
         return self.i < self.n
+
+
+class SkipN(Filter):
+    """跳过条数据"""
+    def __init__(self, n: int = 0):
+        super().__init__(self)
+        self.n = n
+        self.i = 0
+
+    def __call__(self, *args, **kwargs):
+        self.i += 1
+        return self.i > self.n
+
+
+class FieldsExists(Filter):
+    """存在指定字段的过滤器"""
+    def __init__(self, *keys):
+        super().__init__(self)
+        self.keys = keys
+
+    def __call__(self, data: dict, *args, **kwargs):
+        for key in self.keys:
+            if key not in data:
+                return False
+        return True
+
+
+class FieldsNonEmpty(Filter):
+    """字段不为空的过滤器"""
+    def __init__(self, *keys):
+        super().__init__(self)
+        self.keys = keys
+
+    def __call__(self, data: dict, *args, **kwargs):
+        for key in self.keys:
+            if not data.get(key):
+                return False
+        return True
+
+
+class RFilter(Filter):
+    """反转过滤器 基于已有过滤器取反"""
+    def __init__(self, that: Filter, *args, **kwargs):
+        super().__init__(self)
+        self.that = that
+
+    def __call__(self, val):
+        return not self.that.__call__(val)
