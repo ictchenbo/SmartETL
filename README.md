@@ -38,7 +38,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
    - [科情-技术评估预测](flows/technology_score.yaml)
-   - [漏洞POC描述及POC生成](flows/nl2poc/vul_nuclei_http_poc_desc.yaml)
+   - [漏洞POC描述及POC生成](flows/nl2poc/nuclei_http_poc_desc.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -53,7 +53,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - OST
    - OMG
    - [json](flows/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
-   - [yaml](flows/nl2poc/vul_nuclei_http_poc_desc.yaml)
+   - [yaml](flows/nl2poc/nuclei_http_poc_desc.yaml)
    - [parquet](flows/file_parquet.yaml)
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
    - MySQL

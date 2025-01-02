@@ -1,0 +1,27 @@
+name: vul no_poc
+description: 加载漏洞数据集（江子特提供），筛选出有CVE编号&没有PoC的漏洞
+arguments: 0
+consts:
+  no_cve:
+    N/A: 1
+
+loader: JsonArray('data/vul/vul-jiangzite-1121.json')
+
+nodes:
+  print: Print
+  count1: Count(label='vul-all')
+  count2: Count(label='vul-cve')
+  count3: Count(label='vul-no-poc')
+
+  poc_sets: util.sets.from_json('data/vul/nuclei_poc.jsonl', key_key='_id')
+  rename: RenameFields(_id='_parent')
+  flat: Flat(key='docs', inherit_props=True)
+  distinct: Distinct('_parent')
+  select: Select('db_id', 'cve_id', 'CWE', '_parent', 'source', 'description')
+  filter1: BlackList(no_cve, 'cve_id')
+  filter2: BlackList(poc_sets, 'cve_id')
+  filter3: BlackList(poc_sets, 'db_id')
+  rename2: RenameFields(cve_id='_id')
+  writer: WriteJson('data/vul/vul_list-no_poc.jsonl')
+
+processor: Chain(rename, flat, distinct, count1, select, filter1, count2, filter2, filter3, rename2, writer, count3)

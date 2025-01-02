@@ -1,0 +1,24 @@
+name: 基于nuclei的HTTP协议PoC的NL2PoC数据集生成
+description: 利用大模型对nuclei poc代码进行描述说明，生成NL2PoC数据集
+arguments: 0
+consts:
+  input_file: data/vul/nuclei_poc_http.jsonl
+  poc_file: data/vul/nuclei_poc_http_desc.jsonl
+  llm:
+    api_base: https://api.chatanywhere.tech
+    model: gpt-4o
+
+nodes:
+  print: Print
+  count: Count(label='poc desc generated', ticks=10)
+  poc_sets: util.sets.from_json(poc_file, key_key='_id')
+  poc_desc_prompt: util.files.text('config/prompt/vul-poc-desc.txt')
+
+  filter: BlackList(poc_sets, '_id')
+  rename: RenameFields(description='text')
+  poc_desc: model.LLM(**llm, key='code', prompt=poc_desc_prompt, target_key='poc_text')
+  writer: WriteJson(poc_file, append=True)
+
+loader: JsonLine(input_file)
+
+processor: Chain(filter, rename, poc_desc, writer, count)

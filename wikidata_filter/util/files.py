@@ -14,6 +14,7 @@ def json(filename: str, encoding="utf8", **kwargs):
 
 
 def get_lines(filename: str, encoding="utf8", **kwargs):
+
     with open(filename, "r", encoding=encoding, **kwargs) as fin:
         for line in fin:
             yield line.strip()
