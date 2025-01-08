@@ -20,7 +20,7 @@ class Parquet(BinaryFile):
         super().__init__(input_file, auto_open=False)
 
     def iter(self) -> Iterable[Any]:
-        table = pq.read_table(self.filename)
+        table = pq.read_table(self.input_file)
         for batch in table.to_batches():
             for row in batch.to_pylist():
                 yield row

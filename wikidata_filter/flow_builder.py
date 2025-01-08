@@ -35,7 +35,9 @@ class FlowBuilder:
 
         target = {}
         for base_flow in base_flows:
-            assert abs_path(base_flow) not in all_files, "Flow定义出现循环引用！"
+            # assert abs_path(base_flow) not in all_files, "Flow定义出现循环引用！"
+            if abs_path(base_flow) in all_files:
+                continue
             base = FlowBuilder.load_yaml(base_flow, all_files, encoding=encoding)
             merge_dicts(target, base)
 
@@ -46,15 +48,17 @@ class FlowBuilder:
 
     @staticmethod
     def from_file(flow_file: str, *args, encoding: str = 'utf8', **kwargs):
+        """基于yaml流程文件构造流程"""
         flow_def = FlowBuilder.load_yaml(flow_file, set(), encoding=encoding)
         return Flow(flow_def, *args, **kwargs)
 
     @staticmethod
-    def from_cmd(name, *args, **kwargs):
-        flow = {
+    def from_cmd(name, *args, loader: str = None, processor: str = None, **kwargs):
+        """基于命令行参数构造流程"""
+        flow_def = {
             "name": f"cli flow {name}",
             "arguments": len(args),
-            "loader": kwargs.pop("loader"),
-            "processor": kwargs.pop("processor")
+            "loader": loader,
+            "processor": processor
         }
-        return Flow(flow, *args, **kwargs)
+        return Flow(flow_def, *args, **kwargs)

@@ -3,6 +3,8 @@ import os
 from wikidata_filter.base import relative_path
 from wikidata_filter.components import components
 from wikidata_filter.util.mod_util import load_cls
+from wikidata_filter.loader import *
+from wikidata_filter.iterator import *
 
 base_pkg = 'wikidata_filter'
 LOADER_MODULE = "loader"
@@ -11,7 +13,12 @@ UTIL_MODULE = "util"
 
 
 class ComponentManager:
-    variables: dict = {}
+    """组件管理器"""
+    def __init__(self):
+        # 管理类
+        self.components = dict(**components, **globals())
+        # 管理实例
+        self.variables = {}
 
     @staticmethod
     def fullname(cls_name: str, label: str = None):
@@ -41,16 +48,15 @@ class ComponentManager:
         # 默认模块下 -> wikidata_filter/iterator/__init__
         return f'{base_pkg}.{PROCESSOR_MODULE}.{cls_name}'
 
-    @staticmethod
-    def find_cls(full_name: str):
+    def find_cls(self, full_name: str):
         """
         根据对象的全限定名加载对象 提前加载到`components`中可提高加载速度
         """
-        if full_name in components:
-            return components[full_name]
+        if full_name in self.components:
+            return self.components[full_name]
         cls, mod, class_name = load_cls(full_name)
         # 缓存对象
-        components[full_name] = cls
+        self.components[full_name] = cls
         return cls
 
     def register_var(self, var_name, var):
@@ -58,6 +64,8 @@ class ComponentManager:
 
     def is_reference_node(self, expr: str):
         """简单判断策略 如果不包含点、全部为小写、在变量中则认为是"""
+        if expr.endswith(')'):
+            return False
         if expr in self.variables and '.' not in expr and expr.islower():
             return True
         return False
@@ -66,6 +74,7 @@ class ComponentManager:
         if not expr:
             return None
 
+        # 支持以=开头直接定义python表达式
         if expr.startswith('='):
             return eval(expr[1:], globals(), self.variables)
 
@@ -82,16 +91,21 @@ class ComponentManager:
         else:
             call_part = '()'
         assert call_part.endswith(')'), f"Invalid node expr: {expr}, should be a function call"
+
+        # 构造全名
+        class_name_full = self.fullname(constructor, label=label)
+
         # get short class name from constructor
+        # Python语法限制，必须使用组件短名 如`wikidata_filter.loader.Text('a.txt')`是无效的
         class_name = constructor
         if '.' in class_name:
             class_name = class_name[class_name.rfind('.')+1:]
-        class_name_full = self.fullname(constructor, label=label)
+
         # find constructor object
         cls = self.find_cls(class_name_full)
-        # register for later use
-        # eval虽然简单，但是存在限制：由于Python语法限制，必须使用组件短名
-        # 不同构造器的短名如果相同 则会替换已有的构造器；通常每个流程使用一个component_manager 一般不会有问题
-        self.register_var(class_name, cls)
-        new_node = eval(f'{class_name}{call_part}', globals(), self.variables)
+        # 不同构造器如果短名相同 则会替换已有的构造器 一般不会有问题
+        self.components[class_name] = cls
+
+        new_node = eval(f'{class_name}{call_part}', self.components, self.variables)
+
         return new_node

@@ -2,7 +2,14 @@ import json
 from wikidata_filter.util.files import get_lines
 
 
-def from_csv(file, key_col=0, val_col=1, sep=",", encoding="utf8"):
+def from_csv(file: str, key_col: int = 0, val_col: int = 1, sep: str = ",", encoding: str = "utf8"):
+    """基于csv构造dict
+    :param file 输入文件
+    :param key_col key字段序号，默认0第一列
+    :param val_col value字段序号，默认1第二列
+    :param sep 分隔符，默认半角逗号
+    :param encoding 文件编码，默认为utf8
+    """
     kv = {}
     for line in get_lines(file, encoding=encoding):
         if sep in line:
@@ -11,7 +18,13 @@ def from_csv(file, key_col=0, val_col=1, sep=",", encoding="utf8"):
     return kv
 
 
-def from_json(file, key_key='id', val_key='name', encoding="utf8"):
+def from_json(file: str, key_key: str = 'id', val_key: str = 'name', encoding: str = "utf8"):
+    """基于json构造dict
+        :param file 输入文件
+        :param key_key key字段名，默认为'id'
+        :param val_key value字段名，默认为'name'
+        :param encoding 文件编码，默认为utf8
+    """
     kv = {}
     for line in get_lines(file, encoding=encoding):
         row = json.loads(line)
@@ -21,6 +34,7 @@ def from_json(file, key_key='id', val_key='name', encoding="utf8"):
 
 
 def copy_val(val):
+    """Python基本对象值拷贝（深拷贝），但不支持复杂对象"""
     if isinstance(val, dict):
         return {k: copy_val(v) for k, v in val.items()}
     elif isinstance(val, set):
@@ -44,4 +58,5 @@ def merge_dicts(target: dict, source: dict):
 
 
 def reverse_dict(source: dict):
+    """反转dict的k-v"""
     return {v: k for k, v in source.items()}

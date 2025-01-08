@@ -88,3 +88,7 @@ def fill_date(dt: str or list):
             return expand_date_range(dt[0])
         else:
             return expand_date_range(dt[0])[0], expand_date_range(dt[1])[1]
+
+
+def normalize_time(t: str):
+    return t

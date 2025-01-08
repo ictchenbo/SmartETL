@@ -18,7 +18,7 @@ class Print(JsonIterator):
     打印数据，方便查看中间结果
     """
     def on_data(self, data, *args):
-        print(data)
+        print(id(data), data)
         return data
 
 

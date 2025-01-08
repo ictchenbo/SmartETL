@@ -19,12 +19,14 @@ def write_file(url: str, content, save_path: str):
 
 
 def parse_csv(url: str, save_path: str = None):
+    """解析GDELT CSV文件内容"""
+    # 处理URL地址
     if url.startswith("http://") or url.startswith("https://"):
         content = get_content(url)
         if len(content) < 100:
             return
         if save_path:
-            write_file(url, content)
+            write_file(url, content, save_path)
         bytes_io = io.BytesIO(content)
         with ZipFile(bytes_io) as zipObj:
             filename = zipObj.filelist[0].filename
@@ -34,16 +36,17 @@ def parse_csv(url: str, save_path: str = None):
                     if line_s:
                         yield line_s.split('\t')
     else:
+        # 作为本地文件处理
         with open(url, encoding="utf8") as fin:
             for line in fin:
                 yield line.split('\t')
 
 
 class SchemaBuilder:
-    constructors = {}
-    fields = []
-
+    """GDELT数据结构定义 根据配置文件"""
     def __init__(self, filename: str):
+        self.constructors = {}
+        self.fields = []
         for line in get_lines(filename):
             if not line:
                 continue

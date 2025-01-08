@@ -25,13 +25,13 @@ def run(data_provider: DataProvider, processor: JsonIterator):
     # 注册信号处理程序
     signal.signal(signal.SIGINT, handle_sigint)
 
-    print(f"Run flow: \nloader: {data_provider}\nprocessor: {processor}")
+    # print(f"Run flow: \nloader: {data_provider}\nprocessor: {processor}")
     print("------------------------")
     processor.on_start()
 
-    # 注意，由于iterator.on_data可能包含yield，因此仅调用iterator.on_data(data)可能不会真正执行
     def execute(data: Any, *args):
         res = processor.__process__(data)
+        # 注意：包含yield的函数调用仅返回迭代器，而不会执行函数
         if isinstance(res, GeneratorType):
             for _ in res:
                 pass

@@ -1,5 +1,6 @@
 from typing import Union, Dict, Any, List
 from types import GeneratorType
+from wikidata_filter.util.dicts import copy_val
 
 
 class Message:
@@ -61,14 +62,6 @@ class JsonIterator:
     def __str__(self):
         return f"{self.name}"
 
-    def val(self, data, key=None):
-        if key is None:
-            return data
-        if key not in data:
-            print(f"Warning: `{key}` not exists")
-            return None
-        return data[key]
-
 
 class DictProcessorBase(JsonIterator):
     """针对dict类型数据处理的基类 如果传入的非字典将不做任何处理"""
@@ -82,13 +75,12 @@ class DictProcessorBase(JsonIterator):
 
 class Multiple(JsonIterator):
     """多个节点组合"""
-    nodes: List[JsonIterator] = []
 
     def __init__(self, *nodes):
         """
         :param *nodes 处理算子
         """
-        self.nodes.extend(nodes)
+        self.nodes = list(nodes)
 
     def add(self, iterator: JsonIterator):
         """添加节点"""
@@ -104,23 +96,34 @@ class Multiple(JsonIterator):
             it.on_complete()
 
     def __str__(self):
-        nodes = [str(it) for it in self.nodes]
+        nodes = [it.__str__() for it in self.nodes]
         return f'{self.name}(nodes={nodes})'
+        # return f'{self.name}()'
 
 
 class Fork(Multiple):
     """
-    分叉节点（并行逻辑），各处理节点独立运行。Fork节点本身不产生输出。
+    分叉节点（并行逻辑），各处理节点独立运行。
+    Fork节点本身不产生输出，因此不能与其他节点串联
     """
-    def __init__(self, *nodes):
+    def __init__(self, *nodes, copy_data: bool = False):
         """
-        :param *args 处理算子
+        :param *nodes 处理算子
+        :param copy_data 是否复制数据，使得各个分支对数据修改互不干扰
         """
         super().__init__(*nodes)
+        self.copy_data = copy_data
 
     def __process__(self, data: Any, *args):
-        for it in self.nodes:
-            it.__process__(data, *args)
+        for node in self.nodes:
+            _data = data
+            if self.copy_data:
+                _data = copy_val(_data)
+            res = node.__process__(_data, *args)
+            # 注意：包含yield的函数调用仅返回迭代器，而不会执行函数
+            if isinstance(res, GeneratorType):
+                for _ in res:
+                    pass
 
 
 class Chain(Multiple):
@@ -130,14 +133,15 @@ class Chain(Multiple):
     def __init__(self, *nodes):
         super().__init__(*nodes)
 
-    def walk(self, data: Any, break_when_empty: bool = True, end_msg: bool = False):
+    def walk(self, data: Any, break_when_empty: bool = True, end_msg: bool = False) -> list[Any]:
+        """将前一个节点的输出作为下一个节点的输入，依次执行每个节点。返回最后一个节点的输出"""
         queue = [data]
-        for it in self.nodes:
-            # print(it)
+        for node in self.nodes:
             new_queue = []  # cache for next processor, though there's only one item for most time
             # iterate over the current cache
             for current in queue:
-                res = it.__process__(current)
+                res = node.__process__(current)
+                # 注意：包含yield的函数调用仅返回迭代器，而不会执行函数
                 if isinstance(res, GeneratorType):
                     for one in res:
                         if one is not None:
@@ -158,13 +162,14 @@ class Chain(Multiple):
         return queue
 
     def __process__(self, data: Any, *args):
-        # 普通流程中如果收到None 则中断执行链条
         # print('Chain.__process__', data)
+        # 普通流程中如果收到None 则中断执行链条
         if data is None:
             return None
 
         # 特殊消息处理
         if isinstance(data, Message):
+            # 收到结束消息 后续节点还需要
             if data.msg_type == 'end':
                 # print(f'{self.name}: END/Flush signal received.')
                 queue = self.walk(data.data, break_when_empty=False, end_msg=True)

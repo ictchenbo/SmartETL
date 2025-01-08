@@ -5,7 +5,6 @@ from wikidata_filter.iterator.aggregation import BufferedWriter
 
 class WriteText(BufferedWriter):
     """带缓冲的文本文件写，通常换行分隔。由于文件IO自带缓冲，通常不需要这么做，但可以支持更好的写入性能"""
-    writer = None
 
     def __init__(self, output_file: str,
                  append: bool = False,
@@ -22,6 +21,7 @@ class WriteText(BufferedWriter):
         :param mode 压缩模式 默认为None（不启用压缩） 支持gzip
         """
         super().__init__(buffer_size=buffer_size)
+        self.writer = None
         self.output_file = output_file
         self.sep = sep
         self.append = append

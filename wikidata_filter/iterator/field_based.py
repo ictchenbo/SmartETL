@@ -100,7 +100,7 @@ class DictEditBase(DictProcessorBase):
 
 
 class AddFields(DictEditBase):
-    """添加字段 如果不存在"""
+    """添加字段 如果字段不存在"""
     def __init__(self, tmp: dict = None, **kwargs):
         super().__init__(tmp=tmp, **kwargs)
 
@@ -111,8 +111,19 @@ class AddFields(DictEditBase):
         return data
 
 
+class ReplaceFields(DictEditBase):
+    """替换字段 Upsert模式"""
+    def __init__(self, tmp: dict = None, **kwargs):
+        super().__init__(tmp=tmp, **kwargs)
+
+    def on_data(self, data: dict, *args):
+        for k, v in self.templates.items():
+            data[k] = v
+        return data
+
+
 class RenameFields(DictEditBase):
-    """对字段重命名"""
+    """对字段重命名 如果目标字段存在则会被覆盖"""
     def __init__(self, tmp: dict = None, **kwargs):
         super().__init__(tmp=tmp, **kwargs)
 
@@ -123,14 +134,14 @@ class RenameFields(DictEditBase):
         return data
 
 
-class UpdateFields(DictEditBase):
-    """更新字段，Upsert模式"""
+class MergeFields(DictEditBase):
+    """合并字段，如果某字段不存在或值为空，使用指定字段进行填充"""
     def __init__(self, tmp: dict = None, **kwargs):
         super().__init__(tmp=tmp, **kwargs)
 
     def on_data(self, data: dict, *args):
         for s, t in self.templates.items():
-            data[t] = data[s]
+            data[t] = data.get(t) or data.get(s)
         return data
 
 
@@ -184,7 +195,7 @@ class FromJson(DictProcessorBase):
     default_args = {}
 
     def __init__(self, key: str, **kwargs):
-        assert key is not None, "key should be None"
+        assert key is not None, "key should not be None"
         self.key = key
         self.default_args.update(kwargs)
 

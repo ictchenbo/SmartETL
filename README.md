@@ -5,13 +5,14 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 项目内置40+常用流程、150+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
 
-![系统使用](docs/main.png)
+系统架构图：
+![系统架构](docs/arch.png)
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
 - 数据结构转换
 - 数据库备份、同步
-- 数据采集（如GDELT数据）
+- 数据采集（如GDELT数据）、网页抽取
 - 数据解析与NLP处理
 - 索引构建，包括全文索引、向量索引
 - 知识图谱构建
@@ -34,7 +35,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/file_parquet.yaml)
-   - [新闻文本解析&向量化索引](flows/llm_process_news.yaml)
+   - [网页内容信息抽取](flows/kafka_news_p1.yaml)
+   - [新闻文本解析&向量化索引](flows/kafka_news_p2.yaml)
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
    - [科情-技术评估预测](flows/technology_score.yaml)
@@ -65,9 +67,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 7. 提供大模型主要处理，支持访问OpenAI兼容接口进行生成、文本向量化
 
 ## New！
-- 2024-12-26
-1. 新增两个安全领域数据处理流程（基于大模型的poc描述、poc生成）
-2. Fix SelectVal代码问题
+- 2025.1.8
+  - 解决Chain节点重复问题（Pytho类的类字段问题）
+  - 修改`ComponentManager`，将类对象和实例对象进行分开，并支持默认loader/processor的预加载
+  - 支持在构造子中进行嵌套构造，如：`Fork(write_es, Chain(vector, write_qd))`
+  - 修改`Fork`，以支持分支数据相互独立（`copy_data=True`）
+  - 新增Kafka Web接口消息加载
+  - 新增了两个流程：基于消息队列加载新闻并抽取内容 [查看](flows/kafka_news_p1.yaml)；对新闻进行翻译、向量化 [查看](flows/kafka_news_p2.yaml)
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -85,6 +91,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 ```shell
  python main_flow.py -h
 ```
+![系统使用](docs/main.png)
 
 3. 流程定义
 
@@ -163,13 +170,33 @@ processor: Fork(chain_entity, chain_property)
 
 4. 启动流程
 
+**YAML 流程示例**：
+```shell
+ python main_flow.py flows/test.yaml
+```
+
+**CLI 流程示例**：
 最简单示例：
 ```shell
  python main_flow.py --loader "String(arg1, sep=';')" --processor "Print" local "1;2;3"
 ```
 
-```shell
- python main_flow.py <flow-file-path>
+**Python 流程示例([等价的yaml](flows/test.yaml))**：
+```python
+from wikidata_filter.flow_engine import run
+from wikidata_filter.loader import JsonLine
+from wikidata_filter.iterator import Print, Count, Chain, Fork, Select, AddFields
+
+loader = JsonLine('data/news.jsonl')
+
+select = Select('id', 'url')
+
+chain1 = Chain(AddFields(chain='1'), Print())
+chain2 = Chain(AddFields(chain='2'), Print())
+
+processor = Chain(select, Fork(chain1, chain2, copy_data=True))
+
+run(loader, processor)
 ```
 
 可以在[这里](flows)找到很多开箱即用的流程。
@@ -193,6 +220,10 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2024-12-26
+1. 新增两个安全领域数据处理流程（基于大模型的poc描述、poc生成）
+2. Fix SelectVal代码问题
+
 - 2024.12.22
 1. 梳理全部流程，修正组件引用错误
 2. 流程、组件管理器及流引擎部分代码重构，命名更加清晰明确
