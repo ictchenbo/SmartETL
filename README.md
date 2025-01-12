@@ -13,7 +13,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 2. 丰富的ETL算子**180+**：提供**数据集成治理**、**图谱构建**、**大模型**、**NLP**、**信息抽取**等常用算子
 3. 开箱即用的数据流程**50+**：面向开源情报分析提供多样化流程，覆盖数据清洗、大模型/大数据预处理、知识图谱构建、机器学习数据集生成、信息抽取、技术评估预测、数据库备份等任务。开箱即用，具体在[这里](flows)查看
 4. 持续积累开源情报数据资源10+，所见即所得：
-   - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
+   - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/wikipedia/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
    - [wikidata 维基数据](flows/wikidata/p1_graph_simple.yaml)
    - [GDELT 谷歌全球社会事件数据库 （流式，直接下载）](flows/gdelt.yaml)
    - [GTD 全球恐怖主义事件库](flows/gtd.yaml)

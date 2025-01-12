@@ -1,18 +1,18 @@
 from: local/db_envs.yaml
 
-name: Wikidata入ES
-description: 对预处理后的wikidata item建立ES索引，输入为Wikidata数据处理的阶段一/阶段二/阶段三数据
+name: write wikipedia to ES
+description: 对预处理后的wikidata item建立ES索引
 arguments: 0
 consts:
   es1:
-    index: goinv3_document_wikidata
+    index: goinv3_entity_org
 
-loader: JsonLine('p2_human.json')
+loader: JsonLine('p2_org.json')
 
 nodes:
   n1: Select('id', 'labels', 'descriptions', 'aliases', 'modified')
   n2: RenameFields(modified='modified_time')
-  set_types: AddFields(types='human')
+  set_types: AddFields(types='org')
   n3: database.ESWriter(**es1)
   count: Count
 

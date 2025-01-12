@@ -1,0 +1,30 @@
+from: local/db_envs.yaml
+
+name: Wikipedia入ES
+description: 对预处理后的维基百科页面建立ES索引
+arguments: 2
+consts:
+  es1:
+    index: goinv3_document_zhwiki
+#    index: goinv3_document_enwiki
+  remove_fields:
+    - site
+    - categories
+    - sections
+    - pageID
+    - isDisambiguation
+    - isRedirect
+    - isStub
+    - redirectTo
+
+loader: JsonLine(arg1)
+
+nodes:
+#  n1: RemoveFields(*remove_fields)
+  n1: Select('pageID', 'title', 'plaintext')
+  n2: RenameFields(pageID='id', plaintext='content')
+  n3: database.ESWriter(**es1)
+
+  count: Count
+
+processor: Chain(n1, n2, n3, count)

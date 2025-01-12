@@ -1,9 +1,10 @@
+from: local/llm_keys.yaml
+
 name: NL2POC-nuclei
 description: 加载漏洞，提示大模型基于漏洞描述进行PoC生成（nuclei模板格式）
 arguments: 0
 consts:
-  llm:
-    api_base: https://api.chatanywhere.tech
+  openai:
     model: gpt-4o
 
 loader: JsonLine('data/vul/vul_list-no_poc.jsonl')
@@ -15,7 +16,7 @@ nodes:
   nl2poc_prompt: util.files.text('config/prompt/vul-nl2poc-1.txt')
 
   filter1: "Filter(lambda v: len(v)>50, key='description')"
-  nl2poc: model.LLM(**llm, key='description', prompt=nl2poc_prompt, target_key='poc')
+  nl2poc: model.LLM(**openai, key='description', prompt=nl2poc_prompt, target_key='poc')
   writer: WriteJson('data/vul/nl2poc.jsonl', append=True)
 
 processor: Chain(filter1, nl2poc, writer, count1)

@@ -1,12 +1,9 @@
+from: local/db_envs.yaml
+
 name: LD项目技术评估
 description: 从MySQL中读取技术词，进行4个指数计算，评估热度指数、新兴指数、颠覆性指数和预测指数
 arguments: 0
 consts:
-  mysql:
-    host: rds-inner.mysql.zhangbei.rds.aliyuncs.com
-    user: xxxxxx
-    password: xxxxxx
-    database: landinn_technology_prejudge
   table: lanting_words_20241023
   select: golaxy_vocab_id, golaxy_node_id, name_zh, name_en, tech_domain
   where: "created_time > '2024-12-16'"
@@ -29,19 +26,19 @@ nodes:
   tech_predict: MapUtil('landinn.tech_prediction.calc')
   select1: Select('golaxy_vocab_id', 'name_zh', 'name_en', 'predict.year', 'predict.historical_value', 'predict.predicted_value', 'predict.current_trends', 'predict.predicted_trends', 'predict.flag', short_key=True)
   rename1: RenameFields(golaxy_vocab_id='tech_id', name_zh='tech_name_ch', name_en='tech_name_en')
-  write1: database.mysql.MySQL(**mysql, table=result_table1)
+  write1: database.mysql.MySQL(**mysql_ld, table=result_table1)
   chain: Chain(tech_predict, select1, rename1, print, count)
 
 #  disruptive_score: MapUtil('landinn.disruptive_score.calc')
-#  write2: database.mysql.MySQL(**mysql, table=result_table2)
+#  write2: database.mysql.MySQL(**mysql_ld, table=result_table2)
 #  chain: Chain(disruptive_score, print, count)
 
 #  hot_score: MapUtil('landinn.hot_score.calc')
-#  write3: database.mysql.MySQL(**mysql, table=result_table3, mode='replace')
+#  write3: database.mysql.MySQL(**mysql_ld, table=result_table3, mode='replace')
 #  chain: Chain(buffer, hot_score, flat, rm, rename, write3, count)
 
 #  emerging_score: MapUtil('landinn.emerging_score.calc')
-#  write4: database.mysql.MySQL(**mysql, table=result_table4, mode='replace')
+#  write4: database.mysql.MySQL(**mysql_ld, table=result_table4, mode='replace')
 #  chain: Chain(buffer, emerging_score, flat, rm, rename, write4, count)
 
 processor: chain
