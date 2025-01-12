@@ -1,0 +1,11 @@
+name: news to html file
+
+loader: JsonLine('data/news3.jsonl')
+
+nodes:
+  count: Count(ticks=10)
+  print: Print
+  select: Select('id', 'html')
+  write: WriteFiles('test_data/html', name_key='id', content_key='html', suffix='.html')
+
+processor: Chain(select, write, count)

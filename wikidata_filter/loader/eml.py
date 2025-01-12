@@ -7,7 +7,7 @@ import uuid
 
 from typing import Iterable, Any
 from wikidata_filter.loader.file import BinaryFile
-from wikidata_filter.util.html import text_from_html
+from wikidata_filter.util.html_util import text_from_html
 
 import email
 import email.utils

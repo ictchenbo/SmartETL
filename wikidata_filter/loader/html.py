@@ -30,7 +30,7 @@ class HTML(BinaryFile):
         #     encoding = chardet.detect(f.read(1000)).get('encoding', 'utf-8')
 
     def iter(self) -> Iterable[Any]:
-        with open(self.filename, "r", encoding=self.encoding) as f:
+        with open(self.input_file, "r", encoding=self.encoding) as f:
             text = f.read()
             soup = BeautifulSoup(text, 'html.parser')
 

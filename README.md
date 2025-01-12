@@ -35,8 +35,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/file_parquet.yaml)
-   - [网页内容信息抽取](flows/kafka_news_p1.yaml)
-   - [新闻文本解析&向量化索引](flows/kafka_news_p2.yaml)
+   - [网页信息抽取](flows/kafka_news_p1.yaml)
+   - [新闻文本解析&向量化索引](flows/llm_process_news.yaml)
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
    - [科情-技术评估预测](flows/technology_score.yaml)
@@ -64,9 +64,16 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - MongoDB（文档数据库）
    - ElasticSearch（全文索引）
    - Qdrant（向量数据库）
+   - Kafka（消息队列）
 7. 提供大模型主要处理，支持访问OpenAI兼容接口进行生成、文本向量化
 
 ## New！
+- 2025.1.12
+  - 增加新闻（HTML）解析示例[查看](flows/news_parser.yaml)
+
+- 2025.1.9
+  - 新闻时间统一处理 统一转为北京时间对应的时间戳
+
 - 2025.1.8
   - 解决Chain节点重复问题（Pytho类的类字段问题）
   - 修改`ComponentManager`，将类对象和实例对象进行分开，并支持默认loader/processor的预加载

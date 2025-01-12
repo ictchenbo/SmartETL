@@ -112,7 +112,7 @@ class SkipN(Filter):
         return self.i > self.n
 
 
-class FieldsExists(Filter):
+class FieldsExist(Filter):
     """存在指定字段的过滤器"""
     def __init__(self, *keys):
         super().__init__(self)
@@ -138,11 +138,37 @@ class FieldsNonEmpty(Filter):
         return True
 
 
-class RFilter(Filter):
+class All(Filter):
+    """All组合过滤器 全部满足才能通过 否则不通过"""
+    def __init__(self, *filters):
+        super().__init__(self)
+        self.filters = filters
+
+    def __call__(self, val, *args, **kwargs):
+        for one in self.filters:
+            if not one(val):
+                return False
+        return True
+
+
+class Any(Filter):
+    """Any组合过滤器 任意一个满足即可通过 否则不通过"""
+    def __init__(self, *filters):
+        super().__init__(self)
+        self.filters = filters
+
+    def __call__(self, val, *args, **kwargs):
+        for one in self.filters:
+            if one(val):
+                return True
+        return False
+
+
+class Not(Filter):
     """反转过滤器 基于已有过滤器取反"""
-    def __init__(self, that: Filter, *args, **kwargs):
+    def __init__(self, that: Filter):
         super().__init__(self)
         self.that = that
 
-    def __call__(self, val):
+    def __call__(self, val, *args, **kwargs):
         return not self.that.__call__(val)

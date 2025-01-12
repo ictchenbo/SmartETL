@@ -30,7 +30,7 @@ class Map(JsonIterator):
     def on_data(self, data: Any, *args):
         # print('on_data', data)
         val = data
-        if self.key:
+        if self.key is not None:
             if isinstance(data, dict):
                 if self.key in data:
                     val = data[self.key]
@@ -43,15 +43,15 @@ class Map(JsonIterator):
         # 直接传递构造器中的其他位置参数和命名参数
         res_val = self.mapper(val, *self.args, **self.kwargs)
 
-        if self.target_key:
-            if not isinstance(data, dict):
-                print("Warning, data is not dict, can't set property")
-                return res_val
+        if not self.target_key:
+            return res_val
 
-            data[self.target_key] = res_val
-            return data
+        if not isinstance(data, dict):
+            print("Warning, data is not dict, can't set property")
+            return res_val
 
-        return res_val
+        data[self.target_key] = res_val
+        return data
 
     def __str__(self):
         s1 = f"'{self.key}'" if self.key else "None"

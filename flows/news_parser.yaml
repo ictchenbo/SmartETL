@@ -1,0 +1,16 @@
+name: load and parse news
+description: 扫描文件夹内的HTML文件，提取新闻标题、时间、作者、正文等信息
+
+consts:
+  type_mapping:
+    .html: .plain
+
+# 默认.html文件会使用HTML加载器 此处使用type_mapping 对html采用TextPlain加载 整个文件内容为一个字符串输出
+loader: directory.Directory('test_data/html', '.html', type_mapping=type_mapping, encoding='utf8')
+
+nodes:
+  select: SelectVal('data')
+  extract: nlp.news.Extract
+  filter: FieldsExist('publish_time')
+
+processor: Chain(select, extract, filter, Print(), Count())

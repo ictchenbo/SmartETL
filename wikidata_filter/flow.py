@@ -11,7 +11,7 @@ class Flow:
         assert len(args) >= args_num, f"no enough arguments! {args_num} needed!"
         loader_def = flow.get('loader')
         processor_def = flow.get('processor')
-        assert loader_def and processor_def, "loader and processor must both exist"
+        # assert loader_def and processor_def, "loader and processor must both exist"
 
         self.name = flow.get('name')
 

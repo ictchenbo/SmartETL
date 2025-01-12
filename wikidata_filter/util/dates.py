@@ -1,6 +1,6 @@
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 ONE_DAY = 86400
@@ -90,5 +90,67 @@ def fill_date(dt: str or list):
             return expand_date_range(dt[0])[0], expand_date_range(dt[1])[1]
 
 
-def normalize_time(t: str):
-    return t
+def normalize_isotime(ios_datetime_str: str):
+    """
+        基于IOSdate格式日期/时间转化为北京时间时间戳
+    """
+    dt = datetime.fromisoformat(ios_datetime_str.replace("Z", "+00:00"))  # 替换 Z 为 UTC 时区
+    beijing_dt = dt.astimezone(timezone(timedelta(hours=8)))
+    return int(beijing_dt.timestamp() * 1000)
+
+
+possible_formats = [
+    "%Y-%m-%d %H:%M:%S",
+    "%Y/%m/%d %H:%M:%S",
+    "%m/%d/%Y %H:%M:%S",
+    "%d-%m-%Y %H:%M:%S",
+    "%m/%d/%y %H:%M:%S",  # 美国
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%m/%d/%Y",
+    "%d-%m-%Y",
+    "%m/%d/%y"  # 美国
+]
+
+
+def custom_datetime_to_beijing_timestamp(datetime_str, format_str, tz=None):
+    """基于指定格式进行解析并转化为北京时间 假设为UTC"""
+    dt = datetime.strptime(datetime_str, format_str)
+    dt = dt.replace(tzinfo=tz or timezone.utc)
+    beijing_dt = dt.astimezone(timezone(timedelta(hours=8)))
+    return int(beijing_dt.timestamp() * 1000)
+
+
+def normalize_time(datetime_str: str, tz=None):
+    """解析时间,转化为北京时间时间戳"""
+    # 先根据ISO和非ISO的连接符判断
+    if '-' not in datetime_str and '/' not in datetime_str:
+        print('无法解析时间：', datetime_str)
+        return None
+
+    # 假设为ISO格式
+    try:
+        iso_date = normalize_isotime(datetime_str)
+        return iso_date
+    except ValueError as e:
+        print("not ISO format:", datetime_str)
+
+    # 尝试按照几个格式进行解析
+    for fmt in possible_formats:
+        try:
+            timestamp_ms = custom_datetime_to_beijing_timestamp(datetime_str, fmt)
+            return timestamp_ms
+        except ValueError as e:
+            print(f"无法解析日期时间字符串: {e}")
+
+    print("无法解析时间：", datetime_str)
+    return None
+
+
+if __name__ == "__main__":
+    # 示例用法
+    print(normalize_isotime("1925-01-09T14:23:45.056+03:00"))
+    print(normalize_isotime("1971-01-01"))
+    print(normalize_isotime("1971-01-01T00:02:34-05:00"))
+    # 非ISO格式
+    print(normalize_isotime("1971-01-02 15:01:08"))

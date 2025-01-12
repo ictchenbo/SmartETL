@@ -28,7 +28,7 @@ nodes:
   write_es: database.ESWriter(**es1, buffer_size=10)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
   write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
-  fork: Fork(write_es, Chain(vector, write_qd))
+  fork: Fork(write_es, Chain(vector, write_qd), copy_data=True)
   chain3: Chain(rename, trans_title, translate, fork)
 
 processor: Chain(chain, chain2, chain3)

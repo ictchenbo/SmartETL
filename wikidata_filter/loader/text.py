@@ -15,6 +15,10 @@ class TextBase(File):
         yield self.instream.read()
 
 
+# 纯文本文件别名
+TextPlain = TextBase
+
+
 class Yaml(TextBase):
     """加载yaml文件作为一个dict对象 仅适合小文件"""
     def __init__(self, input_file: str,  **kwargs):
@@ -49,7 +53,6 @@ class JsonArray(TextBase):
 
 
 # ---------------------以下为按行输出的文本文件---------------------
-
 
 class Text(TextBase):
     """输出文本文件的每一行"""

@@ -1,5 +1,6 @@
 import os.path
 
+from wikidata_filter.loader.base import Array, String
 from wikidata_filter.flow_builder import FlowBuilder
 from wikidata_filter.flow_engine import run_flow
 
@@ -27,13 +28,22 @@ if __name__ == '__main__':
 
     filename = args.filename
 
-    if args.loader and args.processor:
+    if args.processor:
         flow = FlowBuilder.from_cmd(filename, *unknown, loader=args.loader, processor=args.processor)
+        # 根据命令行参数构造loader
+        if input_data is not None:
+            if isinstance(input_data, str):
+                _loader = String(input_data)
+            elif isinstance(input_data, list):
+                _loader = Array(input_data)
+            else:
+                _loader = Array([input_data])
+            flow.loader = _loader
     elif os.path.exists(filename):
-        flow = FlowBuilder.from_file(filename, *unknown)
+        flow = FlowBuilder.from_yaml(filename, *unknown)
     else:
         parser.print_help(__file__)
-        print("either filename or loader+processor should be provided")
+        print("either filename or loader/i+processor should be provided")
         exit(1)
 
-    run_flow(flow, input_data=input_data)
+    run_flow(flow)

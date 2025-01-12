@@ -47,7 +47,7 @@ class FlowBuilder:
         return target
 
     @staticmethod
-    def from_file(flow_file: str, *args, encoding: str = 'utf8', **kwargs):
+    def from_yaml(flow_file: str, *args, encoding: str = 'utf8', **kwargs):
         """基于yaml流程文件构造流程"""
         flow_def = FlowBuilder.load_yaml(flow_file, set(), encoding=encoding)
         return Flow(flow_def, *args, **kwargs)

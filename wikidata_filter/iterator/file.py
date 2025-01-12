@@ -1,5 +1,9 @@
 """输出到文件的算子"""
+import os
 import json
+from typing import Any
+
+from wikidata_filter.iterator.base import DictProcessorBase
 from wikidata_filter.iterator.aggregation import BufferedWriter
 
 
@@ -95,3 +99,24 @@ class WriteCSV(WriteText):
                 self.writer.write(str(item.get(k)))
 
         return self.seperator.join(line)
+
+
+class WriteFiles(DictProcessorBase):
+    """将每个输入按照指定模式写到单独的文件中"""
+    def __init__(self, output_dir: str, name_key='id', content_key='content', suffix=None):
+        self.output_dir = output_dir
+        self.name_key = name_key
+        self.content_key = content_key
+        self.suffix = suffix
+
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+
+    def on_data(self, data: dict, *args):
+        filename = f'{data[self.name_key]}'
+        if self.suffix:
+            filename += self.suffix
+        filepath = os.path.join(self.output_dir, filename)
+        with open(filepath, 'w', encoding='utf8') as fout:
+            fout.write(str(data[self.content_key]))
+        return data

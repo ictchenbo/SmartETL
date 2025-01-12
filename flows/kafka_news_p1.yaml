@@ -2,18 +2,20 @@ from: local/db_envs.yaml
 
 name: load and parse news
 description: 接收采集平台通过Kafka推送的网页数据，进行标题、时间、作者、正文等抽取
-arguments: 0
 
+#loader: database.kafka.WebConsumer(**kafka, topics=['gdelt'])
 loader: database.kafka.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=15)
+#loader: JsonLine('data/news2.jsonl')
 
 nodes:
   count: Count(ticks=10)
-  print: Print
+  print: Print('id', 'url')
   select: Select('id', 'url', 'html', 'event_time_date', 'mention_time_date')
-  extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', target_key='content')
-#  extract: nlp.news.Extract(target_key='content')
-  remove: RemoveFields('html')
-  flat: FlatProperty('content', inherit_props=True)
-  chain: Chain(select, extract, remove, flat)
+  extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html')
+#  extract: nlp.news.Extract(key='html', target_key='content')
+  flat: FlatProperty('html', inherit_props=True)
+  filter: FieldsExist('publish_time')
+  chain: Chain(select, extract, flat, filter)
 
-processor: Chain(chain, print)
+#processor: Chain(chain, Select('id', 'title', 'origin_publish_time', 'url'), print)
+processor: Chain(chain, WriteJson('data/news3.jsonl', buffer_size=10), count)

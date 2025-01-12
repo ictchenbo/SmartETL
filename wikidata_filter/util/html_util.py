@@ -1,8 +1,27 @@
+import re
+import html
 
 try:
     from bs4 import BeautifulSoup
 except:
     raise ImportError("bs4 not installed")
+
+
+title_pattern = '(?<=<title>)(.*?)(?=</title>)'
+
+
+def extract_title(page_html: str):
+    match = re.search(title_pattern, page_html)
+    if match:
+        text = html.unescape(match.group(0))
+        title_list = list(map(lambda s: s.strip(), re.split(' - | \| | – | — ', text)))
+        long_title = str(max(title_list, key=len))
+        long_index = title_list.index(long_title)
+        if long_index == 0:
+            return long_title
+        pos = text.index(long_title) + len(long_title)
+        return text[:pos]
+    return None
 
 
 def meta_tag(tag):
@@ -18,9 +37,9 @@ def meta_tag(tag):
     return None
 
 
-def text_from_html(html: str, text=True, meta=False):
+def text_from_html(source: str, text=True, meta=False):
     assert text or meta, "at least one of text & meta should be set True"
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(source, 'html.parser')
     _text, _meta = None, []
     if text:
         _text = soup.get_text(separator=' ', strip=True)

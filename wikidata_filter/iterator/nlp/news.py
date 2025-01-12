@@ -1,7 +1,7 @@
-import re
 import requests
-from wikidata_filter.iterator.base import DictProcessorBase
-from wikidata_filter.util.html import text_from_html
+from wikidata_filter.iterator.mapper import Map
+from wikidata_filter.util.html_util import text_from_html, extract_title
+from wikidata_filter.util.dates import normalize_time
 
 try:
     from gne import GeneralNewsExtractor
@@ -9,26 +9,10 @@ except:
     print("gne not installed")
     raise Exception("gne not installed")
 
-title_pattern = '(?<=<title>)(.*?)(?=</title>)'
-time_fields = ['article:published_time', 'datePublished', 'article:modified_time', 'dateModified']
+
+time_fields = ['datePublished', 'article:published_time', 'article:modified_time', 'dateModified']
 KEY_DESC = ['description', 'og:description']
 KEY_KEYWORDS = ['keywords', 'og:keywords']
-KEY_SITES = ['og:site_name']
-# KEY_AUTHOR = ['author', 'og:author']
-
-
-def extract_title(html: str):
-    match = re.search(title_pattern, html)
-    if match:
-        text = html.unescape(match.group(0))
-        title_list = list(map(lambda s: s.strip(), re.split(' - | \| | – | — ', text)))
-        long_title = str(max(title_list, key=len))
-        long_index = title_list.index(long_title)
-        if long_index == 0:
-            return long_title
-        pos = text.index(long_title) + len(long_title)
-        return text[:pos]
-    return None
 
 
 def find_value(meta: dict, keys: list):
@@ -38,38 +22,55 @@ def find_value(meta: dict, keys: list):
     return None
 
 
-class Extract(DictProcessorBase):
+def find_value_by_key(metas: dict, key: str = 'date'):
+    for k, v in metas.items():
+        if key in k.lower():
+            return v
+    return None
+
+
+class Extract(Map):
     """基于gne抽取新闻的标题、正文、时间、作者、图片等信息"""
 
-    def __init__(self, key: str = 'html', target_key: str = None):
+    def __init__(self, **kwargs):
+        super().__init__(self, **kwargs)
         self.extractor = GeneralNewsExtractor()
-        self.key = key
-        self.target_key = target_key or key
 
-    def on_data(self, data: dict, *args):
-        html = data.get(self.key)
-        if html is None:
+    def __call__(self, html: str, *args, **kwargs):
+        if html is None or len(html) < 100:
+            print("Warning: html is None")
             return {}
+
         news = self.extract(html)
+
+        news['meta'] = text_from_html(html, text=False, meta=True)[1]
+        metas = {kv[0]: kv[1] for kv in news['meta']}
+
+        if "title" not in news:
+            news["title"] = find_value_by_key(metas, "title") or extract_title(html)
+        news['keywords'] = find_value(metas, KEY_KEYWORDS)
+        news['desc'] = find_value(metas, KEY_DESC)
+        news['source'] = news.get('source') or find_value_by_key(metas, 'site_name')
+        news['author'] = news.get('author') or find_value_by_key(metas, 'author')
+        news['link'] = news.get('url') or find_value_by_key(metas, 'link') or find_value_by_key(metas, 'url')
+
+        # 发布时间处理
         publish_time = None
-        if news:
-            if not news.get("title"):
-                news["title"] = extract_title(html)
-            if news.get("time"):
-                publish_time = news.pop("time")
-        data[self.target_key] = news
-        data['meta'] = text_from_html(html, text=False, meta=True)[1]
-        metas = {kv[0]: kv[1] for kv in data['meta']}
-        if publish_time is None:
-            publish_time = find_value(metas, time_fields)
+        if news.get("time"):
+            publish_time = news.pop("time")
+        elif news.get("publish_time"):
+            publish_time = news.pop("publish_time")
+        publish_time = publish_time or find_value(metas, time_fields) or find_value_by_key(metas)
         if publish_time:
-            data['publish_time'] = publish_time
+            news['origin_publish_time'] = publish_time
+            # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
+            # 1基于<meta>
+            tz = find_value(metas, ["timezone"])
+            # 2 基于网站域名、服务器所在国家/地区
+            # 3 基于网页内容主要地点
+            news['publish_time'] = normalize_time(publish_time, tz=tz)
 
-        data['keywords'] = find_value(metas, KEY_KEYWORDS)
-        data['desc'] = find_value(metas, KEY_DESC)
-        data['site_name'] = find_value(metas, KEY_SITES)
-
-        return data
+        return news
 
     def extract(self, html: str) -> dict:
         try:
@@ -80,8 +81,8 @@ class Extract(DictProcessorBase):
 
 class Constor(Extract):
     """基于Constor组件的新网网页信息抽取"""
-    def __init__(self, api_base: str, key: str = 'html', target_key: str = None, request_timeout: int = 120):
-        super().__init__(key=key, target_key=target_key)
+    def __init__(self, api_base: str, key: str = 'html', request_timeout: int = 120, **kwargs):
+        super().__init__(key=key, **kwargs)
         self.api_base = api_base
         self.request_timeout = request_timeout
 
@@ -97,3 +98,14 @@ class Constor(Extract):
                 print("Constor服务异常")
 
         return super().extract(html)
+
+
+if __name__ == "__main__":
+    content = open('../../../test_data/html/1219285670.html', encoding='utf8').read()
+
+    ex = Extract()
+    print(ex.extract(content))
+
+    # ex = Constor('http://10.60.1.145:7100/constor/process')
+    # print(ex(content))
+

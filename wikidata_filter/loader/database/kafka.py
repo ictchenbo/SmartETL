@@ -23,37 +23,40 @@ class WebConsumer(DataProvider):
     """
     基于HTTP接口的Kafka简单消费者，持续拉取指定话题数据
     """
-    group_id = None
     logger = get_logger("KafkaConsumer")
 
-    def __init__(self, base_url: str,
-                 username: str,
-                 group_id: str,
-                 auth: str,
+    def __init__(self,
+                 api_base: str = 'localhost:62100',
+                 group_id: str = None,
+                 username: str = 'kafka',
+                 user_auth: str = None,
                  topics: list = None,
                  auto_init: bool = False,
                  poll_timeout: int = 300,
                  poll_metabytes: int = 10,
+                 poll_wait: int = 10,
                  connect_timeout: int = 30,
                  **kwargs
                  ):
         self.username = username
-        self.base_uri = f'{base_url}/consumers/{username}'
+        self.base_uri = f'{api_base}/consumers/{username}'
         self.group_id = group_id
         self.topics = topics
         self.auto_init = auto_init
         self.headers1 = {
             'Content-Type': 'application/vnd.kafka.avro.v2+json',
-            'Authorization': auth
+            'Authorization': user_auth
         }
         self.headers2 = {
             'Accept': 'application/vnd.kafka.avro.v2+json',
-            'Authorization': auth
+            'Authorization': user_auth
         }
         self.poll_params = {
             'timeout':  poll_timeout*1000,
             'max_bytes': poll_metabytes*1024*1024
         }
+        self.poll_wait = poll_wait
+        self.poll_timeout = poll_timeout
         self.connect_timeout = connect_timeout
 
     def create(self):
@@ -93,7 +96,7 @@ class WebConsumer(DataProvider):
     def poll(self):
         try:
             r = requests.get(f'{self.base_uri}/instances/{self.group_id}/records',
-                             params=self.poll_params, headers=self.headers2, timeout=300)
+                             params=self.poll_params, headers=self.headers2, timeout=self.poll_timeout)
             if r.status_code == 200:
                 return r.json()
             else:
@@ -111,23 +114,25 @@ class WebConsumer(DataProvider):
         while True:
             res = self.poll()
             if res is None:
-                time.sleep(30)
+                time.sleep(self.connect_timeout)
                 continue
 
             if not res:
                 self.logger.warning("no data, wait for 10 seconds")
-                time.sleep(10)
+                time.sleep(self.poll_wait)
                 continue
-
+            num = 0
             for item in res:
                 if 'value' not in item:
                     continue
                 v = item.pop('value')
                 v['kafka-info'] = item
                 yield v
+                num += 1
+            self.logger.info(f"Got {num} rows")
 
 
-wait_time = [0, 5, 10, 15, 20, 30, 45, 60]
+wait_time = [0, 5, 10, 15, 20, 30]
 
 
 class TimedConsumer(DataProvider):
@@ -142,7 +147,7 @@ class TimedConsumer(DataProvider):
                  max_wait_times=14,
                  **kwargs):
         assert len(topics) > 0, "topics should not be empty"
-        self.consumer = WebConsumer(api_base, username, group_id, user_auth, topics=topics, **kwargs)
+        self.consumer = WebConsumer(api_base, group_id, username, user_auth, topics=topics, **kwargs)
         self.topics = topics
         self.max_wait_times = max_wait_times
 
@@ -174,7 +179,9 @@ class TimedConsumer(DataProvider):
                 count += 1
                 yield v
 
-            sleep_time = wait_time[no_data_count if no_data_count < len(wait_time) else -1]
+            self.logger.info(f"Got {count} rows")
+
+            sleep_time = wait_time[no_data_count % len(wait_time)]
 
             if count == 0:
                 # 队列为空 则进行等待
