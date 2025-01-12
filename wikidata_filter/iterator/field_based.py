@@ -1,4 +1,3 @@
-import json
 from wikidata_filter.iterator.base import JsonIterator, DictProcessorBase
 from wikidata_filter.util.jsons import extract, fill
 
@@ -187,53 +186,3 @@ class ConcatFields(DictProcessorBase):
         vals = [str(data.get(k, '')) for k in self.source_keys]
         data[self.target] = self.sep.join(vals)
         return data
-
-
-class FromJson(DictProcessorBase):
-    """对指定的字符串类型字段转换为json"""
-
-    default_args = {}
-
-    def __init__(self, key: str, **kwargs):
-        assert key is not None, "key should not be None"
-        self.key = key
-        self.default_args.update(kwargs)
-
-    def on_data(self, data: dict, *args):
-        if self.key in data and isinstance(data[self.key], str):
-            data[self.key] = json.loads(data[self.key], **self.default_args)
-        return data
-
-
-class ToJson(DictProcessorBase):
-    """对指定的任意类型字段转换为json"""
-
-    def __init__(self, key: str, ensure_ascii: bool = False, **kwargs):
-        assert key is not None, "key should be None"
-        self.key = key
-        self.default_args = {
-            "ensure_ascii": ensure_ascii
-        }
-        self.default_args.update(kwargs)
-
-    def on_data(self, data: dict, *args):
-        if self.key in data:
-            data[self.key] = json.dumps(data[self.key], **self.default_args)
-        return data
-
-
-class Format(DictProcessorBase):
-    """对指定字段（为模板字符串）使用指定的值进行填充"""
-    def __init__(self, key: str, **kwargs):
-        assert key is not None, "key should be None"
-        assert len(kwargs) > 0, "**kwargs should not be empty"
-        self.key = key
-        self.values = kwargs
-
-    def on_data(self, data: dict, *args):
-        if self.key in data and isinstance(data[self.key], str):
-            data[self.key] = data[self.key].format(**self.values)
-        return data
-
-    def __str__(self):
-        return f"{self.name}({self.key}, **{self.values})"

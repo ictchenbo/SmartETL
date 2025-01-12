@@ -59,7 +59,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等
 - 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别等
 - 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏等
-- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成
+- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成，网页URL数据采集，JsonP数据解析
 - 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
 - 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等
 - 数据库管理/DBA：数据库备份、同步、查询分析等
@@ -70,17 +70,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 2025.1.12
   - 增加新闻（HTML）解析示例[查看](flows/news_parser.yaml)
   - 更新文档
-
-- 2025.1.9
-  - 新闻时间统一处理 统一转为北京时间对应的时间戳
-
-- 2025.1.8
-  - 解决Chain节点重复问题（Pytho类的类字段问题）
-  - 修改`ComponentManager`，将类对象和实例对象进行分开，并支持默认loader/processor的预加载
-  - 支持在构造子中进行嵌套构造，如：`Fork(write_es, Chain(vector, write_qd))`
-  - 修改`Fork`，以支持分支数据相互独立（`copy_data=True`）
-  - 新增Kafka Web接口消息加载
-  - 新增了两个流程：基于消息队列加载新闻并抽取内容 [查看](flows/kafka_news_p1.yaml)；对新闻进行翻译、向量化 [查看](flows/kafka_news_p2.yaml)
+  - 新增`web.jsonp.Jsonp(url, **params)`加载器，获取提供的jsonp-url的返回结果并解析其中的json数据
+  - 调整`FromJson` `ToJson` `Format`算子到`mapper`模块
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -143,7 +134,15 @@ run(loader, processor)
 ```
 
 
-4. 流程定义示例
+### CLI流程示例
+1. 加载`EarthCam`jsonp数据
+```shell
+python .\main_flow.py --loader "web.jsonp.Jsonp('https://www.earthcam.com/cams/common/gethofi
+tems.php?hofsource=com&tm=ecn&camera=all&start=0&length=21&ec_favorite=0&cdn=0&date_start=undefined&date_end=undefined&id=&callback=onjsonpload')" --processor "Chain(SelectVal('hofdata'), Flat(), Print())" list1
+```
+
+
+### YAML流程定义示例
 
 Tips：可先查看已有流程，看是否有相关任务的，尽量基于已有流程修改。
 
@@ -234,6 +233,17 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.1.9
+  - 新闻时间统一处理 统一转为北京时间对应的时间戳
+
+- 2025.1.8
+  - 解决Chain节点重复问题（Pytho类的类字段问题）
+  - 修改`ComponentManager`，将类对象和实例对象进行分开，并支持默认loader/processor的预加载
+  - 支持在构造子中进行嵌套构造，如：`Fork(write_es, Chain(vector, write_qd))`
+  - 修改`Fork`，以支持分支数据相互独立（`copy_data=True`）
+  - 新增Kafka Web接口消息加载
+  - 新增了两个流程：基于消息队列加载新闻并抽取内容 [查看](flows/kafka_news_p1.yaml)；对新闻进行翻译、向量化 [查看](flows/kafka_news_p2.yaml)
+
 - 2024-12-26
 1. 新增两个安全领域数据处理流程（基于大模型的poc描述、poc生成）
 2. Fix SelectVal代码问题
