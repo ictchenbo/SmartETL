@@ -4,6 +4,7 @@ from wikidata_filter.util.http import text
 
 
 class Jsonp(DataProvider):
+    """获取jsonp URL数据，加载JSON内容"""
     def __init__(self, url: str, **kwargs):
         self.url = url
         self.kwargs = kwargs

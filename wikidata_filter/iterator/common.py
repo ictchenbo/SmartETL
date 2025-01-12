@@ -17,17 +17,21 @@ class Print(JsonIterator):
     """
     打印数据，方便查看中间结果
     """
-    def __init__(self, *keys):
+    def __init__(self, *keys, with_id: bool = False):
         if keys and isinstance(keys[0], list):
             self.keys = keys[0]
         else:
             self.keys = keys
+        self.with_id = with_id
 
     def on_data(self, data, *args):
         _data = data
         if self.keys and isinstance(data, dict):
             _data = {k: data[k] for k in self.keys if k in data}
-        print(id(data), _data)
+        if self.with_id:
+            print(id(data), _data)
+        else:
+            print(_data)
         return data
 
 

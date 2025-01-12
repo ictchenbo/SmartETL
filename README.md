@@ -94,15 +94,20 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 3. 启动流程
 
-- 通过**YAML**定义流程，运行流程：
+- 方式一：基于**命令行CLI**运行：
+```shell
+ python main_flow.py --loader "String(arg1, sep=';')" --processor "Print" local "1;2;3"
+```
+
+- 方式二：基于**YAML流程定义**运行：
 ```shell
  python main_flow.py flows/test.yaml
 ```
 
 可以在[这里](flows)找到很多开箱即用的流程。[查看Yaml定义规范](docs/yaml-flow.md)
 
-
-- **Python 应编码示例([等价的yaml](flows/test.yaml))**：
+- 方式三：基于**Python代码**运行：
+以下示例与([test.yaml](flows/test.yaml)等价：
 ```python
 from wikidata_filter.flow_engine import run
 from wikidata_filter.loader import JsonLine
@@ -128,21 +133,20 @@ run(loader, processor)
 ```
 
 
-- 通过命令行直接**CLI 流程示例**：
-```shell
- python main_flow.py --loader "String(arg1, sep=';')" --processor "Print" local "1;2;3"
-```
-
-
-### CLI流程示例
+## CLI流程示例
 1. 加载`EarthCam`jsonp数据
 ```shell
 python .\main_flow.py --loader "web.jsonp.Jsonp('https://www.earthcam.com/cams/common/gethofi
 tems.php?hofsource=com&tm=ecn&camera=all&start=0&length=21&ec_favorite=0&cdn=0&date_start=undefined&date_end=undefined&id=&callback=onjsonpload')" --processor "Chain(SelectVal('hofdata'), Flat(), Print())" list1
 ```
 
+2. 加载`EarthCam`摄像头搜索结果，显示摄像头名字
+```shell
+python .\main_flow.py --loader "web.api.Get('https://www.earthcam.com/api/mapsearch/get_locations?nwx=37.38509688580934&nwy=-126.40319824218751&nex=37.38509688580934&ney=-109.18212890625001&sex=29.95662353271325&sey=-109.18212890625001&swx=29.95662353271325&swy=-126.40319824218751&zoom=9')" --processor "Chain(Flat(), SelectVal('places'), Flat(), SelectVal('name'), Print())" test1
+```
 
-### YAML流程定义示例
+
+## YAML流程定义示例
 
 Tips：可先查看已有流程，看是否有相关任务的，尽量基于已有流程修改。
 
