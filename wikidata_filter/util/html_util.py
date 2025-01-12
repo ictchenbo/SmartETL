@@ -10,8 +10,9 @@ except:
 title_pattern = '(?<=<title>)(.*?)(?=</title>)'
 
 
-def extract_title(page_html: str):
-    match = re.search(title_pattern, page_html)
+def extract_title(html_source: str):
+    """基于正则表达式提取HTML的标题"""
+    match = re.search(title_pattern, html_source)
     if match:
         text = html.unescape(match.group(0))
         title_list = list(map(lambda s: s.strip(), re.split(' - | \| | – | — ', text)))
@@ -37,9 +38,10 @@ def meta_tag(tag):
     return None
 
 
-def text_from_html(source: str, text=True, meta=False):
+def text_from_html(html_source: str, text=True, meta=False):
+    """"""
     assert text or meta, "at least one of text & meta should be set True"
-    soup = BeautifulSoup(source, 'html.parser')
+    soup = BeautifulSoup(html_source, 'html.parser')
     _text, _meta = None, []
     if text:
         _text = soup.get_text(separator=' ', strip=True)

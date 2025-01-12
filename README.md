@@ -3,7 +3,7 @@
 SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理（ETL）框架，提供**Wikidata** / **Wikipedia** / **GDELT**等多种开源情报数据的处理流程；
 支持**大模型**、**API**、常见文件、数据库等多种输入输出及转换处理，支撑各类数据集成接入、大数据处理、离线分析计算、AI智能分析、知识图谱构建等任务。
 
-项目内置40+常用流程、150+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
+项目内置50+常用流程、180+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
 
 系统架构图：
 ![系统架构](docs/arch.png)
@@ -23,8 +23,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 ## 项目特色
 1. 通过**yaml**配置文件定义流程，可快速使用，无须代码调试； 支持基于Python进行自定义函数
-2. 内置150+常用ETL算子，配置简单，包括大模型处理、数据库读写、API访问、文件读写等多种类型
-3. 内置40+各类数据处理任务，开箱即用，具体在[这里](flows)查看
+2. 内置180+常用ETL算子，配置简单，包括大模型处理、数据库读写、API访问、文件读写等多种类型
+3. 内置50+各类数据处理任务，开箱即用，具体在[这里](flows)查看
 4. 内置10+特色数据资源集成处理，所见即所得：
    - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
    - [wikidata 维基数据](flows/wikidata/p1_graph_simple.yaml)
@@ -35,7 +35,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/file_parquet.yaml)
-   - [网页信息抽取](flows/kafka_news_p1.yaml)
+   - [网页信息抽取](flows/news_parser.yaml)
    - [新闻文本解析&向量化索引](flows/llm_process_news.yaml)
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
