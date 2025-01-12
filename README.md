@@ -8,24 +8,11 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 系统架构图：
 ![系统架构](docs/arch.png)
 
-## 应用场景
-本项目具有众多数据处理分析应用场景：
-- 数据结构转换
-- 数据库备份、同步
-- 数据采集（如GDELT数据）、网页抽取
-- 数据解析与NLP处理
-- 索引构建，包括全文索引、向量索引
-- 知识图谱构建
-- Web API功能/数据集成
-- 服务监测
-- 离线数据分析
-- ...
-
 ## 项目特色
-1. 通过**yaml**配置文件定义流程，可快速使用，无须代码调试； 支持基于Python进行自定义函数
-2. 内置180+常用ETL算子，配置简单，包括大模型处理、数据库读写、API访问、文件读写等多种类型
-3. 内置50+各类数据处理任务，开箱即用，具体在[这里](flows)查看
-4. 内置10+特色数据资源集成处理，所见即所得：
+1. 灵活可配的**YAML**流程定义：通过YAML文件**低/无代码**组装流程，快速响应数据处理需求
+2. 丰富的ETL算子**180+**：提供**数据集成治理**、**图谱构建**、**大模型**、**NLP**、**信息抽取**等常用算子
+3. 开箱即用的数据流程**50+**：面向开源情报分析提供多样化流程，覆盖数据清洗、大模型/大数据预处理、知识图谱构建、机器学习数据集生成、信息抽取、技术评估预测、数据库备份等任务。开箱即用，具体在[这里](flows)查看
+4. 持续积累开源情报数据资源10+，所见即所得：
    - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
    - [wikidata 维基数据](flows/wikidata/p1_graph_simple.yaml)
    - [GDELT 谷歌全球社会事件数据库 （流式，直接下载）](flows/gdelt.yaml)
@@ -65,11 +52,24 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - ElasticSearch（全文索引）
    - Qdrant（向量数据库）
    - Kafka（消息队列）
-7. 提供大模型主要处理，支持访问OpenAI兼容接口进行生成、文本向量化
+7. 弹性伸缩的运行模式：支持本地运行、多进程并行，支持对接Spark/Flink等分布式计算框架（待实现）
+
+## 应用场景
+本项目具有众多数据处理分析应用场景：
+- 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等
+- 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别等
+- 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏等
+- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成
+- 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
+- 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等
+- 数据库管理/DBA：数据库备份、同步、查询分析等
+- 服务监测：定时轮询API/服务状态等
+- ...
 
 ## New！
 - 2025.1.12
   - 增加新闻（HTML）解析示例[查看](flows/news_parser.yaml)
+  - 更新文档
 
 - 2025.1.9
   - 新闻时间统一处理 统一转为北京时间对应的时间戳
@@ -89,7 +89,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - Engine：按照Flow的定义进行执行。简单Engine只支持单线程执行。高级Engine支持并发执行，并发机制通用有多线程、多进程等
 
 ## 快速使用
-1. 安装依赖
+1. 安装基本依赖
 ```shell
  pip install -r requirements.txt
 ```
@@ -100,7 +100,50 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 ```
 ![系统使用](docs/main.png)
 
-3. 流程定义
+
+3. 启动流程
+
+- 通过**YAML**定义流程，运行流程：
+```shell
+ python main_flow.py flows/test.yaml
+```
+
+可以在[这里](flows)找到很多开箱即用的流程。[查看Yaml定义规范](docs/yaml-flow.md)
+
+
+- **Python 应编码示例([等价的yaml](flows/test.yaml))**：
+```python
+from wikidata_filter.flow_engine import run
+from wikidata_filter.loader import JsonLine
+from wikidata_filter.iterator import Print, Count, Chain, Fork, Select, AddFields
+
+# 定义节点
+
+# 定义数据源  新闻数据
+loader = JsonLine('test_data/news.jsonl')
+
+# 选择id和url两个字段
+select = Select('id', 'url')
+# 添加一个字段chain，值为1，然后打印
+chain1 = Chain(AddFields(chain='1'), Print())
+# 添加一个字段chain，值为2，然后打印
+chain2 = Chain(AddFields(chain='2'), Print())
+
+# 定义整体处理流程
+processor = Chain(select, Fork(chain1, chain2, copy_data=True))
+
+# 执行流程
+run(loader, processor)
+```
+
+
+- 通过命令行直接**CLI 流程示例**：
+```shell
+ python main_flow.py --loader "String(arg1, sep=';')" --processor "Print" local "1;2;3"
+```
+
+
+4. 流程定义示例
 
 Tips：可先查看已有流程，看是否有相关任务的，尽量基于已有流程修改。
 
@@ -174,42 +217,6 @@ nodes:
 
 processor: Fork(chain_entity, chain_property)
 ```
-
-4. 启动流程
-
-**YAML 流程示例**：
-```shell
- python main_flow.py flows/test.yaml
-```
-
-**CLI 流程示例**：
-最简单示例：
-```shell
- python main_flow.py --loader "String(arg1, sep=';')" --processor "Print" local "1;2;3"
-```
-
-**Python 流程示例([等价的yaml](flows/test.yaml))**：
-```python
-from wikidata_filter.flow_engine import run
-from wikidata_filter.loader import JsonLine
-from wikidata_filter.iterator import Print, Count, Chain, Fork, Select, AddFields
-
-loader = JsonLine('data/news.jsonl')
-
-select = Select('id', 'url')
-
-chain1 = Chain(AddFields(chain='1'), Print())
-chain2 = Chain(AddFields(chain='2'), Print())
-
-processor = Chain(select, Fork(chain1, chain2, copy_data=True))
-
-run(loader, processor)
-```
-
-可以在[这里](flows)找到很多开箱即用的流程。
-
-关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
-
 
 ## 使用者文档 User Guide
 

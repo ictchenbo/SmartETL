@@ -6,5 +6,5 @@ nodes:
   chain1: Chain(AddFields(chain='1'), Print())
   chain2: Chain(AddFields(chain='2'), Print())
 
-loader: JsonLine('data/news.jsonl')
+loader: JsonLine('test_data/news.jsonl')
 processor: Chain(select, Fork(chain1, chain2, copy_data=True))
