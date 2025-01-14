@@ -43,6 +43,10 @@ class WriteText(BufferedWriter):
             elif self.mode == "gzip" and not self.append:
                 import gzip
                 self.writer = gzip.open(self.output_file, "wt", encoding=self.encoding)
+            _header = self.header()
+            if _header:
+                self.writer.write(_header)
+                self.writer.write(self.sep)
         lines = [self.serialize(item) for item in data]
         content = self.sep.join(lines)
         if self.mode == "gzip" and self.append:
@@ -59,6 +63,9 @@ class WriteText(BufferedWriter):
     def serialize(self, item) -> str:
         """序列化为文本"""
         return str(item)
+
+    def header(self) -> str:
+        return None
 
     def on_complete(self):
         super().on_complete()
@@ -84,19 +91,23 @@ class WriteCSV(WriteText):
     """
     写CSV文件
     """
-    def __init__(self, output_file: str, keys: list = None, seperator=','):
+    def __init__(self, output_file: str, *keys, seperator=','):
         super().__init__(output_file)
         self.keys = keys
         self.seperator = seperator
 
+    def header(self) -> str:
+        if self.keys:
+            return self.seperator.join(self.keys)
+
     def serialize(self, item) -> str:
         line = []
-        if self.keys is None:
+        if not self.keys:
             for k, v in item.items():
                 line.append(str(v))
         else:
             for k in self.keys:
-                self.writer.write(str(item.get(k)))
+                line.append(str(item.get(k)))
 
         return self.seperator.join(line)
 

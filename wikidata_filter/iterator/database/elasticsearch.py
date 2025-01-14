@@ -1,5 +1,8 @@
 import json
+from typing import Any
+
 import requests
+from wikidata_filter.iterator.base import DictProcessorBase
 from wikidata_filter.iterator.aggregation import BufferedWriter
 
 id_keys = ["_id", "id", "mongo_id"]
@@ -47,3 +50,32 @@ class ESWriter(BufferedWriter):
             print("Warning, ES bulk load failed:", res.text)
             return False
         return True
+
+
+class Delete(DictProcessorBase):
+    """
+    删除ES数据
+    """
+    def __init__(self, host="localhost",
+                 port=9200,
+                 username=None,
+                 password=None,
+                 index=None,
+                 id_key: str = "_id", **kwargs):
+        self.url = f"http://{host}:{port}"
+        if password:
+            self.auth = (username, password)
+        else:
+            self.auth = None
+        self.index = index
+        self.id_key = id_key
+
+    def on_data(self, data: dict, *args):
+        row_id = data.get(self.id_key)
+        if row_id:
+            res = requests.delete(f'{self.url}/{self.index}/_doc/{row_id}', auth=self.auth)
+            if res.status_code == 200:
+                print("Deleted:", row_id)
+            else:
+                print("Error:", res.json())
+        return data

@@ -15,7 +15,8 @@ nodes:
 #  extract: nlp.news.Extract(key='html', target_key='content')
   flat: FlatProperty('html', inherit_props=True)
   filter: FieldsExist('publish_time')
-  chain: Chain(select, extract, flat, filter)
+  min_time: MinValue('publish_time', 'publish_time', 'event_time_date', 'mention_time_date')
+  chain: Chain(select, extract, flat, filter, min_time)
 
 #processor: Chain(chain, Select('id', 'title', 'origin_publish_time', 'url'), print)
 processor: Chain(chain, WriteJson('data/news3.jsonl', buffer_size=10), count)

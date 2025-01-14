@@ -1,0 +1,23 @@
+from: local/db_envs.yaml
+
+name: 对指定的关系数据库及db获取table列表信息，可用于Text2SQL、TableSearch等
+arguments: 1
+consts:
+  dtypes:
+    varchar: String
+
+nodes:
+  loader: database.clickhouse.CK(**click1, database='goinv3_2410')
+
+  rename: RenameFields(name='table_name')
+  flat_cols: Flat(key='columns', inherit_props=True)
+  rename1: RenameFields(Field='name', Type='dtype', Null='nullable', Default='default', Key='constraints')
+  map_type: MapUtil('wikidata_filter.util.db_util.dtype_mysql', key='dtype')
+  map_nullable: MapUtil('wikidata_filter.util.db_util.dtype_bool', key='nullable')
+  filter: WhiteList([arg1], 'table_name')
+  rename2: RenameFields(name='original_column_name', comment='description')
+  adds: AddFields(database_name='goinv3_2410')
+  write_csv: WriteCSV(f'data/{arg1}.csv', 'database_name', 'table_name', 'original_column_name', 'description')
+
+loader: database.meta.DBTables(loader)
+processor: Chain(rename, flat_cols, rename1, map_type, map_nullable, filter, rename2, adds, Print(), write_csv)

@@ -84,3 +84,29 @@ class UUID(DictProcessorBase):
     def on_data(self, data: dict, *args):
         data[self.key] = str(uuid.uuid4())
         return data
+
+
+class MinValue(DictProcessorBase):
+    """对指定字段获取最小值"""
+    def __init__(self, target_key: str, *source_keys):
+        super().__init__()
+        self.target_key = target_key
+        self.source_keys = source_keys
+
+    def on_data(self, data: dict, *args):
+        vals = [data[k] for k in self.source_keys if data.get(k)]
+        data[self.target_key] = min(vals)
+        return data
+
+
+class MaxValue(DictProcessorBase):
+    """对指定字段获取最大值"""
+    def __init__(self, target_key: str, *source_keys):
+        super().__init__()
+        self.target_key = target_key
+        self.source_keys = source_keys
+
+    def on_data(self, data: dict, *args):
+        vals = [data[k] for k in self.source_keys if data.get(k)]
+        data[self.target_key] = max(vals)
+        return data

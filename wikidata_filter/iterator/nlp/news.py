@@ -56,12 +56,12 @@ class Extract(Map):
         news['link'] = news.get('url') or find_value_by_key(metas, 'link') or find_value_by_key(metas, 'url')
 
         # 发布时间处理
-        publish_time = None
-        if news.get("time"):
-            publish_time = news.pop("time")
-        elif news.get("publish_time"):
-            publish_time = news.pop("publish_time")
-        publish_time = publish_time or find_value(metas, time_fields) or find_value_by_key(metas)
+        publish_time = find_value(metas, time_fields) or find_value_by_key(metas)
+        if not publish_time:
+            if news.get("time"):
+                publish_time = news.pop("time")
+            elif news.get("publish_time"):
+                publish_time = news.pop("publish_time")
         if publish_time:
             news['origin_publish_time'] = publish_time
             # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
