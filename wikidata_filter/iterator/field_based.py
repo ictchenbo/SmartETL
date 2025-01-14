@@ -175,14 +175,16 @@ class InjectField(DictProcessorBase):
 
 
 class ConcatFields(DictProcessorBase):
-    """连接数个已有的字段值，形成行的字段。如果目标字段名存在 则覆盖；如果只有一个来源字段，与CopyFields效果相同"""
-    def __init__(self, target_key: str, *source_keys, sep: str = '_'):
+    """连接数个已有的字段值，形成新字段。如果目标字段名存在 则覆盖；如果只有一个来源字段，与CopyFields效果相同"""
+    def __init__(self, target_key: str, *source_keys, separator: str = '_', prefix: str = '', suffix: str = ''):
         super().__init__()
-        self.target = target_key
+        self.target_key = target_key
         self.source_keys = source_keys
-        self.sep = sep
+        self.separator = separator if separator is not None else '_'
+        self.prefix = prefix
+        self.suffix = suffix
 
     def on_data(self, data: dict, *args):
-        vals = [str(data.get(k, '')) for k in self.source_keys]
-        data[self.target] = self.sep.join(vals)
+        vals = [str(data.get(k)) for k in self.source_keys]
+        data[self.target_key] = f'{self.prefix}{self.separator.join(vals)}{self.suffix}'
         return data

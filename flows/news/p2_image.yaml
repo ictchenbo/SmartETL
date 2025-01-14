@@ -1,0 +1,45 @@
+from: flows/news/p1_kafka.yaml
+
+name: get images
+
+consts:
+  request_args:
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+    proxies:
+      http: "http://localhost:8001"
+      https: "http://localhost:8001"
+    allow_redirects: true
+  minio_config:
+    bucket: goinv3
+    key_key: object_name
+    value_key: image
+    value_type: bytes
+  mongo2:
+    database: goinv3_2409
+    collection: news_image
+  allowed_formats:
+    - .jpg
+    - .jpeg
+    - .png
+    - .bmp
+
+nodes:
+  count_minio: Count(ticks=10, label='Write-Minio')
+  count_mongo: Count(ticks=10, label='Write-Mongo')
+
+  extract_image: nlp.news.Image
+  filter_format: WhiteList(allowed_formats, 'ext')
+  make_id: UUID
+  append_ext: ConcatFields('_id', '_id', 'ext', separator='')
+  make_path: ConcatFields('object_name', '_id', prefix='tmp/')
+  download: web.image.Download(min_width=50, min_height=50, key='url', target_key='image', **request_args)
+  filter2: FieldsNonEmpty('image')
+  stage21: Chain(extract_image, filter_format, make_id, append_ext, make_path, download, filter2)
+
+  save_image: database.minio.Write(**minio, **minio_config)
+  remove: RemoveFields('html', 'image')
+  write_mongo: database.MongoWriter(**mongo2, buffer_size=1)
+  stage22: Fork(Chain(save_image, count_minio), Chain(remove, write_mongo, count_mongo), copy_data=True)
+
+processor: Chain(stage21, stage22)

@@ -22,8 +22,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/file_parquet.yaml)
-   - [网页信息抽取](flows/news_parser.yaml)
-   - [新闻文本解析&向量化索引](flows/llm_process_news.yaml)
+   - [网页信息抽取](flows/news/news_parser.yaml)
+   - [新闻文本解析&向量化索引](flows/news/llm_process_news.yaml)
    - [ReaderAPI](flows/api_readerapi.yaml)
    - [大模型处理](flows/llm_simple.yaml)
    - [科情-技术评估预测](flows/technology_score.yaml)
@@ -68,7 +68,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 ## New！
 - 2025.1.12
-  - 增加新闻（HTML）解析示例[查看](flows/news_parser.yaml)
+  - 增加新闻（HTML）解析示例[查看](flows/news/news_parser.yaml)
   - 更新文档
   - 新增`web.jsonp.Jsonp(url, **params)`加载器，获取提供的jsonp-url的返回结果并解析其中的json数据
   - 调整`FromJson` `ToJson` `Format`算子到`mapper`模块
@@ -246,7 +246,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
   - 支持在构造子中进行嵌套构造，如：`Fork(write_es, Chain(vector, write_qd))`
   - 修改`Fork`，以支持分支数据相互独立（`copy_data=True`）
   - 新增Kafka Web接口消息加载
-  - 新增了两个流程：基于消息队列加载新闻并抽取内容 [查看](flows/kafka_news_p1.yaml)；对新闻进行翻译、向量化 [查看](flows/kafka_news_p2.yaml)
+  - 新增了两个流程：基于消息队列加载新闻并抽取内容 [查看](flows/news/p1_kafka.yaml)；对新闻进行翻译、向量化 [查看](flows/news/p2_text.yaml)
 
 - 2024-12-26
 1. 新增两个安全领域数据处理流程（基于大模型的poc描述、poc生成）
@@ -297,7 +297,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 - 2024.11.19
 1. 新增文件夹加载器`Directory(paths, *suffix, recursive=False, type_mapping=None, **kwargs)` 根据文件后缀名调用具体的加载器进行加载（.txt .json .jsonl .jsonf .jsona .xls）
-2. 新增[文件夹处理流程](flows/file_directory.yaml)
+2. 新增[文件夹处理流程](flows/files/file_directory.yaml)
 3. 修改Flat处理逻辑
 
 - 2024.11.17
@@ -317,7 +317,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 1. 新增文本分段算子 `nlp.splitter.TextSplit(key, target_key, algorithm='simple')` 实现文本chunk化，便于建立向量化索引。chunk算法持续扩展
 2. 新增qdrant数据库算子 `database.Qdrant(host: str = 'localhost', port: int = 6333, api_key=None, collection: str = "chunks", buffer_size: int = 100, vector_field='vector')`
 3. 新增向量化算子 `model.embed.Local(api_base: str, field: str, target_key: str = '_embed')` 调用向量化服务实现对指定文本字段生成向量。下一步实现OpenAI接口的向量化算子
-4. 修改[新闻处理流](flows/llm_process_news.yaml)，增加分段->向量化->写入qdrant的处理节点
+4. 修改[新闻处理流](flows/news/llm_process_news.yaml)，增加分段->向量化->写入qdrant的处理节点
 
 - 2024.11.04
 1. 新增轮询加载器`TimedLoader(loader)` 可基于一个已有的加载器进行定时轮询 适合数据库轮询、服务监控等场景
@@ -335,7 +335,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 1. 合并`Converter`、`FieldConverter`到`Map`算子，支持对字段进行转换，支持设置目标字段
 2. 修改`Select`以支持嵌套字段`user.name.firstname`形式
 3. 新增天玑大模型接口调用`GoGPT(api_base,field,ignore_errors,prompt)`
-4. 新增一个[新闻处理流程](flows/llm_process_news.yaml) 通过提示大模型实现新闻主题分类、地名识别并并建立ES索引
+4. 新增一个[新闻处理流程](flows/news/llm_process_news.yaml) 通过提示大模型实现新闻主题分类、地名识别并并建立ES索引
 5. 新增文本处理算子模块 `iterator.nlp` 提供常用文本处理
 6. 为基类`JsonIterator`增加_set链式方法，简化算子属性设置和子类实现（子类__init__不需要设置每个基类参数）比如可以写：`WriteJson('test_data/test.json')._set(buffer_size=50)`
 7. 重新实现缓冲基类`Buffer`（具有一定大小的缓冲池）、缓冲写基类`BufferedWriter`，文本写基类`WriteText`继承`BufferedWriter`

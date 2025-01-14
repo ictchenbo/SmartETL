@@ -1,6 +1,7 @@
 import requests
-from wikidata_filter.iterator.mapper import Map
-from wikidata_filter.util.html_util import text_from_html, extract_title
+from wikidata_filter.iterator.mapper import Map, JsonIterator
+from wikidata_filter.iterator.base import DictProcessorBase
+from wikidata_filter.util.html_util import text_from_html, extract_title, extract_news_article, extract_images
 from wikidata_filter.util.dates import normalize_time
 
 try:
@@ -100,6 +101,21 @@ class Constor(Extract):
         return super().extract(html)
 
 
+class Image(DictProcessorBase):
+    """从新闻网页中提取图片相关信息"""
+    def __init__(self, url_key: str = 'url', html_key: str = 'html'):
+        self.url_key = url_key
+        self.html_key = html_key
+
+    def on_data(self, data: dict, *args, **kwargs):
+        url = data[self.url_key]
+        html = data[self.html_key]
+        article = extract_news_article(html)
+        if article:
+            for img in extract_images(url, article):
+                yield img
+
+
 if __name__ == "__main__":
     content = open('../../../test_data/html/1219285670.html', encoding='utf8').read()
 
@@ -108,4 +124,3 @@ if __name__ == "__main__":
 
     # ex = Constor('http://10.60.1.145:7100/constor/process')
     # print(ex(content))
-

@@ -1,6 +1,6 @@
 from: local/db_envs.yaml
 
-name: load and parse news
+name: load and extract news from web page
 description: 接收采集平台通过Kafka推送的网页数据，进行标题、时间、作者、正文等抽取
 
 #loader: database.kafka.WebConsumer(**kafka, topics=['gdelt'])

@@ -3,11 +3,6 @@ from: local/db_envs.yaml
 name: 对指定的关系数据库及db获取table列表信息，可用于Text2SQL、TableSearch等
 arguments: 0
 consts:
-  mysql1:
-    host: localhost
-    user: test
-    password: test
-    database: test
   dtypes:
     varchar: String
 

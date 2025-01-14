@@ -1,10 +1,10 @@
 import requests
 
 
-def content(url, most_times=5):
+def content(url, most_times=5, **kwargs):
     for i in range(most_times):
         try:
-            res = requests.get(url)
+            res = requests.get(url, kwargs)
             if res.status_code == 200:
                 return res.content
             print('Error to Get File', url, res.status_code, res.text)

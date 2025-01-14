@@ -1,15 +1,13 @@
+from: local/db_envs.yaml
+
 name: 解析各类文档入库
 description: 加载文件夹，解析各文件，获取文档，进行chunk&embed&index
 arguments: 0
 consts:
-  es_config:
-    host: 10.208.61.117
-    port: 9200
+  es1:
     index: goinv3_document_news
     buffer_size: 10
-  qdrant_config:
-    host: 10.60.1.145
-    port: 6333
+  qdrant:
     collection: chunk
   bge_large_zh: http://10.208.63.29:8001/embed
 
@@ -26,7 +24,7 @@ nodes:
   flat_chunk: Flat(key='chunks', inherit_props=True)
   count3: Count(label='chunk')
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant_config)
+  write_qd: database.qdrant.Qdrant(**qdrant)
 #  chain_vector: vector
 
   rm_content: RemoveFields('title')

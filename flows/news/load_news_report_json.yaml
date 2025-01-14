@@ -1,0 +1,22 @@
+from: local/db_envs.yaml
+
+name: load json news to qdrant
+arguments: 1
+consts:
+  qdrant:
+    collection: chunk_news_v2
+  bge_large_zh: http://10.208.63.29:8001/embed
+
+loader: Json('data/news/news_' + arg1 + '.json')
+
+nodes:
+  count: Count(ticks=1)
+  print: Print
+  select: SelectVal('nodes')
+  adds: AddFields(date=f'2024-{arg1[0:2]}-{arg1[2:4]}')
+  add_ts: AddTS('imported_time')
+  flat: Flat
+  vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
+  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+
+processor: Chain(select, flat, select, flat, adds, add_ts, vector, write_qd, count)

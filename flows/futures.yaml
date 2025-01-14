@@ -1,9 +1,9 @@
+from: local/db_envs.yaml
+
 name: 加载大选预测市场数据
 arguments: 0
 consts:
-  mongo1:
-    host: 10.60.1.145
-    port: 27017
+  mongo2:
     database: goinv3_2409
     collection: election_prediction
 
@@ -15,6 +15,6 @@ nodes:
   counter: Count
   fm1: FormatFields('_id', date1=date1[2:].replace('-',''))
   fm2: FormatFields('publish_time', date2=date1)
-  writer: database.MongoWriter(**mongo1)
+  writer: database.MongoWriter(**mongo2)
 
 processor: Chain(fm1, fm2, writer, counter)

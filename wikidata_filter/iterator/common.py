@@ -76,19 +76,6 @@ class AddTS(DictProcessorBase):
         return data
 
 
-class PrefixID(DictProcessorBase):
-    """基于已有字段生成带前缀的ID"""
-    def __init__(self, prefix: str, *keys, key: str = '_id'):
-        self.key = key
-        self.prefix = prefix
-        self.keys = keys
-
-    def on_data(self, data: dict, *args):
-        parts = [str(data.get(key)) for key in self.keys]
-        data[self.key] = self.prefix + '_'.join(parts)
-        return data
-
-
 class UUID(DictProcessorBase):
     """"基于UUID生成ID"""
     def __init__(self, key: str = '_id'):

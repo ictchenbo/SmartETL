@@ -1,0 +1,20 @@
+from: local/db_envs.yaml
+
+name: load news from word file and write to qdrant
+description: 读取Docx文件，按照《开源报告》格式解析新闻内容，向量化处理，并写入Qdrant
+arguments: 0
+consts:
+  qdrant:
+    collection: chunk_news_v2
+  bge_large_zh: http://10.208.63.29:8001/embed
+
+loader: doc_news.News('test_data/news/每日开源20241109第222期总第454期.docx')
+
+nodes:
+  count: Count(ticks=1)
+  print: Print
+  add_ts: AddTS('imported_time')
+  vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
+  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+
+processor: Chain(add_ts, vector, write_qd, count)

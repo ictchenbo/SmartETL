@@ -1,11 +1,8 @@
-from:
-  - flows/kafka_news_p1.yaml
+from: flows/news/p1_kafka.yaml
 
-description: 接收采集平台通过Kafka推送的网页数据，进行标题、时间、作者、正文等抽取，标题和正文基于大模型翻译，向量化并写入向量库
+name: translate and vectorize
+description: 对新闻标题和正文基于大模型翻译，向量化并写入向量库
 consts:
-  mongo2:
-    database: global-news
-    collection: news
   qdrant:
     collection: chunk_news_v2
   es1:
@@ -17,6 +14,8 @@ nodes:
   select3: Select('id', 'title', 'publish_time', 'site_name', 'author', 'url')
   prompt: util.files.text('config/prompt/news_translate.txt')
   prompt1: util.files.text('config/prompt/news_translate_abs.txt')
+  count_es: Count(ticks=10, label='Write-ES')
+  count_qd: Count(ticks=10, label='Write-Qdrant')
 
   map: Map(int, key='id')
   add_ts: AddTS('inserted_time')
@@ -28,7 +27,7 @@ nodes:
   write_es: database.ESWriter(**es1, buffer_size=10)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
   write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
-  fork: Fork(write_es, Chain(vector, write_qd), copy_data=True)
+  fork: Fork(Chain(write_es, count_es), Chain(vector, write_qd, count_qd), copy_data=True)
   chain3: Chain(rename, trans_title, translate, fork)
 
 processor: Chain(chain, chain2, chain3)

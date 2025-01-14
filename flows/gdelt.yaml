@@ -1,19 +1,27 @@
+from: local/db_envs.yaml
+
 name: GDELT数据采集
-description: download GDELT continuously, write to json file. you can change the writer to some databases.
+description: 从指定时间开始，持续采集GDELT数据，写入clickhouse库
 arguments: 0
 
-loader: web.gdelt.GdeltTaskEmit(2024, 9, 1)
+consts:
+  click1:
+    database: goinv3_2410
+    table: gdelt_event
+
+loader: web.gdelt.GdeltTaskEmit(2025, 1, 1)
 
 nodes:
+  print: Print
   filter1: "Filter(lambda row: 'export.CSV' in row['url'])"
   filter2: "Filter(lambda row: 'mentions.CSV' in row['url'])"
   row: web.gdelt.Export
-  print: Print
-  msg: Prompt('-----------------')
-  writer1: WriteJson('test_data/gdelt.export.json', append=True)
-  writer2: WriteJson('test_data/gdelt.mention.json', append=True)
+  select: Select('GlobalEventID','Day','EventCode','NumMentions','NumSources','NumArticles','AvgTone','Actor1Code','Actor1Name','Actor1CountryCode','Actor2Code','Actor2Name','Actor2CountryCode','ActionGeo_Type','ActionGeo_Type_Fullname','ActionGeo_CountryCode','ActionGeo_Lat','ActionGeo_Long','SOURCEURL')
+#  writer: WriteJson('test_data/gdelt.export.json', append=True)
+#  writer2: WriteJson('test_data/gdelt.mention.json', append=True)
+  writer: database.clickhouse.CKWriter(**click1, buffer_size=10)
   chain1: Chain(filter1, row, print)
   chain2: Chain(filter2, row, print)
   fork: Fork(chain1, chain2)
 
-processor: Chain(msg, print, fork)
+processor: Chain(print, row, select, writer)

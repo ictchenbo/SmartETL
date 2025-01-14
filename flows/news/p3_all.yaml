@@ -1,0 +1,14 @@
+from:
+  - flows/news/p2_text.yaml
+  - flows/news/p2_image.yaml
+
+name: load html, news extract, translate, vectorize, get images
+description: 新闻网页全处理流程
+
+nodes:
+  print1: Print('id', 'title', 'publish_time')
+  print2: Print('id', 'url')
+  process_text: Chain(chain, chain2, chain3)
+  process_image: Chain(stage21, stage22)
+
+processor: Fork(process_image, process_text, copy_data=True)

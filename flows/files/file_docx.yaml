@@ -2,7 +2,7 @@ name: Doc/Docx File Loader
 description: 读取Doc(x)文件
 arguments: 0
 
-loader: docx.Docx('test_data/files/test.docx')
+loader: doc.Docx('test_data/files/test.docx')
 
 nodes:
   print: Print

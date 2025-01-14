@@ -1,19 +1,16 @@
+from: local/db_envs.yaml
+
 name: 新闻数据处理并建立向量索引
 description: 从MongoDB轮询读取新闻，进行主题分类、地点识别，建立ES全文索引和Qdrant向量化索引。ES索引mapping查看`config/es-mappings/news.json`
 arguments: 0
 consts:
-  mongo1:
-    host: 10.60.1.145
+  mongo2:
     database: global-news
     collection: news
-  es_config:
-    host: 10.208.61.117
-    port: 9200
-    index: news
+  es1:
+    index: goinv3_document_news
     buffer_size: 10
-  qdrant_config:
-    host: 10.60.1.145
-    port: 6333
+  qdrant:
     collection: chunk
   chatglm4: http://10.208.63.29:8888
   bge_large_zh: http://10.208.63.29:8001/embed
@@ -28,7 +25,7 @@ consts:
 
 nodes:
   print: Print
-  loader: database.Mongo(**mongo1, sortby="_id", limit=1)
+  loader: database.Mongo(**mongo2, sortby="_id", limit=1)
 
   prompt1: util.files.text('config/prompt/news_classify.txt')
   prompt2: util.files.text('config/prompt/news_country_rec.txt')
@@ -51,17 +48,17 @@ nodes:
   tags: nlp.tags.TagSplit('tag1', 'tag2')
   remove2: RemoveFields('short_content')
   add_ts: AddTS('inserted_time')
-  write_es: database.ESWriter(**es_config)
+  write_es: database.ESWriter(**es1)
   counter: Count(ticks=10)
   write1: Chain(llm1, llm2, remove2, tags, add_ts, write_es, counter)
 
   chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
   flat: Flat(key='chunks', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant_config)
+  write_qd: database.qdrant.Qdrant(**qdrant)
   write2: Chain(chunk, print, flat, print, vector)
 
-  group: Fork(write1, write2)
+  group: Fork(write1, write2, copy_data=True)
 
 loader: TimedLoader(loader, interval=3600)
 processor: Chain(chain1, print, write2)
