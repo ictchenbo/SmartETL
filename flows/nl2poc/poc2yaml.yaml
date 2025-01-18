@@ -1,0 +1,11 @@
+name: news to html file
+
+loader: JsonLine('data/vul/nl2poc-1225.jsonl')
+
+nodes:
+  count: Count(ticks=10)
+  print: Print
+  select: Select('cve_id', 'poc')
+  write: WriteFiles('data/vul/yaml', name_key='cve_id', content_key='poc', suffix='.md')
+
+processor: Chain(select, write, count)

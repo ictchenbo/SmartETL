@@ -11,7 +11,6 @@ consts:
   bge_large_zh: http://10.208.63.29:8001/embed
 
 nodes:
-  select3: Select('id', 'title', 'publish_time', 'site_name', 'author', 'url')
   prompt: util.files.text('config/prompt/news_translate.txt')
   prompt1: util.files.text('config/prompt/news_translate_abs.txt')
   count_es: Count(ticks=10, label='Write-ES')
@@ -24,10 +23,12 @@ nodes:
   rename: RenameFields(title='title_origin', content='content_origin')
   trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
   translate: model.GoGPT(api_base=chatglm4, key='content_origin', prompt=prompt1, target_key='content')
+
   write_es: database.ESWriter(**es1, buffer_size=10)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
   write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
   fork: Fork(Chain(write_es, count_es), Chain(vector, write_qd, count_qd), copy_data=True)
+
   chain3: Chain(rename, trans_title, translate, fork)
 
-processor: Chain(chain, chain2, chain3)
+processor: Chain(chain, Print('id', 'title', 'origin_publish_time', 'url'), chain2, chain3)
