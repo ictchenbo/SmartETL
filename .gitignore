@@ -162,7 +162,7 @@ cython_debug/
 .idea/
 
 data/
-tests/
+test/
 local/
 
 .ts
