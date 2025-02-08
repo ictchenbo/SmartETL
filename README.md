@@ -21,13 +21,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [预测市场数据](flows/futures.yaml)
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
-   - [FourSqure全球POI数据](flows/file_parquet.yaml)
-   - [网页信息抽取](flows/news/news_parser.yaml)
-   - [新闻文本解析&向量化索引](flows/news/llm_process_news.yaml)
-   - [ReaderAPI](flows/api_readerapi.yaml)
-   - [大模型处理](flows/llm_simple.yaml)
-   - [科情-技术评估预测](flows/technology_score.yaml)
-   - [漏洞POC描述及POC生成](flows/nl2poc/nuclei_http_poc_desc.yaml)
+   - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -56,27 +50,21 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
-- 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等
-- 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别、文档专门解析
-- 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏等
-- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成，网页URL数据采集，JsonP数据解析，新闻图片采集等
-- 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
-- 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等
-- 数据库管理/DBA：数据库备份、同步、查询分析等
-- 服务监测：定时轮询API/服务状态等
+- 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等。参考[大模型调用示例](flows/llm_simple.yaml) [新闻处理](flows/news/p2_text.yaml)
+- 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别、文档专门解析。参考[网页信息抽取](flows/news/p1_kafka.yaml) [新闻处理](flows/news/p2_text.yaml)
+- 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏、科技评估预测等。参考[poc构建](flows/nl2poc/nuclei_http_poc_desc.yaml)
+- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成，网页URL数据采集，JsonP数据解析，新闻图片采集等。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml) [图片采集](flows/news/p2_image.yaml)
+- 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。参考[wikidata知识图谱](flows/wikidata/p3_relation_of_human.yaml) 关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
+- 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等。参考[项目数据统计1](flows/unesco-projects.yaml) [项目数据统计2](flows/unesco-projects-aggs.yaml)
+- 数据库管理/DBA：数据库备份、同步、查询分析等。参考[ClickHouse导出](flows/dba/db_ck_export.yaml) [MongoDB数据迁移](flows/dba/db_mongo_transfer.yaml)
+- 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 - ...
 
 ## New！
-- 2025.1.14
-  - 新增[图片采集流程](flows/news/p2_image.yaml)及相关算子，查找新闻网页中的图片并下载图片，保存到MinIO中（代码来源：丘龙鹏）
-  - 合并新闻文本处理与图片采集流程，形成[总流程](flows/news/p3_all.yaml)
-  - 新增基于开源情报报告（word格式）的[解析流程](flows/news/load_news_report_doc.yaml)及相关算子
-
-- 2025.1.12
-  - 增加新闻（HTML）解析示例[查看](flows/news/news_parser.yaml)
-  - 更新文档
-  - 新增`web.jsonp.Jsonp(url, **params)`加载器，获取提供的jsonp-url的返回结果并解析其中的json数据
-  - 调整`FromJson` `ToJson` `Format`算子到`mapper`模块
+- 2025.2.8
+1. 修改GDELT数据请求策略，尝试30次无效后则跳过
+2. 完善[loader文档](docs/loader.md)
+3. 新增[数据源文档](docs/datasource.md)
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -242,6 +230,17 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.1.14
+  - 新增[图片采集流程](flows/news/p2_image.yaml)及相关算子，查找新闻网页中的图片并下载图片，保存到MinIO中（代码来源：丘龙鹏）
+  - 合并新闻文本处理与图片采集流程，形成[总流程](flows/news/p3_all.yaml)
+  - 新增基于开源情报报告（word格式）的[解析流程](flows/news/load_news_report_doc.yaml)及相关算子
+
+- 2025.1.12
+  - 增加新闻（HTML）解析示例[查看](flows/news/news_parser.yaml)
+  - 更新文档
+  - 新增`web.jsonp.Jsonp(url, **params)`加载器，获取提供的jsonp-url的返回结果并解析其中的json数据
+  - 调整`FromJson` `ToJson` `Format`算子到`mapper`模块
+
 - 2025.1.9
   - 新闻时间统一处理 统一转为北京时间对应的时间戳
 

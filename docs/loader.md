@@ -6,10 +6,9 @@
 
 ### 基类设计
 1. 抽象基类 `DataLoader` 定义了数据加载器的接口
-2. 抽象基类 `FileLoader` 文件数据加载器
-
-### 辅助加载器
-1. 定时轮询加载器`TimedLoader` 可基于一个已有的加载器进行定时轮询 适合数据库轮询、服务监控等场景
+2. 文件基类 `file.File` 文件数据加载器
+3. 二进制文件基类 `file.BinaryFile`
+4. 文本文件基类`text.TextBase`
 
 ### 文件加载器
 1. 按行读取文本文件 `Text(input_file, encoding="utf8")` 每行为字符串直接传递。
@@ -25,8 +24,10 @@
 11. Parquet文件加载器 `parquet.Parquet(input_file)` 基于`pyarrow`读取parquet文件，每行作为一条数据
 12. EML文件加载器 `eml.EML(input_file, tmp_dir: str = None, save_attachment=True)` 每封邮件一条数据
 13. ppt/pptx文件加载器 `ppt.PPTX(input_file)` `ppt.PPTX(input_file)` 基于`python-pptx`读取pptx文件，ppt则先通过`libreoffice`转换为pptx，每个段落、表格作为一条数据
+14. YAML文件 `Yaml(input_file, encoding="utf8")` 加载yaml文件，作为一个对象传递。
+15. 纯文本文件 `TextPlain(input_file: str, encoding: str = "utf8", **kwargs)` 加载文本文件，作为一个字符串传递
 
-### 文件夹加载
+### 文件夹加载器
 通用文件夹加载 `Directory(folders, *suffix, recursive=False, type_mapping={}) `，参数说明：
 - folders 指定文件或文件夹 
 - *suffix 指定后缀名数组 如'.json' '.csv'，'all'表示全部支持的类型（此时其他参数会被忽略）
@@ -48,34 +49,22 @@
 - .parquet -> parquet.Parquet
 - .pdf -> pdf.PDF
 
-### wikidata文件
-提供两种wikidata文件格式加载器：
-1. 全量dump文件：`wikidata.WikidataJsonDump` 本质上是一个每行一项的JSON数组文件 
-2. 增量文件：`wikidata.WikidataXmlIncr` 本质上是wiki修订记录的XML文件的合并（即一个文件中包含了多个完整XML结构）
-
-**说明**：
-- 上述文件都支持以gz或bz2进行压缩，根据文件后缀名进行判断（分别为`.gz`和`.bz2`）
-- wikidata Dump文件下载地址：https://dumps.wikimedia.org/wikidatawiki/entities/
-
-**实例化参数**：文件路径；编码（默认为utf8）
-
-### GDELT数据
-提供GDELT数据加载（通过网络下载） 每行提供url、file_size信息 配合对应iterator
-1. 最近15分钟更新记录 `web.gdelt.GdeltLatest` 下载地址：http://data.gdeltproject.org/gdeltv2/lastupdate.txt
-2. 全部文件，自2015年2月19日以来的全部更新记录 `web.gdelt.GdeltAll` 下载地址：http://data.gdeltproject.org/gdeltv2/masterfilelist.txt
-3. 从指定某个时间开始历史记录 `web.gdelt.GdeltTaskEmit(2024, 9, 1)` 自动保存最新时间戳 程序重启后可以从之前的点恢复
-
-
-### GTD（全球恐怖主义事件库）
-GTD文件为Excel，通过`ExcelStream` 进行加载，可参考`flows/gtd_test.yaml`
-
-
 ### Web API加载器
-1. 简单URL加载器（返回JSON的接口） `web.api.URLSimple(url)`
+1. 基于HTTP加载URL（返回JSON的接口） `web.api.HttpBase(url: str, method: str = 'get', headers=None, auth=None, json=None, data=None)`
+2. GET加载器（返回JSON的接口） `web.api.Get(url: str, headers=None, auth=None, json=None, data=None)`
+3. POST加载器（返回JSON的接口） `web.api.Post(url: str, headers=None, auth=None, json=None, data=None)`
+4. JsonP加载器 `web.jsonp.Jsonp(url: str, headers=None, auth=None, json=None, data=None)`
 
 
 ### 数据库加载器
 提供常用数据库的数据查询式读取：
+1. MySQL
+2. PostgreSQL
+3. ClickHouse
+4. MongoDB
+5. ElasticSearch
+6. Kafka（基于web接口）
+
 1. ClickHouse `database.CK` 实例化参数：
 - host 服务器主机名 默认`"localhost"`
 - tcp_port 服务器端口号 默认 `9000`
@@ -130,10 +119,53 @@ database.ES(host='10.208.57.13', table='docs')
 database.Mongo(host='10.208.57.13', table='nodes')
 ```
 
-4. MySQL `database.mysql.MySQL` 参数同ClickHouse
-5. PostgresSQL `database.postgres.PG` 参数同ClickHouse
-6. DBTables `database.meta.DBTables(loader)` 基于已有的数据库loader读取当前可用的表格 表格返回名字和列的列表
+4. MySQL `database.mysql.MySQL(host: str = 'localhost',
+                 port: int = 3306,
+                 user: str = "root",
+                 password: str = None,
+                 database: str = None,
+                 paging: bool = False, **kwargs)`
+5. PostgresSQL `database.postgres.PG(host: str = 'localhost',
+                 port: int = 9000,
+                 user: str = "default",
+                 password: str = "",
+                 database: str = 'default', **kwargs)`
+6. Kafka `database.kafka.WebConsumer(api_base: str = 'localhost:62100',
+                 group_id: str = None,
+                 username: str = 'kafka',
+                 user_auth: str = None,
+                 topics: list = None,
+                 auto_init: bool = False,
+                 poll_timeout: int = 300,
+                 poll_metabytes: int = 10,
+                 poll_wait: int = 10,
+                 connect_timeout: int = 30`
+7. DBTables `database.meta.DBTables(loader, *database_list)` 基于已有的数据库loader读取当前可用的表格 表格返回名字和列的列表
 
 ### 其他加载器
+1. 定时轮询加载器`TimedLoader` 可基于一个已有的加载器进行定时轮询 适合数据库轮询、服务监控等场景
+2. 随机数生成器 `Random(num_of_times: int = 0)` 产生随机数（0~1）
+3. 数组加载器 `Array(data: list)`
+4. 字符串加载器 `String(text: str, sep: str = '\n')`
+5. 函数加载器 `Function(function, *args, **kwargs)`
 
-1. 随机数生成器 `RandomGenerator`
+### 特定数据加载器：wikidata
+提供两种wikidata文件格式加载器：
+1. 全量dump文件：`wikidata.WikidataJsonDump` 本质上是一个每行一项的JSON数组文件 
+2. 增量文件：`wikidata.WikidataXmlIncr` 本质上是wiki修订记录的XML文件的合并（即一个文件中包含了多个完整XML结构）
+
+**说明**：
+- 上述文件都支持以gz或bz2进行压缩，根据文件后缀名进行判断（分别为`.gz`和`.bz2`）
+- wikidata Dump文件下载地址：https://dumps.wikimedia.org/wikidatawiki/entities/
+
+**实例化参数**：文件路径；编码（默认为utf8）
+
+### 特定数据加载器：GDELT
+提供GDELT数据加载（通过网络下载） 每行提供url、file_size信息 配合对应iterator
+1. 最近15分钟更新记录 `web.gdelt.GdeltLatest` 下载地址：http://data.gdeltproject.org/gdeltv2/lastupdate.txt
+2. 全部文件，自2015年2月19日以来的全部更新记录 `web.gdelt.GdeltAll` 下载地址：http://data.gdeltproject.org/gdeltv2/masterfilelist.txt
+3. 从指定某个时间开始历史记录 `web.gdelt.GdeltTaskEmit(2024, 9, 1)` 自动保存最新时间戳 程序重启后可以从之前的点恢复
+
+### 特定数据加载器：报告新闻
+针对特定格式的word进行加载 `doc_news.News(input_file: str)`
+

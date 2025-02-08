@@ -6,7 +6,7 @@ from .aggregation import ReduceBase
 
 
 class Reduce(ReduceBase):
-    """分组规约，根据提供的函数进行数据规约。注意，此类算子在Group(或其子类）处理之后"""
+    """规约，根据提供的函数进行数据规约。注意，此类算子在Group(或其子类）处理之后"""
     def __init__(self, func, source_key: str = 'values', target_key: str = None):
         """
         :param func (rows) -> res 规约函数

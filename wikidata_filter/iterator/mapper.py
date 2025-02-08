@@ -184,7 +184,7 @@ class Flat(JsonIterator):
             return data
         _data = data.get(self.key) if self.key else data
         _data = self.transform(_data)
-        if isinstance(_data, list) or isinstance(_data, tuple):
+        if isinstance(_data, list) or isinstance(_data, tuple) or isinstance(_data, set):
             if self.inherit_props and isinstance(data, dict):
                 # 字段继承
                 for item in _data:
@@ -200,11 +200,11 @@ class Flat(JsonIterator):
                 for key, val in _data.items():
                     yield key, val
             elif self.flat_mode == 'key':
-                # 返回Key，适合整齐KV字典
+                # 返回Key，适合整齐字典
                 for key in _data.keys():
                     yield key
             elif self.flat_mode == 'value':
-                # 返回Key，适合整齐KV字典
+                # 返回Value，适合整齐字典
                 for key, val in _data.items():
                     if isinstance(val, dict):
                         val["_key"] = key

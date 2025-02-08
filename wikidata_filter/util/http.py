@@ -1,7 +1,7 @@
 import requests
 
 
-def content(url, most_times=5, **kwargs):
+def content(url, most_times=5, ignore_error=False, **kwargs):
     for i in range(most_times):
         try:
             res = requests.get(url, kwargs)
@@ -11,7 +11,9 @@ def content(url, most_times=5, **kwargs):
         except:
             print('Network error')
     print(f'Tried for {most_times}, Failure')
-    raise Exception("Too many failures, exit!")
+    if not ignore_error:
+        raise Exception("Too many failures, exit!")
+    return b""
 
 
 def req(url, method='get', json: dict = None, **kwargs):
