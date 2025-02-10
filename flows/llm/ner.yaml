@@ -1,0 +1,14 @@
+from: local/llm_keys.yaml
+
+name: 基于大模型从新闻文本中提取命名实体
+arguments: 0
+
+loader: Json('test_data/news/news_20241115.json')
+
+nodes:
+  prompt: util.files.text('config/prompt/news-ner.txt')
+  select: SelectVal('nodes')
+  flat: Flat
+  ner: model.DeepSeek(deepseek['api_key'], 'content', prompt=prompt, target_key='ner')
+
+processor: Chain(select, flat, select, flat, ner, Print(), Count(label='News', ticks=10))

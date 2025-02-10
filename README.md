@@ -61,6 +61,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.2.9
+1. 对接DeepSeek `model.DeepSeek(api_key, key, prompt='prompt')` 
+2. 基于DeepSeek实现文本实体识别。[详情](flows/llm/ner.yaml) 修改`model.LLM`的构造参数 配置api_key即可运行
+
 - 2025.2.8
 1. 修改GDELT数据请求策略，尝试30次无效后则跳过
 2. 完善[loader文档](docs/loader.md)

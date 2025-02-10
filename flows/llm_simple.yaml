@@ -1,7 +1,7 @@
 from: local/llm_keys.yaml
 
 name: 大模型调用处理
-description: 调用Kimi（月之暗面）/Siliconflow平台的大模型处理输入的问题 支持配置数据字段field，服务Key api_key，模型model，代理proxy，温度temp，topk，topp参数
+description: 调用Kimi（月之暗面）/Siliconflow平台的大模型处理输入的问题 支持配置数据字段key，服务api_key，模型model，代理proxy参数
 arguments: 0
 consts:
   proxy: 'http://localhost:8001'
