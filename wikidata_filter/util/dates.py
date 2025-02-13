@@ -140,7 +140,7 @@ def normalize_time(datetime_str: str, tz=None):
         try:
             timestamp_ms = custom_datetime_to_beijing_timestamp(datetime_str, fmt)
             return timestamp_ms
-        except ValueError as e:
+        except Exception as e:
             print(f"无法解析日期时间字符串: {e}")
 
     print("无法解析时间：", datetime_str)

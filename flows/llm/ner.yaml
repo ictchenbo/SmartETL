@@ -9,6 +9,6 @@ nodes:
   prompt: util.files.text('config/prompt/news-ner.txt')
   select: SelectVal('nodes')
   flat: Flat
-  ner: model.DeepSeek(deepseek['api_key'], 'content', prompt=prompt, target_key='ner')
+  ner: model.DeepSeek(deepseek['api_key'], key='content', prompt=prompt, target_key='ner')
 
 processor: Chain(select, flat, select, flat, ner, Print(), Count(label='News', ticks=10))

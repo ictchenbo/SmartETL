@@ -15,13 +15,9 @@ nodes:
 #  extract: nlp.news.Extract(key='html', target_key='content')
   flat: FlatProperty('html', inherit_props=True)
   filter: FieldsExist('publish_time')
-  min_time: MinValue('publish_time', 'publish_time', 'event_time_date', 'mention_time_date')
-  select1: "=lambda r: r['publish_time'] if r['publish_time']<r['event_time_date']-86400000 else r['event_time_date']"
-  select2: "=lambda r: r['publish_time'] if r['publish_time']<r['mention_time_date']-86400000 else r['mention_time_date']"
+  select1: "=lambda r: r['publish_time'] if r['publish_time'] and r['publish_time']<r['event_time_date']-259200000 else r['event_time_date']"
   map_time1: Map(select1, key='publish_time')
-  map_time2: Map(select2, key='publish_time')
-#  chain: Chain(select, extract, flat, filter, min_time)
-  chain: Chain(select, extract, flat, filter)
+  chain: Chain(select, extract, flat, filter, map_time1)
 
 #processor: Chain(chain, Select('id', 'title', 'origin_publish_time', 'url'), print)
 processor: Chain(chain, WriteJson('data/news3.jsonl', buffer_size=10), count)

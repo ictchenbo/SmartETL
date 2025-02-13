@@ -1,6 +1,7 @@
 import sys
 import os
 import requests
+import json
 import traceback
 
 from wikidata_filter.iterator.base import JsonIterator
@@ -19,6 +20,7 @@ class LLM(JsonIterator):
                  model: str = None,
                  prompt: str = None,
                  target_key: str = '_llm',
+                 stream: bool = False,
                  **kwargs
                  ):
         """
@@ -29,14 +31,18 @@ class LLM(JsonIterator):
         :param ignore_errors 是否忽略错误 如果为False且调用发生错误则抛出异常，默认True
         :param model 模型名字 如'gpt-4o' 可用的模型需要查看提供模型服务的平台的说明
         :param prompt 提示模板
-        :param placeholders 占位符列表
+        :param target_key 目标字段
+        :param stream 是否流式请求
+        :param temperature 模型温度参数
+        :param topk 模型topk参数
+        :param topp 模型topp参数
         """
         if key is None:
             print("Warning: key is None, use the whole input as the parameter of LLM api call")
         self.key = key
         self.api_base = api_base
         self.api_key = api_key
-        self.prompt_template = prompt
+        self.prompt = prompt
         self.proxy = None
         if proxy:
             if proxy.lower() == "system":
@@ -50,22 +56,23 @@ class LLM(JsonIterator):
                     "https": proxy
                 }
         self.ignore_errors = ignore_errors
-        self.target_key = target_key or '_llm'
+        self.target_key = target_key
+        self.stream = stream
         args_base = dict(**kwargs)
         args_base['model'] = model
-        args_base['stream'] = False
         self.args_base = args_base
 
     def request_service(self, query: str):
         """执行HTTP-POST请求"""
         url = f'{self.api_base}/chat/completions'
-        data = dict(**self.args_base)
-        data['messages'] = [
-                {
-                    "role": "user",
-                    "content": query
-                }
-            ]
+        messages = [
+            {
+                "role": "user",
+                "content": query,
+            }
+        ]
+        data = dict(**self.args_base, prompt=query, stream=self.stream, messages=messages)
+
         headers = {
             'content-type': 'application/json'
         }
@@ -74,9 +81,26 @@ class LLM(JsonIterator):
         proxies = self.proxy or {}
         print(f"requesting LLM(api_base={self.api_base}, model={data.get('model')})")
         try:
-            res = requests.post(url, headers=headers, json=data, proxies=proxies)
+            res = requests.post(url, headers=headers, json=data, proxies=proxies, stream=self.stream)
             if res.status_code == 200:
-                return res.json()['choices'][0]['message']['content']
+                if self.stream:
+                    result = []
+                    for chunk in res.iter_lines():
+                        if chunk:
+                            line = chunk.decode("utf-8")
+                            if line.startswith("data: {"):  # 过滤掉非数据行
+                                json_data = json.loads(line[5:])  # 去掉 "data: " 前缀
+                                piece_data = json_data["choices"][0].get("delta")
+                                text_piece = piece_data.get("content") or piece_data.get("reasoning_content")
+                                if text_piece is None:
+                                    continue
+                                print(text_piece, end='', flush=True)
+                                v = piece_data.get("content")
+                                if v:
+                                    result.append(text_piece)
+                    return ''.join(result)
+                else:
+                    return res.json()['choices'][0]['message']['content']
             print(res.text, file=sys.stderr)
             return None
         except Exception as ex:
@@ -100,12 +124,12 @@ class LLM(JsonIterator):
         else:
             print("Warning: input data type not supported! Must be dict or str")
             return row
-        query = self.prompt_template.replace('{data}', val) if self.prompt_template else val
+        query = self.prompt.replace('{data}', val) if self.prompt else val
         # print(query)
         result = self.request_service(query)
         # print(result)
         if result:
-            if self.key is None:
+            if self.key is None or self.target_key is None:
                 return result
             else:
                 row[self.target_key] = result

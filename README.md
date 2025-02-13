@@ -61,6 +61,11 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.2.13
+1. 新增腾讯云DeepSeek `model.deepseek.DeepSeek_LKEAP(api_key)` 
+2. 提供[测试流程](flows/llm/deepseek_r1.yaml) 使用腾讯云DeepSeek模型进行推理测试，执行：`python main_flow.py flows/llm/deepseek_r1.yaml`
+3. 修改大模型算子基类`model.base.LLM` 支持stream参数，通过设置stream=True实现流式生成，终端连续打印大模型生成结果
+
 - 2025.2.9
 1. 对接DeepSeek `model.DeepSeek(api_key, key, prompt='prompt')` 
 2. 基于DeepSeek实现文本实体识别。[详情](flows/llm/ner.yaml) 修改`model.LLM`的构造参数 配置api_key即可运行
