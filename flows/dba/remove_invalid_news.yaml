@@ -1,0 +1,17 @@
+from: local/db_envs.yaml
+
+name: remove invalid news
+
+nodes:
+  current: util.dates.current_ts(True)
+  flat: FlatProperty('hits')
+  flat2: Flat('hits')
+  select: Select('_id', '_source.title', '_source.publish_time', short_key=True)
+  abnormal_time: "=lambda t, current=current: t >= current "
+  filter: Filter(abnormal_time, key='publish_time')
+  format_time: MapUtil('wikidata_filter.util.dates.millis2datetime', key='publish_time')
+  delete: database.elasticsearch.Delete(**es1, id_key="_id", index="goinv3_document_news")
+
+loader: web.api.Get('http://10.208.61.117:9200/goinv3_document_news/_search?sort=publish_time:desc&size=1000')
+
+processor: Chain(flat, flat2, select, filter, format_time, Print(), delete, Count())

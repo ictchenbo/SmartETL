@@ -11,13 +11,14 @@ nodes:
   count: Count(ticks=10)
   print: Print('id', 'url')
   select: Select('id', 'url', 'html', 'event_time_date', 'mention_time_date')
+  backup: WriteJsonScroll('data/gdelt/news')
   extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html')
 #  extract: nlp.news.Extract(key='html', target_key='content')
   flat: FlatProperty('html', inherit_props=True)
-  filter: FieldsExist('publish_time')
-  select1: "=lambda r: r['publish_time'] if r['publish_time'] and r['publish_time']<r['event_time_date']-259200000 else r['event_time_date']"
-  map_time1: Map(select1, key='publish_time')
-  chain: Chain(select, extract, flat, filter, map_time1)
+  filter: FieldsNonEmpty('publish_time')
+  valid_time: "=lambda r: r['publish_time'] < r['event_time_date']"
+  backup_bad: WriteJsonIf(valid_time, 'data/gdelt/bad', scroll=100)
+  chain: Chain(select, extract, flat, filter, backup_bad)
 
 #processor: Chain(chain, Select('id', 'title', 'origin_publish_time', 'url'), print)
-processor: Chain(chain, WriteJson('data/news3.jsonl', buffer_size=10), count)
+processor: Chain(chain, Print(), count)

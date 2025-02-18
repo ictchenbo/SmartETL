@@ -30,7 +30,10 @@ def run(data_provider: DataProvider, processor: JsonIterator):
     processor.on_start()
 
     def execute(data: Any, *args):
-        res = processor.__process__(data)
+        try:
+            res = processor.__process__(data)
+        except:
+            return
         # 注意：包含yield的函数调用仅返回迭代器，而不会执行函数
         if isinstance(res, GeneratorType):
             for _ in res:

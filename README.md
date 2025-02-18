@@ -61,19 +61,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
-- 2025.2.13
-1. 新增腾讯云DeepSeek `model.deepseek.DeepSeek_LKEAP(api_key)` 
-2. 提供[测试流程](flows/llm/deepseek_r1.yaml) 使用腾讯云DeepSeek模型进行推理测试，执行：`python main_flow.py flows/llm/deepseek_r1.yaml`
-3. 修改大模型算子基类`model.base.LLM` 支持stream参数，通过设置stream=True实现流式生成，终端连续打印大模型生成结果
-
-- 2025.2.9
-1. 对接DeepSeek `model.DeepSeek(api_key, key, prompt='prompt')` 
-2. 基于DeepSeek实现文本实体识别。[详情](flows/llm/ner.yaml) 修改`model.LLM`的构造参数 配置api_key即可运行
-
-- 2025.2.8
-1. 修改GDELT数据请求策略，尝试30次无效后则跳过
-2. 完善[loader文档](docs/loader.md)
-3. 新增[数据源文档](docs/datasource.md)
+- 2025.2.17
+1. 优化新闻信息抽取组件，基于meta及ld-json信息抽取
+2. 新增`WriteJsonScroll`进行滚动备份，新增`WriteJsonIf`进行过滤式数据备份
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -239,6 +229,20 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.2.13
+1. 新增腾讯云DeepSeek `model.deepseek.DeepSeek_LKEAP(api_key)` 
+2. 提供[测试流程](flows/llm/deepseek_r1.yaml) 使用腾讯云DeepSeek模型进行推理测试，执行：`python main_flow.py flows/llm/deepseek_r1.yaml`
+3. 修改大模型算子基类`model.base.LLM` 支持stream参数，通过设置stream=True实现流式生成，终端连续打印大模型生成结果
+
+- 2025.2.9
+1. 对接DeepSeek `model.DeepSeek(api_key, key, prompt='prompt')` 
+2. 基于DeepSeek实现文本实体识别。[详情](flows/llm/ner.yaml) 修改`model.LLM`的构造参数 配置api_key即可运行
+
+- 2025.2.8
+1. 修改GDELT数据请求策略，尝试30次无效后则跳过
+2. 完善[loader文档](docs/loader.md)
+3. 新增[数据源文档](docs/datasource.md)
+
 - 2025.1.14
   - 新增[图片采集流程](flows/news/p2_image.yaml)及相关算子，查找新闻网页中的图片并下载图片，保存到MinIO中（代码来源：丘龙鹏）
   - 合并新闻文本处理与图片采集流程，形成[总流程](flows/news/p3_all.yaml)

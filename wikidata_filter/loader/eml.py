@@ -226,26 +226,17 @@ class EML(BinaryFile):
             os.mkdir(self.tmp_dir)
 
     def iter(self) -> Iterable[Any]:
-        eml = parse_header(self.filename)
-        parts, atts = parse_body(self.filename)
+        eml = parse_header(self.input_file)
+        parts, atts = parse_body(self.input_file)
         if self.save_attachment:
             for att in atts:
                 att['filepath'] = write_attachment(att, self.tmp_dir)
 
-        if parts is None:
-            # 解析错误
-            eml['__error'] = True
-
-        if 'text/html' in parts:
-            eml['html'] = parts['text/html']
-        if 'text/plain' in parts:
-            eml['text'] = parts['text/plain']
-        elif 'html' in eml:
-            eml['text'] = text_from_html(eml['html'])
-
-        if not eml.get('text'):
-            print('Warning: The email body is empty!')
-            eml['__empty'] = True
+        if parts:
+            if 'text/html' in parts:
+                eml['html'] = parts['text/html']
+            if 'text/plain' in parts:
+                eml['text'] = parts['text/plain']
 
         eml['atts'] = atts
 

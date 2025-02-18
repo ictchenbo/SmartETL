@@ -1,3 +1,4 @@
+import traceback
 from typing import Union, Dict, Any, List
 from types import GeneratorType
 from wikidata_filter.util.dicts import copy_val
@@ -140,7 +141,12 @@ class Chain(Multiple):
             new_queue = []  # cache for next processor, though there's only one item for most time
             # iterate over the current cache
             for current in queue:
-                res = node.__process__(current)
+                try:
+                    res = node.__process__(current)
+                except Exception as e:
+                    print("ERROR! node: ", node, "data:", current)
+                    traceback.print_exc()
+                    raise e
                 # 注意：包含yield的函数调用仅返回迭代器，而不会执行函数
                 if isinstance(res, GeneratorType):
                     for one in res:

@@ -10,7 +10,9 @@ loader: directory.Directory('test_data/html', '.html', type_mapping=type_mapping
 
 nodes:
   select: SelectVal('data')
-  extract: nlp.news.Extract
-  filter: FieldsExist('publish_time')
+  extract: nlp.news.Extract(key='data')
+  flat: FlatProperty('data', inherit_props=True)
+  has_time: FieldsExist('publish_time')
+  filter: Not(has_time)
 
 processor: Chain(select, extract, filter, Print(), Count())

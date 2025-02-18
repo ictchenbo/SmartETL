@@ -29,6 +29,10 @@ def ts2datetime(ts, fmt='%Y-%m-%d %H:%M:%S') -> str:
     return ""
 
 
+def millis2datetime(ts, fmt='%Y-%m-%d %H:%M:%S') -> str:
+    return ts2datetime(ts/1000)
+
+
 def current_ts(millis=False) -> int:
     """当前时间时间戳"""
     if millis:
@@ -141,7 +145,8 @@ def normalize_time(datetime_str: str, tz=None):
             timestamp_ms = custom_datetime_to_beijing_timestamp(datetime_str, fmt)
             return timestamp_ms
         except Exception as e:
-            print(f"无法解析日期时间字符串: {e}")
+            pass
+            # print(f"无法解析日期时间字符串: {e}")
 
     print("无法解析时间：", datetime_str)
     return None

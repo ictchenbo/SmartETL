@@ -6,4 +6,4 @@ from .filter import (Filter, BlackList, WhiteList, Sample, Distinct, DistinctRed
 from .field_based import (Select, SelectVal, AddFields, RemoveFields, ReplaceFields, MergeFields, RenameFields, CopyFields,
                           InjectField, ConcatFields, RemoveEmptyOrNullFields)
 from .aggregation import Group, Buffer
-from .file import WriteText, WriteJson, WriteCSV, WriteFiles
+from .file import WriteText, WriteJson, WriteCSV, WriteFiles, WriteJsonScroll, WriteJsonIf

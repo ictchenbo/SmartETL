@@ -124,6 +124,8 @@ class LLM(JsonIterator):
         else:
             print("Warning: input data type not supported! Must be dict or str")
             return row
+        if not val:
+            return row
         query = self.prompt.replace('{data}', val) if self.prompt else val
         # print(query)
         result = self.request_service(query)

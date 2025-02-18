@@ -1,10 +1,12 @@
 """输出到文件的算子"""
 import os
 import json
+import gzip
 from typing import Any
 
 from wikidata_filter.iterator.base import DictProcessorBase
 from wikidata_filter.iterator.aggregation import BufferedWriter
+from wikidata_filter.util.dates import current_ts
 
 
 class WriteText(BufferedWriter):
@@ -41,7 +43,6 @@ class WriteText(BufferedWriter):
             if not self.mode:
                 self.writer = open(self.output_file, 'a' if self.append else 'w', encoding=self.encoding)
             elif self.mode == "gzip" and not self.append:
-                import gzip
                 self.writer = gzip.open(self.output_file, "wt", encoding=self.encoding)
             _header = self.header()
             if _header:
@@ -50,7 +51,6 @@ class WriteText(BufferedWriter):
         lines = [self.serialize(item) for item in data]
         content = self.sep.join(lines)
         if self.mode == "gzip" and self.append:
-            import gzip
             with gzip.open(self.output_file, 'ab') as writer:
                 writer.write(content.encode(self.encoding))
                 writer.write(self.sep.encode(self.encoding))
@@ -131,3 +131,42 @@ class WriteFiles(DictProcessorBase):
         with open(filepath, 'w', encoding='utf8') as fout:
             fout.write(str(data[self.content_key]))
         return data
+
+
+class WriteJsonScroll(DictProcessorBase):
+    """对数据进行滚动备份 保存为json.gz文件"""
+    def __init__(self, output_dir: str, mode="gzip", scroll=10000):
+        self.output_dir = output_dir
+        self.mode = mode
+        self.scroll = scroll
+        self.num = 0
+        self.writer = None
+
+    def on_data(self, data: dict, *args):
+        if self.num % self.scroll == 0:
+            if self.writer:
+                self.writer.close()
+            filename = os.path.join(self.output_dir, f'{current_ts()}.json.gz')
+            self.writer = gzip.open(filename, "wt", encoding="utf8")
+        self.writer.write(json.dumps(data, ensure_ascii=False))
+        self.writer.write('\n')
+        self.num += 1
+        return data
+
+    def on_complete(self):
+        if self.writer:
+            self.writer.close()
+
+
+class WriteJsonIf(WriteJsonScroll):
+    """基于过滤器判断，如果条件不满足，则进行备份；否则正常通过"""
+    def __init__(self, the_filter, output_dir: str, mode="gzip", scroll=100):
+        super().__init__(output_dir, mode=mode, scroll=scroll)
+        self.the_filter = the_filter
+
+    def on_data(self, data: dict, *args):
+        if self.the_filter(data):
+            return data
+        else:
+            super().on_data(data)
+            return None

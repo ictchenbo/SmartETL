@@ -1,7 +1,8 @@
 import requests
-from wikidata_filter.iterator.mapper import Map, JsonIterator
-from wikidata_filter.iterator.base import DictProcessorBase
-from wikidata_filter.util.html_util import text_from_html, extract_title, extract_news_article, extract_images
+
+from wikidata_filter.iterator.mapper import Map
+
+from wikidata_filter.util.extractor.html import HtmlExtractor
 from wikidata_filter.util.dates import normalize_time
 
 try:
@@ -11,23 +12,7 @@ except:
     raise Exception("gne not installed")
 
 
-time_fields = ['datePublished', 'article:published_time', 'article:modified_time', 'dateModified']
-KEY_DESC = ['description', 'og:description']
-KEY_KEYWORDS = ['keywords', 'og:keywords']
-
-
-def find_value(meta: dict, keys: list):
-    for key in keys:
-        if key in meta:
-            return meta[key]
-    return None
-
-
-def find_value_by_key(metas: dict, key: str = 'date'):
-    for k, v in metas.items():
-        if key in k.lower():
-            return v
-    return None
+time_fields = ['datePublished', 'published_time', 'modified_time', 'dateModified']
 
 
 class Extract(Map):
@@ -44,19 +29,20 @@ class Extract(Map):
 
         news = self.extract(html)
 
-        news['meta'] = text_from_html(html, text=False, meta=True)[1]
-        metas = {kv[0]: kv[1] for kv in news['meta']}
+        my_extractor = HtmlExtractor(html)
+
+        news['meta'] = my_extractor.meta
 
         if "title" not in news:
-            news["title"] = find_value_by_key(metas, "title") or extract_title(html)
-        news['keywords'] = find_value(metas, KEY_KEYWORDS)
-        news['desc'] = find_value(metas, KEY_DESC)
-        news['source'] = news.get('source') or find_value_by_key(metas, 'site_name')
-        news['author'] = news.get('author') or find_value_by_key(metas, 'author')
-        news['link'] = news.get('url') or find_value_by_key(metas, 'link') or find_value_by_key(metas, 'url')
+            news["title"] = my_extractor.find_value_by_key("title") or my_extractor.get_title()
+        news['keywords'] = my_extractor.find_value_by_key("keywords")
+        news['desc'] = my_extractor.find_value_by_key("description")
+        news['source'] = news.get('source') or my_extractor.find_value_by_key('site_name')
+        news['author'] = news.get('author') or my_extractor.find_value_by_key('author')
+        # news['link'] = news.get('url') or find_value_by_key(metas_s, 'link') or find_value_by_key(metas_s, 'url')
 
         # 发布时间处理
-        publish_time = find_value(metas, time_fields) or find_value_by_key(metas)
+        publish_time = my_extractor.find_value_by_key('datePublished') or my_extractor.find_value_by_key('published_time')
         if not publish_time:
             if news.get("time"):
                 publish_time = news.pop("time")
@@ -66,7 +52,7 @@ class Extract(Map):
             news['origin_publish_time'] = publish_time
             # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
             # 1基于<meta>
-            tz = find_value(metas, ["timezone"])
+            tz = my_extractor.find_value(["timezone"])
             # 2 基于网站域名、服务器所在国家/地区
             # 3 基于网页内容主要地点
             news['publish_time'] = normalize_time(publish_time, tz=tz)
@@ -99,28 +85,3 @@ class Constor(Extract):
                 print("Constor服务异常")
 
         return super().extract(html)
-
-
-class Image(DictProcessorBase):
-    """从新闻网页中提取图片相关信息"""
-    def __init__(self, url_key: str = 'url', html_key: str = 'html'):
-        self.url_key = url_key
-        self.html_key = html_key
-
-    def on_data(self, data: dict, *args, **kwargs):
-        url = data[self.url_key]
-        html = data[self.html_key]
-        article = extract_news_article(html)
-        if article:
-            for img in extract_images(url, article):
-                yield img
-
-
-if __name__ == "__main__":
-    content = open('../../../test_data/html/1219285670.html', encoding='utf8').read()
-
-    ex = Extract()
-    print(ex.extract(content))
-
-    # ex = Constor('http://10.60.1.145:7100/constor/process')
-    # print(ex(content))
