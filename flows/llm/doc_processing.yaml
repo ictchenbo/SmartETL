@@ -1,7 +1,7 @@
 from: local/db_envs.yaml
 
 name: 解析各类文档入库
-description: 加载文件夹，解析各文件，获取文档，进行chunk&embed&index
+description: 加载文件夹，获取层级化JSON（参考test_data/news/news_20241115.json），进行chunk&embed&index
 arguments: 0
 consts:
   es1:

@@ -1,0 +1,19 @@
+name: 对http模板进行统计
+arguments: 1
+
+loader: directory.Directory(arg1, '.yaml', '.yml', recursive=True)
+
+nodes:
+  select1: SelectVal('data')
+  filter1: FieldsExist('info')
+  rename1: RenameFields(id='_id')
+  filter: FieldsExist('http')
+  select_tags: Select('_id', 'info.metadata.product', short_key=True)
+  filter2: FieldsNonEmpty('product')
+  filter3: "Filter(lambda s: s.startswith('CVE-'), key='_id')"
+  group: Group(by='product', emit_fast=False)
+  count: aggs.Count(target_key='num')
+  sort: sink.Sort(key="num", reverse=True)
+  writer1: WriteJson('data/vul/nuclei-poc-http-product-stat2.jsonl')
+
+processor: Chain(select1, filter1, rename1, filter, select_tags, filter2, filter3, group, count, sort, writer1, Count())

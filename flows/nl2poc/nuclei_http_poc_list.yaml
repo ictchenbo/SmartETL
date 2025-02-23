@@ -10,10 +10,10 @@ nodes:
   count2: Count(label='http-templates')
 
   select1: SelectVal('data')
-  filter1: FieldsExists('info')
+  filter1: FieldsExist('info')
   rename1: RenameFields(id='_id')
   writer1: WriteJson('data/vul/nuclei_poc.jsonl')
-  filter: FieldsExists('http')
+  filter: FieldsExist('http')
   select: Select('_id', 'info.name', 'info.description', 'http', short_key=True)
   rename: RenameFields(http='code')
   writer: WriteJson('data/vul/nuclei_poc_http.jsonl')

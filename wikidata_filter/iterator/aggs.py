@@ -44,8 +44,8 @@ class ReduceBy(Reduce):
 
 class Count(Reduce):
     """group计数 ，等价SQL：select count() from group"""
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, **kwargs):
+        super().__init__(self, **kwargs)
 
     def __call__(self, items: list):
         return len(items)

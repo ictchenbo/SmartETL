@@ -7,3 +7,5 @@ from .field_based import (Select, SelectVal, AddFields, RemoveFields, ReplaceFie
                           InjectField, ConcatFields, RemoveEmptyOrNullFields)
 from .aggregation import Group, Buffer
 from .file import WriteText, WriteJson, WriteCSV, WriteFiles, WriteJsonScroll, WriteJsonIf
+
+from .sink import Collect, Sort

@@ -50,7 +50,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
-- 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等。参考[大模型调用示例](flows/llm_simple.yaml) [新闻处理](flows/news/p2_text.yaml)
+- 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等。参考[大模型调用示例](flows/llm/siliconflow.yaml) [新闻处理](flows/news/p2_text.yaml)
 - 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别、文档专门解析。参考[网页信息抽取](flows/news/p1_kafka.yaml) [新闻处理](flows/news/p2_text.yaml)
 - 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏、科技评估预测等。参考[poc构建](flows/nl2poc/nuclei_http_poc_desc.yaml)
 - 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成，网页URL数据采集，JsonP数据解析，新闻图片采集等。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml) [图片采集](flows/news/p2_image.yaml)
@@ -61,6 +61,11 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.2.23
+1. 新增`sink.Collect` `sink.Sort`算子，对流程处理数据进行收集、排序（注意：仅适合小规模数据）
+2. 新增流程 flows/nl2poc/poc-meta-product-stat.yaml 对`nuclei`模板进行统计
+3. [DeepSeek大模型调用流程](flows/llm/deepseek_r1.yaml) 增加读取整个文件内容作为`prompt`调用到模型的例子
+
 - 2025.2.17
 1. 优化新闻信息抽取组件，基于meta及ld-json信息抽取
 2. 新增`WriteJsonScroll`进行滚动备份，新增`WriteJsonIf`进行过滤式数据备份
@@ -365,7 +370,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 - 2024.10.26
 1. 新增大模型处理算子`LLM` 可调用与OpenAI接口兼容的在线大模型接口，需要提供api_base、api_key，其他参数支持：model、proxy、prompt、temp等
 2. 基于`LLM`实现月之暗面（Kimi）大模型`Moonshot`、Siliconflow平台大模型`Siliconflow`大模型算子
-3. 新增大模型调用流程示例[查看](flows/llm_simple.yaml) 填入api_key即可执行：`python main_flow.py flows/llm_local.yaml`
+3. 新增大模型调用流程示例[查看](flows/llm/siliconflow.yaml) 填入api_key即可执行：`python main_flow.py flows/llm_local.yaml`
 4. 增加一些测试流程的测试样例数据[查看](test_data)
 5. 修改`JsonMatcher`，继承`Filter`，使得匹配对象可以直接作为过滤算子（之前是作为`Filter`的参数） `matcher`移动到`iterator`下
 6. 简化iterator的配置，nodes和processor定义的节点都可以不写`iterator` 如可以写`web.gdelt.Export`

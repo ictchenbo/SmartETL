@@ -161,7 +161,7 @@ class Chain(Multiple):
                 return new_queue
 
             if end_msg:
-                # send a None msg in the end
+                # send END msg in the end
                 new_queue.append(None)
 
             queue = new_queue
