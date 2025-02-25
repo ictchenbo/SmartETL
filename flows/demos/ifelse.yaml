@@ -1,0 +1,17 @@
+name: util test
+
+loader: Array([1])
+
+nodes:
+  as_dict: ToDict
+  left: Chain(AddFields(left=1))
+  right: Chain(AddFields(right=1))
+  lge3: "=lambda r: r['d']<=3"
+  ifnode: If(left, matcher=lge3)
+  ifelse: IfElse(left, right, matcher=lge3)
+  plus1: "Map(lambda r: r + 1, key='d')"
+  match: "=lambda r: r['d'] <= 10"
+  loop: While(plus1, match, max_iterations=5)
+
+#processor: Chain(as_dict, ifnode, Print())
+processor: Chain(as_dict, loop, Print())

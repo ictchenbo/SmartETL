@@ -1,5 +1,3 @@
-
-
 from wikidata_filter.iterator.sink.base import Collect
 
 

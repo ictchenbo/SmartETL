@@ -1,0 +1,23 @@
+from: local/db_envs.yaml
+
+name: 从ES中获取新闻，获取url，生成域名列表
+
+consts:
+  es1:
+    index: goinv3_document_news
+  mongo2:
+    database: gdelt
+    collection: site_icon
+
+loader: database.ES(**es1, fetch_size=100000)
+
+nodes:
+  as_host: Map('util.urls.host_from_url', key='url', target_key='host')
+  select: Select('host')
+  rename: RenameFields(host='_id')
+  unique: Distinct('_id')
+  get_favicon: Map('util.urls.website_favicon', key='_id', target_key='icon', proxy='http://localhost:8001', timeout=30)
+  filter: FieldsNonEmpty('icon')
+  writer: database.MongoWriter(**mongo2, buffer_size=1)
+
+processor: Chain(as_host, select, rename, unique, get_favicon, filter, writer, Count())

@@ -112,11 +112,12 @@ class LLM(JsonIterator):
 
     def on_data(self, row, *args):
         if isinstance(row, dict):
-            if self.key:
-                val = row.get(self.key)
-            else:
-                print("Warning: got dict data but the value field not specified!")
-                return row
+            # if self.key:
+            #     val = row.get(self.key)
+            # else:
+            #     print("Warning: got dict data but the value field not specified!")
+            #     return row
+            pass
         elif isinstance(row, str):
             if self.key:
                 print("Warning: got str, the specified field ignored")
@@ -124,12 +125,23 @@ class LLM(JsonIterator):
         else:
             print("Warning: input data type not supported! Must be dict or str")
             return row
-        if not val:
-            return row
-        query = self.prompt.replace('{data}', val) if self.prompt else val
-        # print(query)
+        # if not val:
+        #     return row
+
+        query = row
+        if self.prompt:
+            key = self.key
+            if isinstance(key, str):
+                # 与旧版本兼容 key类型str时 prompt变量固定为'data'
+                query = self.prompt.replace('{data}', row.get(key))
+            elif isinstance(key, list):
+                # 使用数组进行一个或多个key 此时prompt变量与key对应
+                query = self.prompt
+                for k in key:
+                    query = query.replace('{'+k+'}', row.get(k))
+
         result = self.request_service(query)
-        # print(result)
+
         if result:
             if self.key is None or self.target_key is None:
                 return result

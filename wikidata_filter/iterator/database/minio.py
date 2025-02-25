@@ -11,6 +11,10 @@ from wikidata_filter.iterator.base import DictProcessorBase
 
 
 class Write(DictProcessorBase):
+    """MinIO系统，将数据流程数据以指定格式写入指定桶和指定的文件。
+        其中key_key指定文件名的字段；value_key指定写入文件数据所在字段，该字段含义由value_type指定。
+        value_type=file表示是本地文件路径；value_type=json表示将数据以json写入文件；value_type=str表示将数据以简单字符串写入文件。
+    """
     def __init__(self, host: str = "localhost", port: int = 9000,
                  access_key="minioadmin",
                  secret_key="minioadmin",

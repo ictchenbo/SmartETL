@@ -2,10 +2,10 @@
 DeepSeek大模型服务调用算子
 访问https://api-docs.deepseek.com/zh-cn/
 """
-from .base import LLM
+from .base import LLMModel
 
 
-class DeepSeek(LLM):
+class DeepSeek(LLMModel):
     """DeepSeek大模型（官网）封装算子"""
     def __init__(self,
                  api_key: str,
@@ -20,12 +20,12 @@ class DeepSeek(LLM):
         super().__init__(api_base, api_key=api_key, model=model, **kwargs)
 
 
-class DeepSeek_LKEAP(LLM):
+class DeepSeek_LKEAP(LLMModel):
     """DeepSeek大模型（腾讯云）封装算子"""
     def __init__(self,
                  api_key: str,
                  api_base: str = "https://api.lkeap.cloud.tencent.com/v1",
-                 model: str = "deepseek-r1", **kwargs):
+                 model: str = "deepseek-chat", **kwargs):
         """
                 :param api_key API的Key 必须
                 :param key 输入的字段名，如果为None，表示整个输入作为大模型请求参数，否则，提取该字段的值

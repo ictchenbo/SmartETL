@@ -1,0 +1,49 @@
+from:
+  - local/db_envs.yaml
+  - local/llm_keys.yaml
+
+name: DeepSearch流程
+description: 基于迭代式RAG实现深度搜索。整体流程：（1）问题分解 （2）检索 （3）文档选择 （4）生成补充查询 （5）重复2-4直到不需要再检索或达到检索迭代此时 （6）生成总结答案
+arguments: 0
+consts:
+  prompts: 'config/prompt/deepsearch/'
+  bge_large_zh: http://10.208.63.29:8001/embed
+
+loader: TextPlain('test_data/llm_all2.txt')
+
+nodes:
+  p1: util.files.text(prompts + 'sub_query.txt')
+  p2: util.files.text(prompts + 'doc_judge.txt')
+  p3: util.files.text(prompts + 'reflect.txt')
+  p4: util.files.text(prompts + 'final_answer.txt')
+
+  llm1: modelv2.Siliconflow(siliconflow['api_key'], model='Pro/deepseek-ai/DeepSeek-V3')
+
+  as_dict: ToDict('original_query')
+  add_fields: AddFields(gap_queries=[], all_chunks=[], all_sub_queries=[])
+  gen_sub_query: modelv2.Processor(llm1, prompt=p1, target_key='sub_queries')
+  parser1: Map('util.parser.literal_eval', key='sub_queries')
+
+  merge1: ConcatArray('sub_queries', 'gap_queries', target_key='sub_queries')
+  flat_query: Flat(key='sub_queries', target_key='sub_query', inherit_props=True)
+  vector: model.embed.Local(api_base=bge_large_zh, key='sub_query', target_key='sub_query_vector')
+  search: search.qdrant.Qdrant(**qdrant, key='sub_query_vector', target_key='chunks')
+  flat_chunk: Flat(key='chunks', target_key='chunk', inherit_props=True)
+  judge_chunk: modelv2.Processor(llm1, prompt=p2, target_key='selected')
+  chunk_filter: "Filter(lambda r: 'YES' in r.get('selected', ''))"
+  group1: Group(by='original_query')
+  keep1: aggs.First
+  flat_item: FlatProperty('values')
+  select1: Select('original_query', 'sub_queries', 'chunks', 'all_chunks', 'all_sub_queries')
+  merge2: ConcatArray('all_chunks', 'chunks', target_key='all_chunks')
+  merge3: ConcatArray('all_sub_queries', 'sub_queries', target_key='all_sub_queries')
+  reflection: modelv2.Processor(llm1, prompt=p3, target_key='gap_queries')
+  parser2: Map('util.parser.literal_eval', key='gap_queries')
+
+  stage1: Chain(as_dict, add_fields, gen_sub_query, parser1)
+  stage2: Chain(merge, flat_query, vector, search, flat_chunk, judge_chunk, chunk_filter, group1, keep1, flat_item, select1, merge2, merge3, reflection, parser2)
+  stage3: modelv2.Processor(llm1, prompt=p4, target_key='answer')
+
+  loop: While(stage2, key='gap_queries', max_iterations=3)
+
+processor: Chain(stage1, loop, stage3, Print('original_query', 'answer))

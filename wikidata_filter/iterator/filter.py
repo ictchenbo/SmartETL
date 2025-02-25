@@ -11,7 +11,6 @@ class Filter(JsonIterator):
     """
     def __init__(self, matcher=None, key: str = None):
         super().__init__()
-        # assert matcher is not None, "matcher should not be None"
         self.matcher = matcher or self
         self.key = key
 
@@ -24,7 +23,7 @@ class Filter(JsonIterator):
         if self.matcher(val):
             return data
 
-    def __call__(self, val):
+    def __call__(self, val, *args, **kwargs):
         return True
 
 
@@ -66,7 +65,7 @@ class Distinct(Filter):
         self.field = key
         self.cache = set()
 
-    def __call__(self, data: dict):
+    def __call__(self, data: dict, *args, **kwargs):
         val = V(data, self.field)
         return not self.exists(val)
 
@@ -166,9 +165,9 @@ class Any(Filter):
 
 class Not(Filter):
     """反转过滤器 基于已有过滤器取反"""
-    def __init__(self, that: Filter):
+    def __init__(self, that):
         super().__init__(self)
         self.that = that
 
     def __call__(self, val, *args, **kwargs):
-        return not self.that.__call__(val)
+        return not self.that(val, *args, **kwargs)

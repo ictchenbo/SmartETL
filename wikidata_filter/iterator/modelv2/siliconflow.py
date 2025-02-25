@@ -1,0 +1,20 @@
+"""
+Siliconflow大模型服务调用算子
+访问https://siliconflow.cn/zh-cn/models获取可用的模型的名称
+"""
+from .base import LLMModel
+
+
+class Siliconflow(LLMModel):
+    """Siliconflow平台大模型封装算子"""
+    def __init__(self,
+                 api_key: str,
+                 model: str,
+                 **kwargs):
+        """Siliconflow平台大模型封装算子
+
+        :param api_key API的Key 必须
+        :param key 输入的字段名，如果为None，表示整个输入作为大模型请求参数，否则，提取该字段的值
+        :param model 模型名称 必须
+        """
+        super().__init__("https://api.siliconflow.cn/v1", api_key=api_key, model=model, **kwargs)

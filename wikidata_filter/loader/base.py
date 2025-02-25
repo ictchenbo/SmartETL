@@ -86,6 +86,13 @@ class TimedLoader(DataProvider):
 class Function(DataProvider):
     """函数调用包装器 提供调用函数的结果"""
     def __init__(self, function, *args, **kwargs):
+        """
+        :param function 函数对象或函数对象的完整限定名（如wikidata_filter.util.files.get_lines）
+        """
+        assert function is not None, "function is None!"
+        if isinstance(function, str):
+            from wikidata_filter.util.mod_util import load_cls
+            function = load_cls(function)[0]
         self.function = function
         self.args = args
         self.kwargs = kwargs

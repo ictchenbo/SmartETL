@@ -1,0 +1,5 @@
+Based on the query questions and the retrieved chunk, to determine whether the chunk is helpful in answering any of the query question, you can only return "YES" or "NO", without any other information.
+Query Questions: {sub_queries}
+Retrieved Chunk: {chunk}
+
+Is the chunk helpful in answering the any of the questions?

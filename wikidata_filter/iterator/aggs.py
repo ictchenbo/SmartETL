@@ -7,13 +7,13 @@ from .aggregation import ReduceBase
 
 class Reduce(ReduceBase):
     """规约，根据提供的函数进行数据规约。注意，此类算子在Group(或其子类）处理之后"""
-    def __init__(self, func, source_key: str = 'values', target_key: str = None):
+    def __init__(self, func=None, source_key: str = 'values', target_key: str = None):
         """
         :param func (rows) -> res 规约函数
         :param source_key 指定输入字段名 默认为values（Group默认的结果数据）
         :param target_key 指定结果字段 默认为None 表示与source_key相同 如果需要保留原分组 则可以需要提供一个不同的字段名
         """
-        self.func = func
+        self.func = func or self
         self.source_key = source_key
         self.target_key = target_key or source_key
 
@@ -25,6 +25,9 @@ class Reduce(ReduceBase):
         else:
             data[self.target_key] = self.func(data[self.source_key])
         return data
+
+    def __call__(self, items: list):
+        return items
 
 
 class ReduceBy(Reduce):
@@ -121,6 +124,36 @@ class Std(Reduce):
     def __call__(self, items: list):
         import numpy
         return numpy.std(V(items, self.field))
+
+
+class First(Reduce):
+    """group分组取前第一项"""
+    def __init__(self):
+        super().__init__(self)
+
+    def __call__(self, items: list):
+        return items[0]
+
+
+class Last(Reduce):
+    """group分组取前最后一项"""
+    def __init__(self):
+        super().__init__(self)
+
+    def __call__(self, items: list):
+        return items[-1]
+
+
+class Nth(Reduce):
+    """group分组取前第N项"""
+    def __init__(self, i: int = 0):
+        super().__init__(self)
+        self.i = i
+
+    def __call__(self, items: list):
+        if self.i < len(items):
+            return items[self.i]
+        return None
 
 
 class Head(Reduce):

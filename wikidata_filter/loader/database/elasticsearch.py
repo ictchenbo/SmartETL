@@ -12,10 +12,11 @@ class ES(DataProvider):
                  password: str = None,
                  index: str = None,
                  query: dict = None,
-                 batch_size: int = 1000, **kwargs):
+                 batch_size: int = 1000,
+                 fetch_size: int = 0,
+                 **kwargs):
         self.url = f"http://{host}:{port}"
         self.cache = []
-        self.batch_size = batch_size
         if password:
             self.auth = (user, password)
         else:
@@ -24,6 +25,7 @@ class ES(DataProvider):
         self.query = query
         self.scroll = "1m"
         self.batch_size = batch_size
+        self.fetch_size = fetch_size
         self.query_body = {
             'size': batch_size,
             'query': query if query else {'match_all': {}}
@@ -31,6 +33,7 @@ class ES(DataProvider):
 
     def iter(self):
         scroll_id = None
+        total = 0
         while True:
             if scroll_id:
                 # 后续请求
@@ -52,9 +55,12 @@ class ES(DataProvider):
             hits = res['hits']['hits']
             for hit in hits:
                 doc = hit['_source']
+                doc['_id'] = hit['_id']
                 yield doc
 
-            if len(hits) < self.batch_size:
+            total += len(hits)
+
+            if len(hits) < self.batch_size or 0 < self.fetch_size <= total:
                 # clear scroll
                 url = f'{self.url}/_search/scroll'
                 requests.delete(url, auth=self.auth, json={'scroll_id': scroll_id})

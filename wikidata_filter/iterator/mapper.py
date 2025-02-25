@@ -1,8 +1,23 @@
 from typing import Any
+import traceback
 import json
 from wikidata_filter.util.mod_util import load_cls
 from wikidata_filter.util.jsons import parse_rules, parse_field
 from wikidata_filter.iterator.base import JsonIterator, DictProcessorBase
+
+
+class Function(JsonIterator):
+    """函数调用处理 输出调用函数的结果 与Map(function, **kwargs)等价"""
+    def __init__(self, function, *args, **kwargs):
+        assert function is not None, "function is None!"
+        if isinstance(function, str):
+            function = load_cls(function)[0]
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+
+    def on_data(self, data, *args):
+        return self.function(data, *args)
 
 
 class Map(JsonIterator):
@@ -18,6 +33,11 @@ class Map(JsonIterator):
         :param kwargs 命名参数。注意：如果指定了target_key，则使用它，默认target_key与key相同。target_key指定输出的字段，如果为None直接输出mapper结果；否额设置为target_key字段值
         """
         super().__init__()
+        if isinstance(mapper, str):
+            if mapper.startswith('util.'):
+                mapper = f'wikidata_filter.{mapper}'
+            mapper = load_cls(mapper)[0]
+
         self.mapper = mapper
         self.key = key
         if 'target_key' in kwargs:
@@ -41,8 +61,12 @@ class Map(JsonIterator):
             else:
                 print("Warning, data is not dict:", data)
                 return data
-        # 直接传递构造器中的其他位置参数和命名参数
-        res_val = self.mapper(val, *self.args, **self.kwargs)
+        try:
+            # 直接传递构造器中的其他位置参数和命名参数
+            res_val = self.mapper(val, *self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            res_val = None
 
         if not self.target_key:
             return res_val
@@ -68,6 +92,12 @@ class MapMulti(DictProcessorBase):
     """
     def __init__(self, mapper, *keys, **kwargs):
         super().__init__()
+
+        if isinstance(mapper, str):
+            if '.' not in mapper:
+                mapper = f'wikidata_filter.util.{mapper}'
+            mapper = load_cls(mapper)[0]
+
         self.mapper = mapper
         self.keys = dict(kwargs)
         for key in keys:
@@ -86,19 +116,7 @@ class MapMulti(DictProcessorBase):
         return f"{self.name}({self.mapper}, **{self.keys})"
 
 
-class MapUtil(Map):
-    """根据指定的对象名加载对象 用于对数据进行转换"""
-    def __init__(self, mod_name: str, *args, **kwargs):
-        """构造器，可接收位置位置参数和命名参数
-        :param mod_name 模块名字，完整名或短名
-        """
-        super().__init__(self, *args, **kwargs)
-        if '.' not in mod_name:
-            mod_name = f'wikidata_filter.util.{mod_name}'
-        self.mod = load_cls(mod_name)[0]
-
-    def __call__(self, val, *args, **kwargs):
-        return self.mod(val, *args, **kwargs)
+MapUtil = Map
 
 
 class MapFill(Map):
@@ -158,25 +176,26 @@ class Flat(JsonIterator):
       - 对于字典：如果flat_mode='key'，则对key打散，否则对value打散
     如果提供了key，则针对该字段进行上述扁平化。
     """
-    def __init__(self, key: str = None, flat_mode: str = 'kv', inherit_props: bool = False):
+    def __init__(self, key: str = None, target_key: str = None, flat_mode: str = 'kv', inherit_props: bool = False):
         self.key = key
         self.flat_mode = flat_mode
         self.inherit_props = inherit_props
         if inherit_props:
             assert self.key is not None, "key should not be None if inherit_props=True"
+        self.target_key = target_key or key
 
     def new_item(self, data: dict, item):
-        if isinstance(item, dict):
-            # 子项为字典 避免被继承字段覆盖。如果需要用继承字段 可以先重命名
-            for k, v in data.items():
-                if k != self.key:
-                    item[k] = v
-            return item
-        else:
-            # 子项为非字典
-            ret = dict(**data)
-            ret[self.key] = item
-            return ret
+        # if isinstance(item, dict):
+        #     # 子项为字典 避免被继承字段覆盖。如果需要用继承字段 可以先重命名
+        #     for k, v in data.items():
+        #         if k != self.key:
+        #             item[k] = v
+        #     return item
+        # else:
+        #     # 子项为非字典
+        ret = dict(**data)
+        ret[self.target_key] = item
+        return ret
 
     def on_data(self, data: Any, *args):
         if self.key and not isinstance(data, dict):

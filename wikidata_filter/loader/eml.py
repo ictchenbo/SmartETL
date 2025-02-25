@@ -3,11 +3,9 @@ import time
 from datetime import datetime
 import re
 import traceback
-import uuid
 
 from typing import Iterable, Any
 from wikidata_filter.loader.file import BinaryFile
-from wikidata_filter.util.html_util import text_from_html
 
 import email
 import email.utils

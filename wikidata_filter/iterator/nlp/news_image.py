@@ -1,5 +1,5 @@
 from wikidata_filter.iterator.base import DictProcessorBase
-from wikidata_filter.util.html_util import extract_news_article, extract_images
+from wikidata_filter.util.extractor.htmlv0 import extract_news_article, extract_images
 
 
 class Image(DictProcessorBase):

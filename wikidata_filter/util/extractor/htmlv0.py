@@ -1,6 +1,5 @@
 import os
 import re
-import html
 from urllib.parse import urljoin, urlsplit, parse_qs
 
 try:

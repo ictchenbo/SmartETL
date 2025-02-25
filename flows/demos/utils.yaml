@@ -1,0 +1,13 @@
+name: util test
+description:
+arguments: 0
+consts:
+  path: $PATH
+
+loader: String(path, sep=';')
+
+nodes:
+  lower: util.strings.f('lower')
+  upper: util.strings.f('upper')
+
+processor: Chain(Function(upper), ToDict(), ToArray(), Print())

@@ -78,11 +78,13 @@ class AddTS(DictProcessorBase):
 
 class UUID(DictProcessorBase):
     """"基于UUID生成ID"""
-    def __init__(self, key: str = '_id'):
+    def __init__(self, key: str = '_id', upsert: bool = False):
         self.key = key
+        self.upsert = upsert
 
     def on_data(self, data: dict, *args):
-        data[self.key] = str(uuid.uuid4())
+        if self.upsert or self.key not in data:
+            data[self.key] = str(uuid.uuid4())
         return data
 
 

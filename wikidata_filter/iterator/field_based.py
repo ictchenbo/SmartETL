@@ -188,3 +188,25 @@ class ConcatFields(DictProcessorBase):
         vals = [str(data.get(k)) for k in self.source_keys]
         data[self.target_key] = f'{self.prefix}{self.separator.join(vals)}{self.suffix}'
         return data
+
+
+class ConcatArray(DictProcessorBase):
+    """拼接数组字段，形成新字段"""
+    def __init__(self, *source_keys, target_key: str = None):
+        super().__init__()
+        self.source_keys = source_keys
+        self.target_key = target_key
+
+    def on_data(self, data: dict, *args):
+        res = []
+        for k in self.source_keys:
+            if k in data:
+                val = data[k]
+                if isinstance(val, list) or isinstance(val, tuple) or isinstance(val, set):
+                    res.extend(val)
+                else:
+                    res.append(val)
+        if self.target_key:
+            data[self.target_key] = res
+            return data
+        return res

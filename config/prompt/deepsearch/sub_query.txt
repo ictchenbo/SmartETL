@@ -1,0 +1,19 @@
+To answer this question more comprehensively, please break down the original question into up to four sub-questions. Return as list of str.
+If this is a very simple question and no decomposition is necessary, then keep the only one original question in the list.
+
+Original Question: {original_query}
+
+
+<EXAMPLE>
+Example input:
+"Explain deep learning"
+
+Example output:
+[
+    "What is deep learning?",
+    "What is the difference between deep learning and machine learning?",
+    "What is the history of deep learning?"
+]
+</EXAMPLE>
+
+Provide your response in list of str format:

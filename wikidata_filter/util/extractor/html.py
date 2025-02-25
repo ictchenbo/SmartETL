@@ -97,3 +97,15 @@ class HtmlExtractor:
             pos = text.index(long_title) + len(long_title)
             return text[:pos]
         return None
+
+
+def simple(html: str):
+    soup = BeautifulSoup(html, 'html.parser')
+
+    title = soup.title.string
+    content = soup.body.text.strip()
+
+    return {
+        "title": title,
+        "text": content
+    }

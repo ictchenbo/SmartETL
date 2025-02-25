@@ -61,14 +61,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
-- 2025.2.23
-1. 新增`sink.Collect` `sink.Sort`算子，对流程处理数据进行收集、排序（注意：仅适合小规模数据）
-2. 新增流程 flows/nl2poc/poc-meta-product-stat.yaml 对`nuclei`模板进行统计
-3. [DeepSeek大模型调用流程](flows/llm/deepseek_r1.yaml) 增加读取整个文件内容作为`prompt`调用到模型的例子
+- 2025.2.25
+1. **重磅！** 实现流程控制节点 `If` `IfElse` `While` 根据条件进行分支选择。见 [示例流程](flows/demos/ifelse.yaml)
+2. 重构模型系列组件，拆分提示构造`util.prompt`、模型调用`modelv2.base.Model`、结果解析`util.parser`等组件，与流程节点`modelv2.processor`分离。[示例流程](flows/agent/deepsearch.yaml)
+3. 增加字符串处理算子 `util.strings.f(method)`
+4. 新增[Deep Search流程](flows/agent/deepsearch.yaml) 参考：https://github.com/zilliztech/deep-searcher
+5. 新增[网站icon图标文件采集流程](flows/news/scan_website.yaml)
 
-- 2025.2.17
-1. 优化新闻信息抽取组件，基于meta及ld-json信息抽取
-2. 新增`WriteJsonScroll`进行滚动备份，新增`WriteJsonIf`进行过滤式数据备份
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -234,6 +233,15 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.2.23
+1. 新增`sink.Collect` `sink.Sort`算子，对流程处理数据进行收集、排序（注意：仅适合小规模数据）
+2. 新增流程 flows/nl2poc/poc-meta-product-stat.yaml 对`nuclei`模板进行统计
+3. [DeepSeek大模型调用流程](flows/llm/deepseek_r1.yaml) 增加读取整个文件内容作为`prompt`调用到模型的例子
+
+- 2025.2.17
+1. 优化新闻信息抽取组件，基于meta及ld-json信息抽取
+2. 新增`WriteJsonScroll`进行滚动备份，新增`WriteJsonIf`进行过滤式数据备份
+
 - 2025.2.13
 1. 新增腾讯云DeepSeek `model.deepseek.DeepSeek_LKEAP(api_key)` 
 2. 提供[测试流程](flows/llm/deepseek_r1.yaml) 使用腾讯云DeepSeek模型进行推理测试，执行：`python main_flow.py flows/llm/deepseek_r1.yaml`

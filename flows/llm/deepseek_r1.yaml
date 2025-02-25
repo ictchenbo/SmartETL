@@ -1,10 +1,9 @@
 name: DeepSeek-R1推理测试
-arguments: 0
+arguments: 1
 consts:
   api_key: sk-yqYQTOhDYcqh4Zzp7voTwa64msY9ey0u4bGHLC1a0nGy0kXY
 
-#loader: Text('test_data/llm_reason_tests.txt')
-loader: TextPlain('test_data/llm_all.txt')
+loader: TextPlain(arg1)
 
 nodes:
   query: model.deepseek.DeepSeek_LKEAP(api_key, stream=True)
