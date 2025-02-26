@@ -8,7 +8,7 @@ from wikidata_filter.util.prompt import template
 
 class Model:
     """
-    模型基础类。定义模型（包括大模型）调用协议，但不关心具体参数
+    模型基础类，定义基于HTTP协议访问的模型，但不关心具体参数
     """
     def __init__(self,
                  api_base: str,
@@ -53,7 +53,7 @@ class Model:
         }
         if self.api_key:
             headers['Authorization'] = 'Bearer ' + self.api_key
-        print(f"requesting Model(api_base={self.api_base}, model={data.get('model')})")
+        print(f"requesting Model(api_base={self.api_base}, model={json_data.get('model')})")
         try:
             res = requests.post(self.url, headers=headers, json=json_data, proxies=self.proxy, stream=stream)
             if res.status_code == 200:
@@ -86,14 +86,18 @@ class LLMModel(Model):
         self.prompt = template(prompt)
 
     def chat(self, data: str or dict, stream: bool = False, **params):
+        prompt = self.prompt(data)
+
         params["messages"] = [
             {
                 "role": "user",
-                "content": self.prompt(data),
+                "content": prompt,
             }
         ]
 
         res = super().invoke(params, stream)
+        print("------------------prompt----------------")
+        print(prompt)
         if stream:
             result = []
             for chunk in res:
@@ -109,6 +113,9 @@ class LLMModel(Model):
                         v = piece_data.get("content")
                         if v:
                             result.append(text_piece)
-            return ''.join(result)
+            r = ''.join(result)
         else:
-            return res['choices'][0]['message']['content']
+            r = res['choices'][0]['message']['content']
+        print("------------------response----------------")
+        print(r)
+        return r

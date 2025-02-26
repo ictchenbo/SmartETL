@@ -61,6 +61,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.2.26
+1. 更新[Deep Search流程](flows/agent/deepsearch.yaml)
+2. 实现Prompt构造工具 `util.prompt.Config` （大模型应用关键组件：Prompt构造、大模型调用、结果解析）
+3. 实现基于数据库的去重算子 `DistinctByDatabase` #17
+
+
 - 2025.2.25
 1. **重磅！** 实现流程控制节点 `If` `IfElse` `While` 根据条件进行分支选择。见 [示例流程](flows/demos/ifelse.yaml)
 2. 重构模型系列组件，拆分提示构造`util.prompt`、模型调用`modelv2.base.Model`、结果解析`util.parser`等组件，与流程节点`modelv2.processor`分离。[示例流程](flows/agent/deepsearch.yaml)

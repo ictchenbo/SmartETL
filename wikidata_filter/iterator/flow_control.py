@@ -40,6 +40,8 @@ class If(JsonIterator):
             for one in res:
                 if one is not None:
                     yield one
+        else:
+            return res
 
 
 class IfElse(JsonIterator):

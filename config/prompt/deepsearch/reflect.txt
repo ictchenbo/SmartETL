@@ -3,8 +3,8 @@ Determine whether additional search queries are needed based on the original que
 If the original query is to write a report, then you prefer to generate some further queries, instead return an empty list.
 
 Original Query: {original_query}
-Previous Sub Queries: {sub_queries}
+Previous Sub Queries: {all_sub_queries}
 Related Chunks:
-{chunks}
+{all_chunks}
 
 Respond exclusively in valid List of str format without any other text.

@@ -4,7 +4,7 @@ from .dates import date2ts
 methods = {
     "lower": lambda s: s.lower(),
     "upper": lambda s: s.upper(),
-    "trim": lambda s: s.trim(),
+    "strip": lambda s: s.strip(),
     "int": int,
     "float": float,
     "toDate": date2ts

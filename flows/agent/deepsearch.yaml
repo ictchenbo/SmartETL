@@ -8,6 +8,12 @@ arguments: 0
 consts:
   prompts: 'config/prompt/deepsearch/'
   bge_large_zh: http://10.208.63.29:8001/embed
+  qdrant:
+    collection: chunk_news_v2
+  prompt_config:
+    all_chunks: chunk_list
+    original_query: str
+    all_sub_queries: str
 
 loader: TextPlain('test_data/llm_all2.txt')
 
@@ -16,6 +22,9 @@ nodes:
   p2: util.files.text(prompts + 'doc_judge.txt')
   p3: util.files.text(prompts + 'reflect.txt')
   p4: util.files.text(prompts + 'final_answer.txt')
+
+  prompt3: util.prompt.Config(p3, **prompt_config)
+  prompt4: util.prompt.Config(p4, **prompt_config)
 
   llm1: modelv2.Siliconflow(siliconflow['api_key'], model='Pro/deepseek-ai/DeepSeek-V3')
 
@@ -27,7 +36,8 @@ nodes:
   merge1: ConcatArray('sub_queries', 'gap_queries', target_key='sub_queries')
   flat_query: Flat(key='sub_queries', target_key='sub_query', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, key='sub_query', target_key='sub_query_vector')
-  search: search.qdrant.Qdrant(**qdrant, key='sub_query_vector', target_key='chunks')
+  search: search.qdrant.Qdrant(**qdrant, fetch_size=5, key='sub_query_vector', target_key='chunks')
+  remove_vector: RemoveFields('sub_query_vector')
   flat_chunk: Flat(key='chunks', target_key='chunk', inherit_props=True)
   judge_chunk: modelv2.Processor(llm1, prompt=p2, target_key='selected')
   chunk_filter: "Filter(lambda r: 'YES' in r.get('selected', ''))"
@@ -37,13 +47,15 @@ nodes:
   select1: Select('original_query', 'sub_queries', 'chunks', 'all_chunks', 'all_sub_queries')
   merge2: ConcatArray('all_chunks', 'chunks', target_key='all_chunks')
   merge3: ConcatArray('all_sub_queries', 'sub_queries', target_key='all_sub_queries')
-  reflection: modelv2.Processor(llm1, prompt=p3, target_key='gap_queries')
+  reflection: modelv2.Processor(llm1, prompt=prompt3, target_key='gap_queries')
   parser2: Map('util.parser.literal_eval', key='gap_queries')
+  clear1: ReplaceFields(sub_queries=[])
 
-  stage1: Chain(as_dict, add_fields, gen_sub_query, parser1)
-  stage2: Chain(merge, flat_query, vector, search, flat_chunk, judge_chunk, chunk_filter, group1, keep1, flat_item, select1, merge2, merge3, reflection, parser2)
-  stage3: modelv2.Processor(llm1, prompt=p4, target_key='answer')
+  stage1: Chain(as_dict, add_fields, gen_sub_query, parser1, Print())
+  stage2: Chain(merge1, flat_query, vector, search, remove_vector, flat_chunk, judge_chunk, chunk_filter, group1, keep1, flat_item, select1, merge2, merge3, reflection, parser2, clear1)
+  stage3: modelv2.Processor(llm1, prompt=prompt4, target_key='answer')
 
-  loop: While(stage2, key='gap_queries', max_iterations=3)
+  iteration: If(stage2, key='gap_queries')
+  loop: While(stage2, key='gap_queries', max_iterations=2)
 
-processor: Chain(stage1, loop, stage3, Print('original_query', 'answer))
+processor: Chain(stage1, stage2, iteration, iteration, stage3, Print())

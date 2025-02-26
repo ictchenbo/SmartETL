@@ -15,4 +15,8 @@ class Qdrant(Map):
         self.fetch_size = fetch_size
 
     def __call__(self, query_vector: list, *args, **kwargs):
-        return self.client.search(self.collection, query_vector=query_vector, limit=self.fetch_size)
+        docs = self.client.search(self.collection, query_vector=query_vector, limit=self.fetch_size)
+        # print("----------------------search result-------------")
+        # for doc in docs:
+        #     print(doc.get("id"), doc.get("content_origin"))
+        return [doc['content_origin'] for doc in docs if doc.get('content_origin')]

@@ -31,7 +31,7 @@ def open_file(filename: str, mode: str = "rb", encoding: str = "utf8", **kwargs)
         stream = bz2.open(filename, mode, encoding=encoding, **kwargs)
     elif filename.endswith('.gz'):
         import gzip
-        stream = gzip.open(filename, mode, encoding=encoding, **kwargs)
+        stream = gzip.open(filename, mode, **kwargs)
     else:
         stream = open(filename, mode, encoding=encoding, **kwargs)
     return stream

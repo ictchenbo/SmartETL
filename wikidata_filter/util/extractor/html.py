@@ -104,6 +104,7 @@ def simple(html: str):
 
     title = soup.title.string
     content = soup.body.text.strip()
+    # content = soup.get_text(separator=' ', strip=True)
 
     return {
         "title": title,

@@ -24,7 +24,10 @@ class Processor(Map):
         assert model is not None, "model is None"
         self.model = model
         self.stream = stream
-        self.prompt = template(prompt)
+        if isinstance(prompt, str):
+            self.prompt = template(prompt)
+        else:
+            self.prompt = prompt
 
     def __call__(self, query: str or dict, **kwargs):
         data = self.prompt(query)

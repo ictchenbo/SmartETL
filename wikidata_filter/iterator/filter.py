@@ -1,6 +1,7 @@
 """对数据进行采样输出"""
 from random import random
 from wikidata_filter.util.jsons import extract as V
+from wikidata_filter.util.database.base import Database
 from wikidata_filter.iterator.base import JsonIterator
 
 
@@ -59,15 +60,15 @@ class Sample(Filter):
 
 class Distinct(Filter):
     """去重，过滤掉重复数据 默认为本地set进行缓存判重，可实现基于内存数据库（如redis）或根据业务数据库进行重复监测"""
-    def __init__(self, key: str):
-        super().__init__(self)
-        assert key is not None, "key 不能为空"
-        self.field = key
+    def __init__(self, key: str = None):
+        super().__init__(self, key)
         self.cache = set()
 
-    def __call__(self, data: dict, *args, **kwargs):
-        val = V(data, self.field)
-        return not self.exists(val)
+    def __call__(self, val, *args, **kwargs):
+        r = self.exists(val)
+        if r:
+            print("Exist, ignore:", val)
+        return not r
 
     def exists(self, val):
         """判断特定的值是否存在 重写此方法实现更加持久性的判断"""
@@ -77,14 +78,20 @@ class Distinct(Filter):
         return False
 
 
-class DistinctRedis(Distinct):
-    """基于Redis进行缓存去重 具体待实现"""
-    def __init__(self, key: str):
+class DistinctByDatabase(Distinct):
+    """基于指定的数据库表进行去重 查询结果将缓存在本地以复用"""
+    def __init__(self, db_client: Database, key: str = None, **kwargs):
         super().__init__(key)
-        raise NotImplemented()
+        self.db_client = db_client
+        self.kwargs = kwargs
 
     def exists(self, val):
-        pass
+        if super().exists(val):
+            return True
+        r = self.db_client.exists(val, **self.kwargs)
+        if r:
+            self.cache.add(val)
+        return r
 
 
 class TakeN(Filter):

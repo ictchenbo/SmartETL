@@ -8,13 +8,6 @@ except:
     raise ImportError("bs4 not installed")
 
 
-def text_from_html(html_source: str):
-    """"""
-    soup = BeautifulSoup(html_source, 'html.parser')
-    _text = soup.get_text(separator=' ', strip=True)
-    return _text
-
-
 article_classes = ['article-body', 'content', 'news-content', 'post-content', 'entry', "post-image", "imgboxa",
                   "pageImg main", "article-image-in-body", "relative", "pt-4 md:pt-10"]
 article_tags = ['article']

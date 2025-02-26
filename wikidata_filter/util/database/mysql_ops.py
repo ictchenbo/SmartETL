@@ -1,4 +1,5 @@
 import json
+from .base import Database
 
 try:
     import pymysql
@@ -7,8 +8,15 @@ except ImportError:
     raise "pymysql not installed"
 
 
-class MySQLOps:
-    def __init__(self, host='localhost', port=3306, username='root', password='123456', database='goin', charset='utf8'):
+class MySQLOps(Database):
+    def __init__(self, host='localhost',
+                 port=3306,
+                 username='root',
+                 password='123456',
+                 database='goin',
+                 table: str = None,
+                 key_col: str = 'id',
+                 charset='utf8'):
         self.params = dict(
             host=host,
             port=port,
@@ -17,6 +25,8 @@ class MySQLOps:
             password=password,
             charset=charset
         )
+        self.table = table
+        self.key_col = key_col
 
     def get_conn(self):
         return pymysql.connect(**self.params)
@@ -96,3 +106,9 @@ class MySQLOps:
         sql = f"update {table} set {','.join(sets)} where id=%s"
         values.append(_id)
         return self.execute(sql, values)
+
+    def exists(self, _id, **kwargs):
+        table = kwargs.get("table") or self.table
+        sql = f'select * from {table} where {self.key_col} = %s'
+        one = self.fetchone(sql, (_id, ))
+        return one is not None

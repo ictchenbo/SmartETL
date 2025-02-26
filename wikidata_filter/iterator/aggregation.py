@@ -81,9 +81,6 @@ class BufferedWriter(Buffer):
 
 class Group(ReduceBase):
     """分组规约，基于指定字段的值进行分组"""
-    groups = {}
-    last_key = None
-
     def __init__(self, by: str, emit_fast: bool = True):
         """
         :param by 指定字段的key
@@ -92,6 +89,8 @@ class Group(ReduceBase):
         super().__init__()
         self.by = by
         self.emit_fast = emit_fast
+        self.groups = {}
+        self.last_key = None
 
     def __process__(self, data: dict or None, *args):
         # print('Group.__process__', data)

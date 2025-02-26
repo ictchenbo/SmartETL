@@ -3,6 +3,7 @@ import re
 
 
 def literal_eval(response_content: str):
+    """对大模型输出按照字面值进行eval"""
     response_content = response_content.strip()
 
     # remove content between <think> and </think>, especial for DeepSeek reasoning model
@@ -36,6 +37,7 @@ def literal_eval(response_content: str):
 
 
 def tag_split(text: str):
+    """从大模型输出中提取标签数组"""
     if not text:
         return []
     if ':' in text:
