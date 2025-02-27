@@ -6,7 +6,7 @@ nodes:
   count: Count(ticks=10)
   print: Print
   select: Select('id', 'url', 'html')
-  text: nlp.html.Text(key='html', target_key='text')
+  text: Map('util.extractor.html.simple', key='html', target_key='text')
   extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html')
   flat: FlatProperty('html', inherit_props=True)
   write: WriteFiles('data/html', name_key='id', content_key='html', suffix='.html')

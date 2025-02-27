@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 from wikidata_filter.iterator.base import DictProcessorBase
-from wikidata_filter.iterator.aggregation import BufferedWriter
+from wikidata_filter.iterator.buffer import BufferedWriter
 
 id_keys = ["_id", "id", "mongo_id"]
 

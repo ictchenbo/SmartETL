@@ -9,7 +9,7 @@ class Processor(Map):
                  model: LLMModel,
                  prompt: str = None,
                  key: str = None,
-                 target_key: str = '_llm',
+                 target_key: str = None,
                  stream: bool = False,
                  **kwargs
                  ):
@@ -24,11 +24,11 @@ class Processor(Map):
         assert model is not None, "model is None"
         self.model = model
         self.stream = stream
-        if isinstance(prompt, str):
+        if prompt and isinstance(prompt, str):
             self.prompt = template(prompt)
         else:
             self.prompt = prompt
 
     def __call__(self, query: str or dict, **kwargs):
-        data = self.prompt(query)
+        data = self.prompt(query) if self.prompt else query
         return self.model.chat(data, stream=self.stream, **kwargs)

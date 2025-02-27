@@ -13,7 +13,7 @@ nodes:
   count2: Count(label='doc1')
   count3: Count(label='doc2')
 
-  chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
+  chunk: Map('util.split.simple', key='content',target_key='chunks')
   flat_chunk: Flat(key='chunks', inherit_props=True)
   count4: Count(label='chunk')
 

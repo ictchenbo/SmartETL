@@ -1,0 +1,20 @@
+You are a professional security analyst. You are provided with some information about a vulnerability. Give me your thinking process to bridge the gap between the vulnerability's descriptive info and the PoC code.
+
+product name: {product_name}. **You can use all your memory about this product **
+
+related source code:
+```python
+{related_code}
+```
+
+vulnerability name: {name}
+
+vulnerability description：{desc}
+
+reference links:
+{ref_list}
+
+PoC in nuclei template format:
+```yaml
+{nuclei_poc}
+```

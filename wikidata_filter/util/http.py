@@ -1,5 +1,7 @@
 import requests
 import time
+from PIL import Image
+from io import BytesIO
 
 
 def content(url, most_times=1, ignore_error=False, **kwargs):
@@ -39,3 +41,21 @@ def json(url, method='get', **kwargs):
     if res.status_code == 200:
         return res.json()
     return None
+
+
+def download_image(url: str, *args, min_width: int = 10, min_height: int = 10, **kwargs):
+    try:
+        c = content(url, **kwargs)
+        # 使用PIL来打开图片
+        img = Image.open(BytesIO(c))
+    except:
+        print("Open image error:", url)
+        return None
+
+    width, height = img.size
+    # print(f"下载的图片尺寸: {width}x{height}")
+    # 判断图片尺寸是否符合要求
+    if width < min_width or height < min_height:
+        print(f"图片尺寸过小: {url}")
+        return None
+    return c

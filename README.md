@@ -268,7 +268,7 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
   - 新增基于开源情报报告（word格式）的[解析流程](flows/news/load_news_report_doc.yaml)及相关算子
 
 - 2025.1.12
-  - 增加新闻（HTML）解析示例[查看](flows/news/news_parser.yaml)
+  - 增加新闻（HTML）解析示例[查看](flows/news/parse_html.yaml)
   - 更新文档
   - 新增`web.jsonp.Jsonp(url, **params)`加载器，获取提供的jsonp-url的返回结果并解析其中的json数据
   - 调整`FromJson` `ToJson` `Format`算子到`mapper`模块
@@ -423,4 +423,4 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 - 2024.09.30
 1. 集成Reader API（`wikidata_filter.iterator.web.readerapi` 详见 https://jina.ai/reader/)
 2. 增减文本文件加载器 TxtLoader（详见 `wikidata_filter.loader.file.TxtLoader`）
-3. 新增Reader API的流程 [查看](flows/api_readerapi.yaml) 加载url列表文件 实现网页内容获取
+3. 新增Reader API的流程 [查看](flows/web/jina.yaml) 加载url列表文件 实现网页内容获取

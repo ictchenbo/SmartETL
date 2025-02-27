@@ -84,6 +84,7 @@ class LLM(JsonIterator):
             res = requests.post(url, headers=headers, json=data, proxies=proxies, stream=self.stream)
             if res.status_code == 200:
                 if self.stream:
+                    print(">>>>>>>>>>>>>>>>>>>>")
                     result = []
                     for chunk in res.iter_lines():
                         if chunk:
@@ -91,13 +92,13 @@ class LLM(JsonIterator):
                             if line.startswith("data: {"):  # 过滤掉非数据行
                                 json_data = json.loads(line[5:])  # 去掉 "data: " 前缀
                                 piece_data = json_data["choices"][0].get("delta")
-                                text_piece = piece_data.get("content") or piece_data.get("reasoning_content")
-                                if text_piece is None:
-                                    continue
-                                print(text_piece, end='', flush=True)
+                                text_piece = piece_data.get("reasoning_content")
+                                if text_piece:
+                                    print(text_piece, end='', flush=True)
                                 v = piece_data.get("content")
                                 if v:
-                                    result.append(text_piece)
+                                    result.append(v)
+                    print("\n>>>>>>>>>>>>>>>>>>>>")
                     return ''.join(result)
                 else:
                     return res.json()['choices'][0]['message']['content']
@@ -125,8 +126,6 @@ class LLM(JsonIterator):
         else:
             print("Warning: input data type not supported! Must be dict or str")
             return row
-        # if not val:
-        #     return row
 
         query = row
         if self.prompt:

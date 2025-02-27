@@ -23,14 +23,12 @@ class Model:
         :param proxy 调用代理，形式：system 或 http(s)://username:password@host:port
         :param ignore_errors 是否忽略错误 如果为False且调用发生错误则抛出异常，默认True
         :param model 模型名字 如'gpt-4o' 可用的模型需要查看提供模型服务的平台的说明
-        :param temperature 模型温度参数
-        :param topk 模型topk参数
-        :param topp 模型topp参数
+        :param kwargs 其他参数 请参考具体模型平台文档
         """
         self.api_base = api_base
         self.url = f'{self.api_base}/chat/completions'
         self.api_key = api_key
-        self.proxy = None
+        self.proxy = {}
         if proxy:
             if proxy.lower() == "system":
                 self.proxy = {
@@ -44,16 +42,19 @@ class Model:
                 }
         self.ignore_errors = ignore_errors
         self.args_base = dict(**kwargs)
+        print(f"Using Model(api_base={self.api_base}, model={self.args_base.get('model')})")
 
     def invoke(self, data: dict, stream: bool = False, **kwargs):
         """执行HTTP-POST请求"""
-        json_data = dict(**self.args_base, **data)
+        stream = stream is True
+        json_data = dict(**self.args_base, **kwargs, stream=stream)
+        json_data.update(data)
         headers = {
             'content-type': 'application/json'
         }
         if self.api_key:
             headers['Authorization'] = 'Bearer ' + self.api_key
-        print(f"requesting Model(api_base={self.api_base}, model={json_data.get('model')})")
+        # print("data:", json_data)
         try:
             res = requests.post(self.url, headers=headers, json=json_data, proxies=self.proxy, stream=stream)
             if res.status_code == 200:
@@ -77,28 +78,27 @@ class LLMModel(Model):
                  api_base: str,
                  api_key: str = None,
                  prompt: str = None,
-                 proxy: str = None,
-                 ignore_errors: bool = True,
                  model: str = None,
                  **kwargs
                  ):
-        super().__init__(api_base, api_key=api_key, proxy=proxy, ignore_errors=ignore_errors, model=model, **kwargs)
+        super().__init__(api_base, api_key=api_key, model=model, **kwargs)
         self.prompt = template(prompt)
 
-    def chat(self, data: str or dict, stream: bool = False, **params):
+    def chat(self, data: str or dict, stream: bool = False, **kwargs):
         prompt = self.prompt(data)
 
-        params["messages"] = [
+        messages = [
             {
                 "role": "user",
                 "content": prompt,
             }
         ]
 
-        res = super().invoke(params, stream)
-        print("------------------prompt----------------")
-        print(prompt)
+        res = super().invoke(dict(messages=messages), stream=stream, **kwargs)
+        if res is None:
+            return res
         if stream:
+            print(">>>>>>>>>>>>>>>>>>>>")
             result = []
             for chunk in res:
                 if chunk:
@@ -106,16 +106,18 @@ class LLMModel(Model):
                     if line.startswith("data: {"):  # 过滤掉非数据行
                         json_data = json.loads(line[5:])  # 去掉 "data: " 前缀
                         piece_data = json_data["choices"][0].get("delta")
-                        text_piece = piece_data.get("content") or piece_data.get("reasoning_content")
-                        if text_piece is None:
-                            continue
-                        print(text_piece, end='', flush=True)
                         v = piece_data.get("content")
+                        text_piece = piece_data.get("reasoning_content") or v
+                        if text_piece:
+                            print(text_piece, end='', flush=True)
                         if v:
-                            result.append(text_piece)
-            r = ''.join(result)
+                            result.append(v)
+            print("\n>>>>>>>>>>>>>>>>>>>>")
+            return ''.join(result)
         else:
-            r = res['choices'][0]['message']['content']
-        print("------------------response----------------")
-        print(r)
-        return r
+            msg = res['choices'][0]['message']
+            if msg.get('reasoning_content'):
+                print(">>>>>>>>>>>>>>>>>>>>")
+                print(msg['reasoning_content'])
+                print(">>>>>>>>>>>>>>>>>>>>")
+            return msg['content']

@@ -45,14 +45,15 @@ nodes:
   rename2: RenameFields(_llm='tag2')
   llm2: Chain(class2, rename2)
 
-  tags: nlp.tags.TagSplit('tag1', 'tag2')
+  tag1: Map('util.parser.tag_split', key='tag1')
+  tag2: Map('util.parser.tag_split', key='tag2')
   remove2: RemoveFields('short_content')
   add_ts: AddTS('inserted_time')
   write_es: database.ESWriter(**es1)
   counter: Count(ticks=10)
-  write1: Chain(llm1, llm2, remove2, tags, add_ts, write_es, counter)
+  write1: Chain(llm1, llm2, remove2, tag1, tag2, add_ts, write_es, counter)
 
-  chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
+  chunk: Map('util.split.simple', key='content',target_key='chunks')
   flat: Flat(key='chunks', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
   write_qd: database.qdrant.Qdrant(**qdrant)

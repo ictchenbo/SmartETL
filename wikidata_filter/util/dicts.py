@@ -57,6 +57,6 @@ def merge_dicts(target: dict, source: dict):
             target[k] = copy_val(v)
 
 
-def reverse_dict(source: dict):
+def reverse(source: dict):
     """反转dict的k-v"""
     return {v: k for k, v in source.items()}

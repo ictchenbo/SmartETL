@@ -2,7 +2,53 @@
 from typing import Any
 from random import random
 from wikidata_filter.util.jsons import extract, get_valid as V
-from .aggregation import ReduceBase
+from .buffer import ReduceBase
+
+
+class Group(ReduceBase):
+    """分组规约，基于指定字段的值进行分组"""
+    def __init__(self, by: str, emit_fast: bool = True):
+        """
+        :param by 指定字段的key
+        :param emit_fast 是否快速提交数据 如果遇到了不同的键值。默认为True
+        """
+        super().__init__()
+        self.by = by
+        self.emit_fast = emit_fast
+        self.groups = {}
+        self.last_key = None
+
+    def __process__(self, data: dict or None, *args):
+        # print('Group.__process__', data)
+        if data is None:
+            # print(f'{self.name}: END/Flush signal received.')
+            for key, values in self.groups.items():
+                print('grouping key:', key)
+                yield dict(key=key, values=values)
+            self.groups.clear()
+            self.last_key = None
+        else:
+            group_key = data.get(self.by)
+            # print('group_key:', group_key)
+            if group_key is None:
+                yield None
+            group_key = str(group_key)
+            if group_key in self.groups:
+                self.groups[group_key].append(data)
+            else:
+                last_k = self.last_key
+                if self.emit_fast and last_k is not None:
+                    print('grouping key:', last_k)
+                    last_v = self.groups.pop(last_k)
+                    yield dict(key=last_k, values=last_v)
+
+                self.last_key = group_key
+                self.groups[self.last_key] = [data]
+
+            yield None
+
+    def __str__(self):
+        return f"{self.name}(by='{self.by}', emit_fast={self.emit_fast})"
 
 
 class Reduce(ReduceBase):

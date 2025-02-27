@@ -1,0 +1,9 @@
+name: craw web page by Reader API
+description: 使用Reader API对指定URL的网页获取其内容
+
+loader: Text('test_data/urls.txt')
+
+nodes:
+  row: Map('gestata.web.jina.reader', api_key='jina_546c74213c784959a87c39b75a6efdaeQxwqYuQ-tIfMcHyO70FMWQNraqAb')
+
+processor: Chain(row, Print())

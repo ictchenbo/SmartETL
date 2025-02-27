@@ -6,12 +6,11 @@ class Flow:
     """流程类 表示一个处理流程 包括基础变量、数据加载节点、处理节点"""
     comp_mgr = ComponentManager()
 
-    def __init__(self, flow: dict, *args, **kwargs):
+    def __init__(self, flow: dict, *args, loader: str = None, processor: str = None, **kwargs):
         args_num = int(flow.get('arguments', '0'))
         assert len(args) >= args_num, f"no enough arguments! {args_num} needed!"
-        loader_def = flow.get('loader')
-        processor_def = flow.get('processor')
-        # assert loader_def and processor_def, "loader and processor must both exist"
+        loader_def = loader or flow.get('loader')
+        processor_def = processor or flow.get('processor')
 
         self.name = flow.get('name')
 

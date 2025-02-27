@@ -1,6 +1,6 @@
 from typing import Any
 import traceback
-import json
+from wikidata_filter.base import ROOT
 from wikidata_filter.util.mod_util import load_cls
 from wikidata_filter.util.jsons import parse_rules, parse_field
 from wikidata_filter.iterator.base import JsonIterator, DictProcessorBase
@@ -34,8 +34,8 @@ class Map(JsonIterator):
         """
         super().__init__()
         if isinstance(mapper, str):
-            if mapper.startswith('util.'):
-                mapper = f'wikidata_filter.{mapper}'
+            if mapper.startswith('util.') or mapper.startswith('gestata.'):
+                mapper = f'{ROOT}.{mapper}'
             mapper = load_cls(mapper)[0]
 
         self.mapper = mapper
@@ -160,14 +160,6 @@ class MapRules(DictProcessorBase):
         return ret
 
 
-class MapKV(DictProcessorBase):
-    """
-    对调字典的字段名和字段值
-    """
-    def on_data(self, data: dict, *args):
-        return {v: k for k, v in data.items()}
-
-
 class Flat(JsonIterator):
     """
     扁平化操作（1-*）
@@ -275,37 +267,3 @@ class FlatProperty(Flat):
 
     def __str__(self):
         return f"{self.name}(keys={self.keys}, inherit_props={self.inherit_props})"
-
-
-class FromJson(Map):
-    """对指定的字符串类型字段转换为json"""
-    def __init__(self, key: str = None, **kwargs):
-        super().__init__(self, key=key)
-        self.default_args = dict(kwargs)
-
-    def __call__(self, val: str, *args, **kwargs):
-        return json.loads(val, **self.default_args)
-
-
-class ToJson(Map):
-    """对指定的任意类型字段转换为json"""
-    def __init__(self, key: str = None, ensure_ascii: bool = False, **kwargs):
-        super().__init__(self, key=key)
-        self.default_args = dict(ensure_ascii=ensure_ascii, **kwargs)
-
-    def __call__(self, val: Any, *args, **kwargs):
-        return json.dumps(val, **self.default_args)
-
-
-class Format(Map):
-    """对指定字段（为模板字符串）使用指定的值进行填充"""
-    def __init__(self, key: str = None, **kwargs):
-        super().__init__(self, key=key)
-        assert len(kwargs) > 0, "**kwargs should not be empty"
-        self.values = dict(kwargs)
-
-    def __call__(self, val: str, *args, **kwargs):
-        return val.format(**self.values)
-
-    def __str__(self):
-        return f"{self.name}({self.key}, **{self.values})"

@@ -20,7 +20,7 @@ nodes:
   flat: Flat(key='nodes', inherit_props=True)
   count2: Count(label='doc')
 
-  chunk: nlp.splitter.TextSplit(key='content',target_key='chunks')
+  chunk: Map('util.split.simple', key='content',target_key='chunks')
   flat_chunk: Flat(key='chunks', inherit_props=True)
   count3: Count(label='chunk')
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')

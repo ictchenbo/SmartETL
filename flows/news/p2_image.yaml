@@ -33,7 +33,7 @@ nodes:
   make_id: UUID
   append_ext: ConcatFields('_id', '_id', 'ext', separator='')
   make_path: ConcatFields('object_name', '_id', prefix='tmp/')
-  download: web.image.Download(min_width=50, min_height=50, key='url', target_key='image', **request_args)
+  download: Map('util.http.download_image', key='url', target_key='image', min_width=50, min_height=50, **request_args)
   filter2: FieldsNonEmpty('image')
   stage21: Chain(extract_image, filter_format, make_id, append_ext, make_path, download, filter2)
 

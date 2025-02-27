@@ -5,7 +5,7 @@ import gzip
 from typing import Any
 
 from wikidata_filter.iterator.base import DictProcessorBase
-from wikidata_filter.iterator.aggregation import BufferedWriter
+from wikidata_filter.iterator.buffer import BufferedWriter
 from wikidata_filter.util.dates import current_ts
 
 

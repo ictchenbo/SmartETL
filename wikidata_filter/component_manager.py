@@ -1,15 +1,10 @@
 import os
 
-from wikidata_filter.base import relative_path
+from wikidata_filter.base import relative_path, ROOT, PROCESSOR_MODULE, LOADER_MODULE, UTIL_MODULE
 from wikidata_filter.components import components
 from wikidata_filter.util.mod_util import load_cls
 from wikidata_filter.loader import *
 from wikidata_filter.iterator import *
-
-base_pkg = 'wikidata_filter'
-LOADER_MODULE = "loader"
-PROCESSOR_MODULE = "iterator"
-UTIL_MODULE = "util"
 
 
 class ComponentManager:
@@ -38,15 +33,15 @@ class ComponentManager:
         if label is not None:
             # 兼容两种情况 loader/iterator
             if cls_name.startswith(f'{label}.'):
-                return f'{base_pkg}.{cls_name}'
-            return f'{base_pkg}.{label}.{cls_name}'
+                return f'{ROOT}.{cls_name}'
+            return f'{ROOT}.{label}.{cls_name}'
         if '.' in cls_name:
             # wikidata_filter下面的其他模块 如util
-            path = relative_path(f'{base_pkg}/{cls_name.split(".")[0]}')
+            path = relative_path(f'{ROOT}/{cls_name.split(".")[0]}')
             if os.path.exists(path):
-                return f'{base_pkg}.{cls_name}'
+                return f'{ROOT}.{cls_name}'
         # 默认模块下 -> wikidata_filter/iterator/__init__
-        return f'{base_pkg}.{PROCESSOR_MODULE}.{cls_name}'
+        return f'{ROOT}.{PROCESSOR_MODULE}.{cls_name}'
 
     def find_cls(self, full_name: str):
         """

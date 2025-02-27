@@ -25,7 +25,7 @@ class DeepSeek_LKEAP(LLMModel):
     def __init__(self,
                  api_key: str,
                  api_base: str = "https://api.lkeap.cloud.tencent.com/v1",
-                 model: str = "deepseek-chat", **kwargs):
+                 model: str = "deepseek-r1", **kwargs):
         """
                 :param api_key API的Key 必须
                 :param key 输入的字段名，如果为None，表示整个输入作为大模型请求参数，否则，提取该字段的值

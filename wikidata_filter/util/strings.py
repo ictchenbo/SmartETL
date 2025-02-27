@@ -11,6 +11,10 @@ methods = {
 }
 
 
+def format(val: str, *args, **kwargs):
+    return val.format(**kwargs)
+
+
 def f(method: str):
     assert method in methods, "method not supported"
     return methods[method]

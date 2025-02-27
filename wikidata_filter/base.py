@@ -1,6 +1,10 @@
 import os
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+ROOT = 'wikidata_filter'
+LOADER_MODULE = "loader"
+PROCESSOR_MODULE = "iterator"
+UTIL_MODULE = "util"
 
 
 def relative_path(path):

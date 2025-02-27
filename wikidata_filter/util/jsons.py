@@ -1,3 +1,6 @@
+import json
+
+
 def split_path(path: list or str):
     if isinstance(path, str):
         path = path.split('.')
@@ -77,3 +80,11 @@ def parse_rules(rules):
         rule_map[target] = parse_field(source)
 
     return rule_map
+
+
+def to_json(val, *args, **kwargs):
+    return json.dumps(val, **kwargs)
+
+
+def from_json(val: str, *args, **kwargs):
+    return json.loads(val, **kwargs)

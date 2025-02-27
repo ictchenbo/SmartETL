@@ -1,11 +1,16 @@
+from: local/llm_keys.yaml
+
 name: DeepSeek-R1推理测试
 arguments: 1
-consts:
-  api_key: sk-yqYQTOhDYcqh4Zzp7voTwa64msY9ey0u4bGHLC1a0nGy0kXY
 
 loader: TextPlain(arg1)
 
 nodes:
-  query: model.deepseek.DeepSeek_LKEAP(api_key, stream=True)
+#  model: modelv2.DeepSeek(deepseek['api_key'], model='deepseek-chat')
+  model: modelv2.DeepSeek(deepseek['api_key'], model='deepseek-reasoner')
+#  model: modelv2.DeepSeek_LKEAP(lkeap['api_key'])
+  query: modelv2.Processor(model, stream=True)
+#  query: model.DeepSeek_LKEAP(lkeap['api_key'], stream=True)
+#  query: model.DeepSeek(deepseek['api_key'], model='deepseek-reasoner', stream=True)
 
-processor: Chain(Print(), Prompt('>>>>>>>>>>>>>>>>>>>>'), query, Print())
+processor: Chain(Print(), query, Print())
