@@ -151,7 +151,7 @@ class SimplifyProps(DictProcessorBase):
     PropDataType :=  wikibase-entityid | globecoordinate | quantity | time | monolingualtext | novalue | somevalue
     """
     def on_data(self, item: dict, *args):
-        item['claims'] = get_props(item.get("claims", {}))
+        item['claims'] = list(get_props(item))
         return item
 
 
