@@ -12,6 +12,7 @@ methods = {
 
 
 def format(val: str, *args, **kwargs):
+    """对指定字段（为模板字符串）使用指定的值进行填充"""
     return val.format(**kwargs)
 
 

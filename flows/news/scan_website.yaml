@@ -1,7 +1,7 @@
 from: local/db_envs.yaml
 
 name: 从ES中获取新闻，获取url，生成域名列表；基于域名爬取网站favicon图标，存储到MongoDB中
-
+arguments: 1
 consts:
   es1:
     index: goinv3_document_news
@@ -9,10 +9,8 @@ consts:
     database: gdelt
     collection: site_icon
 
-#loader: database.ES(**es1, fetch_size=100000)
-loader: JsonLine('data/website.jsonl.gz')
-
 nodes:
+  loader1: database.ES(**es1, fetch_size=100000)
   db: util.database.mongodb.MongoDB(**mongo2)
   as_host: Map('util.urls.host_from_url', key='url', target_key='host')
   select: Select('host')
@@ -22,10 +20,9 @@ nodes:
   get_favicon: Map('util.urls.website_favicon', key='_id', target_key='icon', proxy='http://localhost:8001', timeout=30)
   filter: FieldsNonEmpty('icon')
   writer: database.MongoWriter(**mongo2, buffer_size=1)
+  get_list: Chain(as_host, select, rename, unique, WriteJson(arg1, mode='gzip'), Count())
 
 #processor: Chain(as_host, select, rename, unique, get_favicon, filter, writer, Count())
 
-#processor: Chain(as_host, select, rename, unique, WriteJson('data/website.jsonl', mode='gzip'), Count())
+loader: JsonLine(arg1)
 processor: Chain(dedup, get_favicon, filter, writer, Count())
-
-#processor: Print()

@@ -10,7 +10,5 @@ nodes:
   model: modelv2.DeepSeek(deepseek['api_key'], model='deepseek-reasoner')
 #  model: modelv2.DeepSeek_LKEAP(lkeap['api_key'])
   query: modelv2.Processor(model, stream=True)
-#  query: model.DeepSeek_LKEAP(lkeap['api_key'], stream=True)
-#  query: model.DeepSeek(deepseek['api_key'], model='deepseek-reasoner', stream=True)
 
 processor: Chain(Print(), query, Print())

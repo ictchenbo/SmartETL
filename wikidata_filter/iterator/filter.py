@@ -1,6 +1,5 @@
 """对数据进行采样输出"""
 from random import random
-from wikidata_filter.util.jsons import extract as V
 from wikidata_filter.util.database.base import Database
 from wikidata_filter.iterator.base import JsonIterator
 
