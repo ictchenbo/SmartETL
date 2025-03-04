@@ -26,14 +26,8 @@ if __name__ == '__main__':
     if input_data and args.json is True:
         input_data = json.loads(input_data)
 
-    # 加载流程文件
-    filename = args.filename
-    if os.path.exists(filename):
-        flow = FlowBuilder.from_yaml(filename, *unknown, loader=args.loader, processor=args.processor)
-    else:
-        flow = FlowBuilder.from_cmd(filename, *unknown, loader=args.loader, processor=args.processor)
-
     # 如果指定输入数据 则根据命令行参数构造loader
+    _loader = None
     if input_data is not None:
         if isinstance(input_data, str):
             _loader = String(input_data)
@@ -41,7 +35,13 @@ if __name__ == '__main__':
             _loader = Array(input_data)
         else:
             _loader = Array([input_data])
-        flow.loader = _loader
+
+    # 加载流程文件
+    filename = args.filename
+    if os.path.exists(filename):
+        flow = FlowBuilder.from_yaml(filename, *unknown, loader=_loader or args.loader, processor=args.processor)
+    else:
+        flow = FlowBuilder.from_cmd(filename, *unknown, loader=_loader or args.loader, processor=args.processor)
 
     if not flow.loader or not flow.processor:
         parser.print_help(__file__)

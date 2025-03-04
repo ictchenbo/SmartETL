@@ -1,0 +1,13 @@
+from: flows/news/p2_text.yaml
+
+name: load local files and write to dbs
+
+consts:
+  mapping:
+    .gz: .jsonl
+
+loader: directory.Directory(arg1, '.gz', recursive=True, type_mapping=mapping)
+
+nodes:
+  valid_time: "=lambda r: 'publish_time' in r and r['publish_time'] < r['event_time_date'] + 86400000"
+  chain: Chain(SelectVal('data'), WriteJsonIf(valid_time, 'data/gdelt/bad2', scroll=1000))

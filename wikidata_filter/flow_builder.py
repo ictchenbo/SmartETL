@@ -47,18 +47,16 @@ class FlowBuilder:
         return target
 
     @staticmethod
-    def from_yaml(flow_file: str, *args, encoding: str = 'utf8', loader: str = None, processor: str = None, **kwargs):
+    def from_yaml(flow_file: str, *args, encoding: str = 'utf8', loader=None, processor: str = None, **kwargs):
         """基于yaml流程文件构造流程"""
         flow_def = FlowBuilder.load_yaml(flow_file, set(), encoding=encoding)
         return Flow(flow_def, *args, loader=loader, processor=processor, **kwargs)
 
     @staticmethod
-    def from_cmd(name, *args, loader: str = None, processor: str = None, **kwargs):
+    def from_cmd(name, *args, loader=None, processor: str = None, **kwargs):
         """基于命令行参数构造流程"""
         flow_def = {
             "name": f"cli flow {name}",
-            "arguments": len(args),
-            "loader": loader,
-            "processor": processor
+            "arguments": len(args)
         }
-        return Flow(flow_def, *args, **kwargs)
+        return Flow(flow_def, *args, loader=loader, processor=processor, **kwargs)

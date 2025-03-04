@@ -9,9 +9,6 @@ class Flow:
     def __init__(self, flow: dict, *args, loader: str = None, processor: str = None, **kwargs):
         args_num = int(flow.get('arguments', '0'))
         assert len(args) >= args_num, f"no enough arguments! {args_num} needed!"
-        loader_def = loader or flow.get('loader')
-        processor_def = processor or flow.get('processor')
-
         self.name = flow.get('name')
 
         # init context
@@ -23,10 +20,21 @@ class Flow:
         self.init_nodes(flow.get('nodes') or {})
 
         # init loader, maybe None
-        self.loader = self.comp_mgr.init_node(loader_def, label=LOADER_MODULE)
+        if loader is not None:
+            if isinstance(loader, str):
+                self.loader = self.comp_mgr.init_node(loader, label=LOADER_MODULE)
+            else:
+                self.loader = loader
+        else:
+            self.loader = self.comp_mgr.init_node(flow.get('loader'), label=LOADER_MODULE)
 
-        # init processor, maybe None
-        self.processor = self.comp_mgr.init_node(processor_def, label=PROCESSOR_MODULE)
+        if processor is not None:
+            if isinstance(loader, str):
+                self.processor = self.comp_mgr.init_node(processor, label=PROCESSOR_MODULE)
+            else:
+                self.processor = loader
+        else:
+            self.processor = self.comp_mgr.init_node(flow.get('processor'), label=PROCESSOR_MODULE)
 
     def init_base_envs(self, args: tuple or list, kwargs: dict):
         """初始化基础变量 包括命令行参数"""

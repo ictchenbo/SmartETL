@@ -1,0 +1,21 @@
+name: CC数据提取
+description: 查看Common Crawl数据。参考：https://commoncrawl.org/get-started。通过aws s3/curl下载相关数据。
+
+nodes:
+  loader0: Text('data/cc/segment.paths.gz')
+  loader1: Text('data/cc/warc.paths.gz')
+  loader2: Text('data/cc/wat.paths.gz')
+  loader3: Text('data/cc/wet.paths.gz')
+  loader11: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.gz')
+  loader12: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wat.gz')
+  loader13: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wet.gz')
+  loader_warc: web.CCWARC('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.gz')
+  loader_wat: web.CCWAT('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wat.gz')
+  loader_wet: web.CCWET('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wet.gz')
+  strip: "Map(lambda s: s.decode('utf8').strip())"
+  display: Chain(strip, Print())
+  print: Print
+  counter: Count(ticks=1000, label='CC')
+  write_html: WriteFiles('data/cc/html', name_key='_id', content_key='body', suffix='.html')
+
+processor: Chain(write_html, counter)

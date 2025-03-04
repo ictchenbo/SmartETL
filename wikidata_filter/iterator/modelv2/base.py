@@ -105,7 +105,11 @@ class LLMModel(Model):
                     line = chunk.decode("utf-8")
                     if line.startswith("data: {"):  # 过滤掉非数据行
                         json_data = json.loads(line[5:])  # 去掉 "data: " 前缀
-                        piece_data = json_data["choices"][0].get("delta")
+                        choices = json_data.get("choices")
+                        if not choices:
+                            continue
+                        # print(choices[0])
+                        piece_data = choices[0].get("delta")
                         v = piece_data.get("content")
                         text_piece = piece_data.get("reasoning_content") or v
                         if text_piece:
