@@ -22,6 +22,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
+   - [Common Crawl网页存档数据](flows/cc.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -61,6 +62,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.3.4
+1. 实现Common Crawl WARC/WAT/WET文件解析，参考 https://commoncrawl.org/get-started
+
+- 2025.2.28
+1. 实现命令行参数--loader --processor覆盖flow文件
+
 - 2025.2.26
 1. 更新[Deep Search流程](flows/agent/deepsearch.yaml)
 2. 实现Prompt构造工具 `util.prompt.Config` （大模型应用关键组件：Prompt构造、大模型调用、结果解析）
