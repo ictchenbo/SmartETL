@@ -1,9 +1,0 @@
-name: markdown to json
-description: 解析处理markdown文件，返回树状结构json数据
-loader: TextBase('test_data/人工智能简介.md')
-
-nodes:
-  n1: MarkdowToJsonCommon
-  n2: WriteJson('test_data/markdownfile.json')
-
-processor: Chain(n1,n2)
