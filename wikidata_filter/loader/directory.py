@@ -3,6 +3,7 @@ from typing import Iterable, Any
 
 from wikidata_filter.loader.base import DataProvider
 from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
+from .markdown import Markdown
 # from .xls import ExcelStream
 # from .parquet import Parquet
 # from .docx import Doc, Docx
@@ -20,7 +21,8 @@ LOADERS = {
     '.jsona': JsonArray,
     '.jsonf': JsonFree,
     '.html': TextPlain,
-    '.plain': TextPlain
+    '.plain': TextPlain,
+    '.md': Markdown
     # '.xls': ExcelStream,
     # '.parquet': Parquet,
     # '.doc': Doc,

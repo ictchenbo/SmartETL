@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any
 from wikidata_filter.util.dates import current_ts
 import uuid
