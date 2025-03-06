@@ -1,5 +1,5 @@
 """本模块为聚合分析相关算子 提供分组、缓存"""
-from wikidata_filter.iterator.base import ReduceBase
+from wikidata_filter.iterator.base import Message, ReduceBase
 
 
 class Buffer(ReduceBase):
@@ -17,6 +17,9 @@ class Buffer(ReduceBase):
         self.mode = mode
 
     def __process__(self, item: dict or None, *args):
+        if isinstance(item, Message):
+            item = None if item.msg_type == "end" else item.data
+
         if item is None:
             # 数据结束或需要刷新缓存
             # print(f'{self.name}: END/Flush signal received.')
