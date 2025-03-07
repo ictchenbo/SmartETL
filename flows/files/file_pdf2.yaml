@@ -1,0 +1,7 @@
+name: pdf to json
+description: 解析处理pdf文件，返回统一树状结构json数据,有两种模式可以选择，model='tree'时，可以把带有标题层级结构的论文格式的pdf文件解析
+  成树状结构的json数据保存，model='json'时可以把特殊格式的pdf文件的内容按页提取出来，并且把每一页的表格内容提取出来并保存
+loader: PDF2('test_data/大模型英文介绍.pdf',mode="json")
+nodes:
+  n1: WriteJson('test_data/pdf2_file.json')
+processor: Chain(n1,Print())
