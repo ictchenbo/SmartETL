@@ -44,6 +44,9 @@ class ES(DataProvider):
                 url = f'{self.url}/{self.index_name}/_search?scroll={self.scroll}'
                 res = requests.post(url, auth=self.auth, json=self.query_body)
 
+            if res.status_code != 200:
+                break
+
             res = res.json()
             if '_scroll_id' in res:
                 scroll_id = res['_scroll_id']

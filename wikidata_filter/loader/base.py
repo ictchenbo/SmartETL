@@ -45,6 +45,20 @@ class String(DataProvider):
             yield item
 
 
+class Input(DataProvider):
+    """通过用户输入提供数据"""
+    def __init__(self, msg: str = None):
+        self.msg = msg or "请输入（`exit`退出）: "
+
+    def iter(self):
+        while True:
+            line = input(self.msg).strip()
+            if line == "exit":
+                break
+            if line:
+                yield line
+
+
 class Random(DataProvider):
     """随机生成器"""
     def __init__(self, num_of_times: int = 0):

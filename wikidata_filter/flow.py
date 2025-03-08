@@ -1,5 +1,7 @@
 import os
 from wikidata_filter.component_manager import ComponentManager, LOADER_MODULE, PROCESSOR_MODULE
+from wikidata_filter.loader.base import DataProvider
+from wikidata_filter.iterator.base import JsonIterator
 
 
 class Flow:
@@ -24,15 +26,17 @@ class Flow:
             if isinstance(loader, str):
                 self.loader = self.comp_mgr.init_node(loader, label=LOADER_MODULE)
             else:
+                assert isinstance(loader, DataProvider), "loader must be instance of DataProvider"
                 self.loader = loader
         else:
             self.loader = self.comp_mgr.init_node(flow.get('loader'), label=LOADER_MODULE)
 
         if processor is not None:
-            if isinstance(loader, str):
+            if isinstance(processor, str):
                 self.processor = self.comp_mgr.init_node(processor, label=PROCESSOR_MODULE)
             else:
-                self.processor = loader
+                assert isinstance(processor, JsonIterator), "processor must be instance of JsonIterator"
+                self.processor = processor
         else:
             self.processor = self.comp_mgr.init_node(flow.get('processor'), label=PROCESSOR_MODULE)
 
