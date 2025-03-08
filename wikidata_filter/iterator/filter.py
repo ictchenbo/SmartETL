@@ -1,5 +1,7 @@
 """对数据进行采样输出"""
 from random import random
+
+from wikidata_filter.util.mod_util import load_util
 from wikidata_filter.util.database.base import Database
 from wikidata_filter.iterator.base import JsonIterator
 
@@ -9,10 +11,11 @@ class Filter(JsonIterator):
     过滤节点（1->?)
     根据提供的匹配函数判断是否继续往后面传递数据
     """
-    def __init__(self, matcher=None, key: str = None):
+    def __init__(self, matcher=None, key: str = None, **kwargs):
         super().__init__()
-        self.matcher = matcher or self
+        self.matcher = load_util(matcher) or self
         self.key = key
+        self.kwargs = kwargs
 
     def on_data(self, data, *args):
         if self.key and self.key not in data:
@@ -24,7 +27,7 @@ class Filter(JsonIterator):
             return data
 
     def __call__(self, val, *args, **kwargs):
-        return True
+        return self.matcher(val)
 
 
 class WhiteList(Filter):
@@ -171,9 +174,9 @@ class Any(Filter):
 
 class Not(Filter):
     """反转过滤器 基于已有过滤器取反"""
-    def __init__(self, that):
-        super().__init__(self)
-        self.that = that
+    def __init__(self, that: str or Filter, key: str = None, **kwargs):
+        super().__init__(key=key, **kwargs)
+        self.that = load_util(that)
 
     def __call__(self, val, *args, **kwargs):
         return not self.that(val, *args, **kwargs)

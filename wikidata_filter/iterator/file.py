@@ -128,8 +128,17 @@ class WriteFiles(DictProcessorBase):
         if self.suffix:
             filename += self.suffix
         filepath = os.path.join(self.output_dir, filename)
-        with open(filepath, 'w', encoding='utf8') as fout:
-            fout.write(str(data[self.content_key]))
+        content = data.get(self.content_key)
+        if not content:
+            print("Warning: empty content to write", filepath)
+            return data
+        if isinstance(content, bytes):
+            with open(filepath, 'wb') as fout:
+                fout.write(content)
+        else:
+            with open(filepath, 'w', encoding='utf8') as fout:
+                fout.write(str(data[self.content_key]))
+        print("file saved:", filepath)
         return data
 
 

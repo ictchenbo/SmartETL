@@ -4,18 +4,20 @@ from PIL import Image
 from io import BytesIO
 
 
-def content(url, most_times=1, ignore_error=False, **kwargs):
+def content(url, most_times: int = 1, ignore_error: bool = False, wait_time: int = 30, **kwargs):
     for i in range(most_times):
         try:
+            print("fetching:", url)
             res = requests.get(url, kwargs)
             if res.status_code == 200:
                 return res.content
+            if res.status_code == 404:
+                return b""
             print('Error to Get File', url, res.status_code, res.text)
         except:
             print('Network error')
         if i < most_times - 1:
-            # wait 1 min
-            time.sleep(60)
+            time.sleep(wait_time)
     print(f'Tried for {most_times}, Failure')
     if not ignore_error:
         raise Exception("Too many failures, exit!")

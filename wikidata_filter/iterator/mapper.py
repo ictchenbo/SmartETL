@@ -1,7 +1,6 @@
 from typing import Any
 import traceback
-from wikidata_filter.base import ROOT
-from wikidata_filter.util.mod_util import load_cls
+from wikidata_filter.util.mod_util import load_cls, load_util
 from wikidata_filter.util.jsons import parse_rules, parse_field
 from wikidata_filter.iterator.base import JsonIterator, DictProcessorBase
 
@@ -33,12 +32,7 @@ class Map(JsonIterator):
         :param kwargs 命名参数。注意：如果指定了target_key，则使用它，默认target_key与key相同。target_key指定输出的字段，如果为None直接输出mapper结果；否额设置为target_key字段值
         """
         super().__init__()
-        if isinstance(mapper, str):
-            if mapper.startswith('util.') or mapper.startswith('gestata.'):
-                mapper = f'{ROOT}.{mapper}'
-            mapper = load_cls(mapper)[0]
-
-        self.mapper = mapper
+        self.mapper = load_util(mapper)
         self.key = key
         if 'target_key' in kwargs:
             self.target_key = kwargs.pop('target_key')
@@ -92,13 +86,7 @@ class MapMulti(DictProcessorBase):
     """
     def __init__(self, mapper, *keys, **kwargs):
         super().__init__()
-
-        if isinstance(mapper, str):
-            if '.' not in mapper:
-                mapper = f'wikidata_filter.util.{mapper}'
-            mapper = load_cls(mapper)[0]
-
-        self.mapper = mapper
+        self.mapper = load_util(mapper)
         self.keys = dict(kwargs)
         for key in keys:
             if key not in self.keys:

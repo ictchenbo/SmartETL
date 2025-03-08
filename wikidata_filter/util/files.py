@@ -1,3 +1,4 @@
+import os
 import json as JSON
 
 
@@ -44,3 +45,7 @@ def display_file_content(filename: str, encoding="utf8", limit=1000):
             limit -= 1
             if limit <= 0:
                 break
+
+
+def exists(filename: str) -> bool:
+    return os.path.exists(filename)

@@ -1,0 +1,23 @@
+from: local/db_envs.yaml
+
+name: arXiv数据采集
+description: 从指定时间开始，持续采集GDELT数据
+arguments: 0
+
+consts:
+  click1:
+    database: goinv3_2410
+    table: gdelt_event
+
+loader: web.ArXivTaskEmit
+
+nodes:
+  as_dict: ToDict
+  make_id: Map('util.urls.path_from_url', key='d', target_key='id', result='last')
+  make_filename: ConcatFields('filename', 'id', prefix='data/arxiv/', suffix='.pdf')
+  file_not_exists: Not('util.files.exists', key='filename')
+  download: Map('util.http.content', key='d', target_key='content', most_times=3, ignore_error=True)
+  save_file: WriteFiles('data/arxiv', suffix='.pdf')
+
+
+processor: Chain(as_dict, make_id, make_filename, file_not_exists, Print(), download, save_file)

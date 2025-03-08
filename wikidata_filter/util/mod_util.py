@@ -1,4 +1,5 @@
 from importlib import import_module
+from wikidata_filter.base import ROOT
 
 
 def load_module(pkg: str):
@@ -36,3 +37,11 @@ def parse_args(expr: str):
         return args, kwargs
     else:
         return None
+
+
+def load_util(mod: str):
+    if mod is not None and isinstance(mod, str):
+        if mod.startswith('util.') or mod.startswith('gestata.'):
+            mod = f'{ROOT}.{mod}'
+        return load_cls(mod)[0]
+    return mod
