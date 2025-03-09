@@ -148,8 +148,8 @@ class FieldsNonEmpty(Filter):
 
 class All(Filter):
     """All组合过滤器 全部满足才能通过 否则不通过"""
-    def __init__(self, *filters):
-        super().__init__(self)
+    def __init__(self, *filters, key: str = None, **kwargs):
+        super().__init__(key=key, **kwargs)
         self.filters = filters
 
     def __call__(self, val, *args, **kwargs):
@@ -161,8 +161,8 @@ class All(Filter):
 
 class Any(Filter):
     """Any组合过滤器 任意一个满足即可通过 否则不通过"""
-    def __init__(self, *filters):
-        super().__init__(self)
+    def __init__(self, *filters, key: str = None, **kwargs):
+        super().__init__(key=key, **kwargs)
         self.filters = filters
 
     def __call__(self, val, *args, **kwargs):

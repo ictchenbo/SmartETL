@@ -3,6 +3,7 @@ from wikidata_filter.base import ROOT
 
 
 def load_module(pkg: str):
+    """根据模块名加载模块对象"""
     try:
         mod = import_module(pkg)
         # mod = __import__(pkg, fromlist=pkg)
@@ -11,8 +12,8 @@ def load_module(pkg: str):
     return mod
 
 
-def load_cls(full_name):
-    # print('load_cls:', full_name)
+def load_cls(full_name: str):
+    """根据对象全名加载对象"""
     pkg = full_name[:full_name.rfind('.')]
     class_name_only = full_name[full_name.rfind('.') + 1:]
     mod = load_module(pkg)
@@ -40,6 +41,7 @@ def parse_args(expr: str):
 
 
 def load_util(mod: str):
+    """加载工具类对象"""
     if mod is not None and isinstance(mod, str):
         if mod.startswith('util.') or mod.startswith('gestata.'):
             mod = f'{ROOT}.{mod}'

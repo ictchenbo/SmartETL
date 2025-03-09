@@ -1,3 +1,4 @@
+"""产生arXiv下载链接"""
 import time
 import os
 import json
@@ -9,7 +10,6 @@ base_url = "https://arxiv.org/pdf"
 
 
 class ArXivTaskEmit(DataProvider):
-    """每隔15分钟左右获取最新的GDELT事件列表，输出每一个事件"""
     ts_file = ".arxiv.ts"
 
     def __init__(self, start_month: int = None, end_month: int = None):

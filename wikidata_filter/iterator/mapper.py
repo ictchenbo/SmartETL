@@ -248,9 +248,12 @@ class FlatProperty(Flat):
                 continue
             val = data[key]
             if self.inherit_props:
-                for k, v in data.items():
-                    if k not in self.keys:
-                        val[k] = v
+                if not isinstance(val, dict):
+                    print("Warning, target must be dict when inherit_props=True")
+                else:
+                    for k, v in data.items():
+                        if k not in self.keys:
+                            val[k] = v
             yield val
 
     def __str__(self):

@@ -1,5 +1,6 @@
 import re
 import json
+from wikidata_filter.util.dates import normalize_time
 
 try:
     from bs4 import BeautifulSoup
@@ -100,6 +101,7 @@ class HtmlExtractor:
 
 
 def simple(html: str):
+    """从HTML中提取标题和正文（简单方法）"""
     soup = BeautifulSoup(html, 'html.parser')
 
     title = soup.title.string
@@ -110,3 +112,30 @@ def simple(html: str):
         "title": title,
         "text": content
     }
+
+
+def news(html: str):
+    """基于新闻网页HTML提取基本信息"""
+    doc = {}
+    my_extractor = HtmlExtractor(html)
+    doc['meta'] = my_extractor.meta
+
+    if "title" not in doc:
+        doc["title"] = my_extractor.find_value_by_key("title") or my_extractor.get_title()
+    doc['keywords'] = my_extractor.find_value_by_key("keywords")
+    doc['desc'] = my_extractor.find_value_by_key("description")
+    doc['source'] = doc.get('source') or my_extractor.find_value_by_key('site_name')
+    doc['author'] = doc.get('author') or my_extractor.find_value_by_key('author')
+
+    # 发布时间处理
+    publish_time = my_extractor.find_value_by_key('datePublished') or my_extractor.find_value_by_key('published_time')
+    if publish_time:
+        doc['origin_publish_time'] = publish_time
+        # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
+        # 1基于<meta>
+        tz = my_extractor.find_value(["timezone"])
+        # 2 基于网站域名、服务器所在国家/地区
+        # 3 基于网页内容主要地点
+        doc['publish_time'] = normalize_time(publish_time, tz=tz)
+
+    return doc

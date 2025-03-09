@@ -15,11 +15,13 @@ def json(filename: str, encoding="utf8", **kwargs):
 
 
 def json_lines(filename: str, encoding="utf8", **kwargs):
+    """读取每行并加载为json"""
     for line in get_lines(filename, encoding=encoding):
         yield JSON.loads(line)
 
 
 def get_lines(filename: str, encoding="utf8", **kwargs):
+    """读取每行并作为文本返回"""
     with open(filename, "r", encoding=encoding, **kwargs) as fin:
         for line in fin:
             yield line.strip()
@@ -48,4 +50,5 @@ def display_file_content(filename: str, encoding="utf8", limit=1000):
 
 
 def exists(filename: str) -> bool:
+    """判断文件是否存在"""
     return os.path.exists(filename)

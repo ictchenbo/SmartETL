@@ -30,7 +30,8 @@ def ts2datetime(ts, fmt='%Y-%m-%d %H:%M:%S') -> str:
 
 
 def millis2datetime(ts, fmt='%Y-%m-%d %H:%M:%S') -> str:
-    return ts2datetime(ts/1000)
+    """毫秒时间戳转字符串日期"""
+    return ts2datetime(ts/1000, fmt=fmt)
 
 
 def current_ts(millis=False) -> int:
@@ -146,7 +147,6 @@ def normalize_time(datetime_str: str, tz=None):
             return timestamp_ms
         except Exception as e:
             pass
-            # print(f"无法解析日期时间字符串: {e}")
 
     print("无法解析时间：", datetime_str)
     return None

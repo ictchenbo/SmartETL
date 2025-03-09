@@ -23,11 +23,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
    - [Common Crawl网页存档数据](flows/cc.yaml)
+   - [arXiv论文下载](flows/arxiv.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
    - csv
    - html
+   - Markdown
    - [pdf](flows/file_pdf.yaml) 
    - [docx](flows/file_docx.yaml)(doc, docx)
    - [eml](flows/file_eml.yaml)
@@ -62,25 +64,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
-- 2025.3.4
-1. 实现Common Crawl WARC/WAT/WET文件解析，参考 https://commoncrawl.org/get-started
-
-- 2025.2.28
-1. 实现命令行参数--loader --processor覆盖flow文件
-
-- 2025.2.26
-1. 更新[Deep Search流程](flows/agent/deepsearch.yaml)
-2. 实现Prompt构造工具 `util.prompt.Config` （大模型应用关键组件：Prompt构造、大模型调用、结果解析）
-3. 实现基于数据库的去重算子 `DistinctByDatabase` #17
-
-
-- 2025.2.25
-1. **重磅！** 实现流程控制节点 `If` `IfElse` `While` 根据条件进行分支选择。见 [示例流程](flows/demos/ifelse.yaml)
-2. 重构模型系列组件，拆分提示构造`util.prompt`、模型调用`modelv2.base.Model`、结果解析`util.parser`等组件，与流程节点`modelv2.processor`分离。[示例流程](flows/agent/deepsearch.yaml)
-3. 增加字符串处理算子 `util.strings.f(method)`
-4. 新增[Deep Search流程](flows/agent/deepsearch.yaml) 参考：https://github.com/zilliztech/deep-searcher
-5. 新增[网站icon图标文件采集流程](flows/news/scan_website.yaml)
-
+- 2025.3.8
+1. 新增`Markdown`格式解析为json层级结构，支持提取表格
+2. 新增`arXiv`论文下载
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -246,6 +232,24 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.3.4
+1. 实现Common Crawl WARC/WAT/WET文件解析，参考 https://commoncrawl.org/get-started
+
+- 2025.2.28
+1. 实现命令行参数--loader --processor覆盖flow文件
+
+- 2025.2.26
+1. 更新[Deep Search流程](flows/agent/deepsearch.yaml)
+2. 实现Prompt构造工具 `util.prompt.Config` （大模型应用关键组件：Prompt构造、大模型调用、结果解析）
+3. 实现基于数据库的去重算子 `DistinctByDatabase` #17
+
+- 2025.2.25
+1. **重磅！** 实现流程控制节点 `If` `IfElse` `While` 根据条件进行分支选择。见 [示例流程](flows/demos/ifelse.yaml)
+2. 重构模型系列组件，拆分提示构造`util.prompt`、模型调用`modelv2.base.Model`、结果解析`util.parser`等组件，与流程节点`modelv2.processor`分离。[示例流程](flows/agent/deepsearch.yaml)
+3. 增加字符串处理算子 `util.strings.f(method)`
+4. 新增[Deep Search流程](flows/agent/deepsearch.yaml) 参考：https://github.com/zilliztech/deep-searcher
+5. 新增[网站icon图标文件采集流程](flows/news/scan_website.yaml)
+
 - 2025.2.23
 1. 新增`sink.Collect` `sink.Sort`算子，对流程处理数据进行收集、排序（注意：仅适合小规模数据）
 2. 新增流程 flows/nl2poc/poc-meta-product-stat.yaml 对`nuclei`模板进行统计
