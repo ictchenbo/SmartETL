@@ -1,0 +1,6 @@
+name: doc to json
+description: 解析处理word文件，返回统一树状结构json数据
+loader: Docx('test_data/大模型技术介绍.docx')
+nodes:
+  n1: WriteJson('test_data/docfile.json')
+processor: Chain(n1,Print())
