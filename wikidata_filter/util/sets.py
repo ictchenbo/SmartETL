@@ -14,15 +14,15 @@ def from_text(file: str, encoding="utf8"):
     return s
 
 
-def from_csv(file: str, key_col=0, encoding="utf8"):
+def from_csv(file: str, key_col=0, encoding="utf8", sep: str = ","):
     """基于csv文件构造set"""
     s = set()
     if not os.path.exists(file):
         print('Warning: file not exists:', file)
         return s
     for line in get_lines(file, encoding=encoding):
-        if "," in line:
-            s.add(line.split(",")[key_col])
+        if sep in line:
+            s.add(line.split(sep)[key_col])
     return s
 
 

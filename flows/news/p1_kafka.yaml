@@ -8,16 +8,20 @@ loader: database.kafka.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=1
 #loader: JsonLine('data/news2.jsonl')
 
 nodes:
+  db_es: util.database.elasticsearch.ES(**es1, index="goinv3_document_news")
+  dedup: DistinctByDatabase(db_es, key='id')
+
   count: Count(ticks=10)
   print: Print('id', 'url')
   select: Select('id', 'url', 'html', 'event_time_date', 'mention_time_date')
-  backup: WriteJsonScroll('data/gdelt/news')
-  extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html')
+  backup: WriteJsonScroll('data/news/news')
+  extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html', target_key='info')
 #  extract: nlp.news.Extract(key='html', target_key='content')
-  flat: FlatProperty('html', inherit_props=True)
-  valid_time: "=lambda r: r['publish_time'] < r['event_time_date'] + 86400000 if r.get('publish_time') else False"
-  backup_bad: WriteJsonIf(valid_time, 'data/gdelt/bad', scroll=100)
-  chain: Chain(select, extract, flat, backup_bad)
+  flat: FlatProperty('info', inherit_props=True)
+#  valid_time: "=lambda r: r['publish_time'] < r['event_time_date'] + 86400000 if r.get('publish_time') else False"
+  valid_time: "=lambda r:  True if r.get('publish_time') else False"
+  backup_bad: WriteJsonIf(valid_time, 'data/news/bad', scroll=100)
+  rm_html: RemoveFields('html')
+  chain: Chain(dedup, select, extract, flat, backup_bad, rm_html)
 
-#processor: Chain(chain, Select('id', 'title', 'origin_publish_time', 'url'), print)
 processor: Chain(chain, Print(), count)

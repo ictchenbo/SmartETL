@@ -128,13 +128,18 @@ class WriteFiles(DictProcessorBase):
         if self.suffix:
             filename += self.suffix
         filepath = os.path.join(self.output_dir, filename)
-        content = data.get(self.content_key)
-        if not content:
-            print("Warning: empty content to write", filepath)
-            return data
+        content = data
+        if self.content_key:
+            content = data.get(self.content_key)
+            if not content:
+                print("Warning: empty content to write", filepath)
+                return data
         if isinstance(content, bytes):
             with open(filepath, 'wb') as fout:
                 fout.write(content)
+        elif isinstance(content, dict):
+            with open(filepath, 'w', encoding='utf8') as fout:
+                json.dump(content, fout, ensure_ascii=False)
         else:
             with open(filepath, 'w', encoding='utf8') as fout:
                 fout.write(str(data[self.content_key]))

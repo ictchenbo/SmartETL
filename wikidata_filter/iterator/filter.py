@@ -35,8 +35,10 @@ class WhiteList(Filter):
     def __init__(self, cache: dict or set, key: str):
         super().__init__(self, key)
         self.cache = cache
+        print('WhiteList init: total', len(cache), 'items')
 
     def __call__(self, val, *args, **kwargs):
+        # print('current', val)
         return val in self.cache
 
 
@@ -82,16 +84,20 @@ class Distinct(Filter):
 
 class DistinctByDatabase(Distinct):
     """基于指定的数据库表进行去重 查询结果将缓存在本地以复用"""
-    def __init__(self, db_client: Database, key: str = None, **kwargs):
+    def __init__(self, db_client: Database, key: str = None, local_cache: bool = True, **kwargs):
         super().__init__(key)
         self.db_client = db_client
+        self.local_cache = local_cache
         self.kwargs = kwargs
 
     def exists(self, val):
-        if super().exists(val):
+        if not self.local_cache:
+            return self.db_client.exists(val, **self.kwargs)
+        if val in self.cache:
             return True
         r = self.db_client.exists(val, **self.kwargs)
         if r:
+            # 缓存到本地 加速后续查找
             self.cache.add(val)
         return r
 
