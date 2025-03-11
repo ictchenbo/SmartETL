@@ -74,18 +74,20 @@ class RDBBase(DataProvider):
                 else:
                     yield item
 
+    def show_create(self, table: str, database: str = None):
+        table = f'`{database}`.`{table}`' if database else f'`{table}`'
+        sql = f"show create table {table}"
+        return list(self.fetch_all(sql, fmt="tuple"))
+
     def list_tables(self, db: str = None):
         sql = f"show tables"
         if db:
             sql = f"show tables in `{db}`"
-        # print(list(self.fetch_all(sql)))
         return [row[0] for row in self.fetch_all(sql, fmt="tuple")]
 
     def desc_table(self, table: str, database: str = None):
-        if database:
-            table = f'{database}.{table}'
+        table = f'`{database}`.`{table}`' if database else f'`{table}`'
         sql = f"describe {table}"
-        # print(sql)
         return list(self.fetch_all(sql))
 
     def close(self):

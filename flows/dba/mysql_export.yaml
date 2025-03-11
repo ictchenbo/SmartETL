@@ -1,0 +1,15 @@
+from: local/db_envs.yaml
+name: mysql export
+arguments: 1
+consts:
+  save_path: data/goin_db/
+
+nodes:
+  loader1: database.mysql.MySQL(**mysql7, database=arg1)
+  rename: RenameFields(name='table')
+  get_name: SelectVal('name')
+  query: dbops.SQLDump(loader1)
+  writer: WriteJson(save_path + arg1+'.json', mode='gzip')
+
+loader: database.meta.DBTables(loader1)
+processor: Chain(rename, query, writer, Count())

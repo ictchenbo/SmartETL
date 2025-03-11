@@ -225,7 +225,7 @@ def news_merge(html: str, doc: dict):
     news['author'] = my_extractor.find_value_from_meta('author')
 
     for key in ["title", "source", "author", "keywords"]:
-        if key not in news and key in doc:
+        if not news.get(key) and key in doc:
             news[key] = doc[key]
 
     news["content"] = doc.get("content")

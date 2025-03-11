@@ -1,4 +1,20 @@
 import json
+import datetime
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, z):
+        if isinstance(z, datetime.date) or isinstance(z, datetime.datetime):
+            return str(z)
+        return super().default(z)
+
+
+def dumps(obj, ensure_ascii=False, **kwargs):
+    return json.dumps(obj, ensure_ascii=ensure_ascii, cls=DateTimeEncoder, **kwargs)
+
+
+def dump(obj, out, ensure_ascii=False, **kwargs):
+    return json.dump(obj, out, ensure_ascii=ensure_ascii, cls=DateTimeEncoder, **kwargs)
 
 
 def split_path(path: list or str):
