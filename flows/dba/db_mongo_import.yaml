@@ -1,3 +1,4 @@
+from: local/db_envs.yaml
 name: MongoDB数据导入
 description: JSON文件导入MongoDB数据库
 arguments: 1
@@ -6,16 +7,19 @@ consts:
     host: localhost
     port: 27017
     username: root
-    password: *********
+    password: <yourpassword>
     auth_db: admin
     database: <dbname>
     collection: table
+  mongo2:
+    database: gdelt
+    collection: site_icon
 
 loader: JsonLine(arg1)
 
 nodes:
   print: Print
   counter: Count
-  writer: database.MongoWriter(**mongo1)
+  writer: database.MongoWriter(**mongo2)
 
-processor: Chain(print, counter, writer)
+processor: Chain(writer, counter)

@@ -132,7 +132,10 @@ class LLM(JsonIterator):
             key = self.key
             if isinstance(key, str):
                 # 与旧版本兼容 key类型str时 prompt变量固定为'data'
-                query = self.prompt.replace('{data}', row.get(key))
+                val = row.get(key)
+                if not val:
+                    return row
+                query = self.prompt.replace('{data}', str(val))
             elif isinstance(key, list):
                 # 使用数组进行一个或多个key 此时prompt变量与key对应
                 query = self.prompt

@@ -7,6 +7,7 @@ from typing import Any
 from wikidata_filter.iterator.base import DictProcessorBase
 from wikidata_filter.iterator.buffer import BufferedWriter
 from wikidata_filter.util.dates import current_ts
+from wikidata_filter.util.jsons import dumps, dump
 
 
 class WriteText(BufferedWriter):
@@ -84,7 +85,7 @@ class WriteJson(WriteText):
         super().__init__(output_file, **kwargs)
 
     def serialize(self, item) -> str:
-        return json.dumps(item, ensure_ascii=False)
+        return dumps(item)
 
 
 class WriteCSV(WriteText):
@@ -128,13 +129,18 @@ class WriteFiles(DictProcessorBase):
         if self.suffix:
             filename += self.suffix
         filepath = os.path.join(self.output_dir, filename)
-        content = data.get(self.content_key)
-        if not content:
-            print("Warning: empty content to write", filepath)
-            return data
+        content = data
+        if self.content_key:
+            content = data.get(self.content_key)
+            if not content:
+                print("Warning: empty content to write", filepath)
+                return data
         if isinstance(content, bytes):
             with open(filepath, 'wb') as fout:
                 fout.write(content)
+        elif isinstance(content, dict):
+            with open(filepath, 'w', encoding='utf8') as fout:
+                dump(content, fout)
         else:
             with open(filepath, 'w', encoding='utf8') as fout:
                 fout.write(str(data[self.content_key]))
@@ -157,7 +163,7 @@ class WriteJsonScroll(DictProcessorBase):
                 self.writer.close()
             filename = os.path.join(self.output_dir, f'{current_ts()}.json.gz')
             self.writer = gzip.open(filename, "wt", encoding="utf8")
-        self.writer.write(json.dumps(data, ensure_ascii=False))
+        self.writer.write(dumps(data))
         self.writer.write('\n')
         self.num += 1
         return data

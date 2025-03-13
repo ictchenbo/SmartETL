@@ -24,9 +24,9 @@ nodes:
   trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
   translate: model.GoGPT(api_base=chatglm4, key='content_origin', prompt=prompt1, target_key='content')
 
-  write_es: database.ESWriter(**es1, buffer_size=10)
+  write_es: database.ESWriter(**es1, buffer_size=1)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=1)
   fork: Fork(Chain(write_es, count_es), Chain(vector, write_qd, count_qd), copy_data=True)
 
   chain3: Chain(rename, trans_title, translate, fork)

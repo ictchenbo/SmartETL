@@ -1,5 +1,6 @@
 import re
 import time
+import pytz
 from datetime import datetime, timezone, timedelta
 
 
@@ -118,12 +119,67 @@ possible_formats = [
 ]
 
 
+# beijing_tz = pytz.timezone('Asia/Shanghai')
+beijing_tz = timezone(timedelta(hours=8))
+
+
 def custom_datetime_to_beijing_timestamp(datetime_str, format_str, tz=None):
     """基于指定格式进行解析并转化为北京时间 假设为UTC"""
     dt = datetime.strptime(datetime_str, format_str)
     dt = dt.replace(tzinfo=tz or timezone.utc)
-    beijing_dt = dt.astimezone(timezone(timedelta(hours=8)))
+    beijing_dt = dt.astimezone(beijing_tz)
     return int(beijing_dt.timestamp() * 1000)
+
+
+TIMEZONE_ABBREVIATIONS = {
+    "IST": "Asia/Kolkata",      # 印度标准时间 UTC+5:30
+    "PST": "America/Los_Angeles", # 太平洋标准时间 UTC-8
+    "EST": "America/New_York",   # 东部标准时间 UTC-5
+    "CST": "America/Chicago",    # 中部标准时间 UTC-6
+    "MST": "America/Denver",     # 山地标准时间 UTC-7
+    "JST": "Asia/Tokyo",         # 日本标准时间 UTC+9
+    "CET": "Europe/Berlin",      # 中欧时间 UTC+1
+    "EET": "Europe/Istanbul",    # 东欧时间 UTC+2
+    "BST": "Europe/London",      # 英国夏令时 UTC+1
+    "AEDT": "Australia/Sydney",  # 澳大利亚东部夏令时 UTC+11
+    "ACST": "Australia/Adelaide",# 澳大利亚中部标准时间 UTC+9:30
+}
+
+
+def native_datetime_to_beijing_timestamp(time_str: str, time_format: str = '%B %d, %Y %I:%M:%S %p %Z', tz_name: str = None):
+    """
+    将任意时区的时间字符串转换为北京时间时间戳。
+
+    参数：
+    - time_str (str): 输入的时间字符串，例如 "March 3, 2025 4:13:13 PM IST"。
+    - time_format (str): 时间字符串的格式，例如 "%B %d, %Y %I:%M:%S %p %Z"。
+    - tz_name (str): 输入时间字符串所属的时区名称，例如 "Asia/Kolkata"。
+
+    返回：
+    - int: 北京时间的时间戳（秒）。
+    """
+    try:
+        if tz_name is None:
+            abbr = time_str.split()[-1]
+            if abbr not in TIMEZONE_ABBREVIATIONS:
+                return None
+            tz_name = TIMEZONE_ABBREVIATIONS[abbr]
+
+        input_tz = pytz.timezone(tz_name)
+
+        # 将时间字符串解析为 naive datetime 对象（无时区）
+        naive_dt = datetime.strptime(time_str, time_format)
+
+        # 赋予输入时区信息
+        localized_dt = input_tz.localize(naive_dt)
+
+        # 转换为北京时间
+        beijing_dt = localized_dt.astimezone(beijing_tz)
+
+        return int(beijing_dt.timestamp()*1000)
+
+    except Exception as e:
+        raise ValueError(f"转换失败：{e}")
 
 
 def normalize_time(datetime_str: str, tz=None):
