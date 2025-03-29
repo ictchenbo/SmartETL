@@ -1,0 +1,577 @@
+{
+  "feed": {
+    "@xmlns": "http://www.w3.org/2005/Atom",
+    "link": {
+      "@href": "http://arxiv.org/api/query?search_query%3Dall%3Aelectron%26id_list%3D%26start%3D0%26max_results%3D10",
+      "@rel": "self",
+      "@type": "application/atom+xml"
+    },
+    "title": {
+      "@type": "html",
+      "#text": "ArXiv Query: search_query=all:electron&id_list=&start=0&max_results=10"
+    },
+    "id": "http://arxiv.org/api/WyBPOs+pRgzCTXTMWhtnbcOmk6g",
+    "updated": "2025-03-29T00:00:00-04:00",
+    "opensearch:totalResults": {
+      "@xmlns:opensearch": "http://a9.com/-/spec/opensearch/1.1/",
+      "#text": "222477"
+    },
+    "opensearch:startIndex": {
+      "@xmlns:opensearch": "http://a9.com/-/spec/opensearch/1.1/",
+      "#text": "0"
+    },
+    "opensearch:itemsPerPage": {
+      "@xmlns:opensearch": "http://a9.com/-/spec/opensearch/1.1/",
+      "#text": "10"
+    },
+    "entry": [
+      {
+        "id": "http://arxiv.org/abs/cond-mat/0102536v1",
+        "updated": "2001-02-28T20:12:09Z",
+        "published": "2001-02-28T20:12:09Z",
+        "title": "Impact of Electron-Electron Cusp on Configuration Interaction Energies",
+        "summary": "The effect of the electron-electron cusp on the convergence of configuration\ninteraction (CI) wave functions is examined. By analogy with the\npseudopotential approach for electron-ion interactions, an effective\nelectron-electron interaction is developed which closely reproduces the\nscattering of the Coulomb interaction but is smooth and finite at zero\nelectron-electron separation. The exact many-electron wave function for this\nsmooth effective interaction has no cusp at zero electron-electron separation.\nWe perform CI and quantum Monte Carlo calculations for He and Be atoms, both\nwith the Coulomb electron-electron interaction and with the smooth effective\nelectron-electron interaction. We find that convergence of the CI expansion of\nthe wave function for the smooth electron-electron interaction is not\nsignificantly improved compared with that for the divergent Coulomb interaction\nfor energy differences on the order of 1 mHartree. This shows that, contrary to\npopular belief, description of the electron-electron cusp is not a limiting\nfactor, to within chemical accuracy, for CI calculations.",
+        "author": [
+          {
+            "name": "David Prendergast",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "Department of Physics"
+            }
+          },
+          {
+            "name": "M. Nolan",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "NMRC, University College, Cork, Ireland"
+            }
+          },
+          {
+            "name": "Claudia Filippi",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "Department of Physics"
+            }
+          },
+          {
+            "name": "Stephen Fahy",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "Department of Physics"
+            }
+          },
+          {
+            "name": "J. C. Greer",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "NMRC, University College, Cork, Ireland"
+            }
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1063/1.1383585"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1063/1.1383585",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/cond-mat/0102536v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/cond-mat/0102536v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "11 pages, 6 figures, 3 tables, LaTeX209, submitted to The Journal of\n  Chemical Physics"
+        },
+        "arxiv:journal_ref": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "J. Chem. Phys. 115, 1626 (2001)"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/astro-ph/0608371v1",
+        "updated": "2006-08-17T14:05:46Z",
+        "published": "2006-08-17T14:05:46Z",
+        "title": "Electron thermal conductivity owing to collisions between degenerate\n  electrons",
+        "summary": "We calculate the thermal conductivity of electrons produced by\nelectron-electron Coulomb scattering in a strongly degenerate electron gas\ntaking into account the Landau damping of transverse plasmons. The Landau\ndamping strongly reduces this conductivity in the domain of ultrarelativistic\nelectrons at temperatures below the electron plasma temperature. In the inner\ncrust of a neutron star at temperatures T < 1e7 K this thermal conductivity\ncompletely dominates over the electron conductivity due to electron-ion\n(electron-phonon) scattering and becomes competitive with the the electron\nconductivity due to scattering of electrons by impurity ions.",
+        "author": [
+          {
+            "name": "P. S. Shternin",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "Ioffe Physico-Technical Institute"
+            }
+          },
+          {
+            "name": "D. G. Yakovlev",
+            "arxiv:affiliation": {
+              "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+              "#text": "Ioffe Physico-Technical Institute"
+            }
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1103/PhysRevD.74.043004"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1103/PhysRevD.74.043004",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/astro-ph/0608371v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/astro-ph/0608371v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "8 pages, 3 figures"
+        },
+        "arxiv:journal_ref": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "Phys.Rev. D74 (2006) 043004"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/1802.06593v1",
+        "updated": "2018-02-19T11:51:42Z",
+        "published": "2018-02-19T11:51:42Z",
+        "title": "Electron pairing: from metastable electron pair to bipolaron",
+        "summary": "Starting from the shell structure in atoms and the significant correlation\nwithin electron pairs, we distinguish the exchange-correlation effects between\ntwo electrons of opposite spins occupying the same orbital from the average\ncorrelation among many electrons in a crystal. In the periodic potential of the\ncrystal with lattice constant larger than the effective Bohr radius of the\nvalence electrons, these correlated electron pairs can form a metastable energy\nband above the corresponding single-electron band separated by an energy gap.\nIn order to determine if these metastable electron pairs can be stabilized, we\ncalculate the many-electron exchange-correlation renormalization and the\npolaron correction to the two-band system with single electrons and electron\npairs. We find that the electron-phonon interaction is essential to\ncounterbalance the Coulomb repulsion and to stabilize the electron pairs. The\ninterplay of the electron-electron and electron-phonon interactions, manifested\nin the exchange-correlation energies, polaron effects, and screening, is\nresponsible for the formation of electron pairs (bipolarons) that are located\non the Fermi surface of the single-electron band.",
+        "author": [
+          {
+            "name": "Guo-Qiang Hai"
+          },
+          {
+            "name": "Ladir Cândido"
+          },
+          {
+            "name": "Braulio G. A. Brito"
+          },
+          {
+            "name": "François M. Peeters"
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1088/2399-6528/aaaee0"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1088/2399-6528/aaaee0",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/1802.06593v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/1802.06593v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "17 pages, 6 figures, Journal of Physics Communications 2018"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/2010.01066v1",
+        "updated": "2020-10-02T15:46:56Z",
+        "published": "2020-10-02T15:46:56Z",
+        "title": "Electron Temperature Anisotropy and Electron Beam Constraints From\n  Electron Kinetic Instabilities in the Solar Wind",
+        "summary": "Electron temperature anisotropies and electron beams are nonthermal features\nof the observed nonequilibrium electron velocity distributions in the solar\nwind. In collision-poor plasmas these nonequilibrium distributions are expected\nto be regulated by kinetic instabilities through wave-particle interactions.\nThis study considers electron instabilities driven by the interplay of core\nelectron temperature anisotropies and the electron beam, and firstly gives a\ncomprehensive analysis of instabilities in arbitrary directions to the\nbackground magnetic field. It clarifies the dominant parameter regime (e.g.,\nparallel core electron plasma beta $\\beta_{\\mathrm{ec\\parallel}}$, core\nelectron temperature anisotropy $A_{\\mathrm{ec}}\\equiv\nT_{\\mathrm{ec\\perp}}/T_{\\mathrm{ec\\parallel}}$, and electron beam velocity\n$V_{\\mathrm{eb}}$) for each kind of electron instability (e.g., the electron\nbeam-driven electron acoustic/magnetoacoustic instability, the electron\nbeam-driven whistler instability, the electromagnetic electron cyclotron\ninstability, the electron mirror instability, the electron firehose\ninstability, and the ordinary-mode instability). It finds that the electron\nbeam can destabilize electron acoustic/magnetoacoustic waves in the\nlow-$\\beta_{\\mathrm{ec\\parallel}}$ regime, and whistler waves in the medium-\nand large-$\\beta_{\\mathrm{ec\\parallel}}$ regime. It also finds that a new\noblique fast-magnetosonic/whistler instability is driven by the electron beam\nwith $V_{\\mathrm{eb}}\\gtrsim7V_{\\mathrm{A}}$ in a regime where\n$\\beta_{\\mathrm{ec\\parallel}}\\sim0.1-2$ and $A_{\\mathrm{ec}}<1$. Moreover, this\nstudy presents electromagnetic responses of each kind of electron instability.\nThese results provide a comprehensive overview for electron instability\nconstraints on core electron temperature anisotropies and electron beams in the\nsolar wind.",
+        "author": [
+          {
+            "name": "Heyu Sun"
+          },
+          {
+            "name": "Jinsong Zhao"
+          },
+          {
+            "name": "Wen Liu"
+          },
+          {
+            "name": "Huasheng Xie"
+          },
+          {
+            "name": "Dejin Wu"
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.3847/1538-4357/abb3ca"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.3847/1538-4357/abb3ca",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/2010.01066v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/2010.01066v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "physics.space-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "physics.space-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/1501.04914v1",
+        "updated": "2015-01-20T18:48:22Z",
+        "published": "2015-01-20T18:48:22Z",
+        "title": "Hamiltonian of a many-electron system with single-electron and\n  electron-pair states in a two-dimensional periodic potential",
+        "summary": "Based on the metastable electron-pair energy band in a two-dimensional (2D)\nperiodic potential obtained previously by Hai and Castelano [J. Phys.: Condens.\nMatter 26, 115502 (2014)], we present in this work a Hamiltonian of many\nelectrons consisting of single electrons and electron pairs in the 2D system.\nThe electron-pair states are metastable of energies higher than those of the\nsingle-electron states at low electron density. We assume two different\nscenarios for the single-electron band. When it is considered as the lowest\nconduction band of a crystal, we compare the obtained Hamiltonian with the\nphenomenological model Hamiltonian of a boson-fermion mixture proposed by\nFriedberg and Lee [Phys. Rev. B 40, 6745 (1989)]. Single-electron-electron-pair\nand electron-pair-electron-pair interaction terms appear in our Hamiltonian and\nthe interaction potentials can be determined from the electron-electron Coulomb\ninteractions. When we consider the single-electron band as the highest valence\nband of a crystal, we show that holes in this valence band are important for\nstabilization of the electron-pair states in the system.",
+        "author": [
+          {
+            "name": "G. -Q. Hai"
+          },
+          {
+            "name": "F. M. Peeters"
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1140/epjb/e2014-50686-x"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1140/epjb/e2014-50686-x",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/1501.04914v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/1501.04914v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:journal_ref": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "Eur. Phys. J. B (2015) 88: 20"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.supr-con",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": [
+          {
+            "@term": "cond-mat.supr-con",
+            "@scheme": "http://arxiv.org/schemas/atom"
+          },
+          {
+            "@term": "cond-mat.mes-hall",
+            "@scheme": "http://arxiv.org/schemas/atom"
+          }
+        ]
+      },
+      {
+        "id": "http://arxiv.org/abs/0707.4225v1",
+        "updated": "2007-07-28T09:32:22Z",
+        "published": "2007-07-28T09:32:22Z",
+        "title": "Electron-Electron Bremsstrahlung Emission and the Inference of Electron\n  Flux Spectra in Solar Flares",
+        "summary": "Although both electron-ion and electron-electron bremsstrahlung contribute to\nthe hard X-ray emission from solar flares, the latter is normally ignored. Such\nan omission is not justified at electron (and photon) energies above $\\sim 300$\nkeV, and inclusion of the additional electron-electron bremsstrahlung in\ngeneral makes the electron spectrum required to produce a given hard X-ray\nspectrum steeper at high energies.\n  Unlike electron-ion bremsstrahlung, electron-electron bremsstrahlung cannot\nproduce photons of all energies up to the maximum electron energy involved. The\nmaximum possible photon energy depends on the angle between the direction of\nthe emitting electron and the emitted photon, and this suggests a diagnostic\nfor an upper cutoff energy and/or for the degree of beaming of the accelerated\nelectrons.\n  We analyze the large event of January 17, 2005 observed by RHESSI and show\nthat the upward break around 400 keV in the observed hard X-ray spectrum is\nnaturally accounted for by the inclusion of electron-electron bremsstrahlung.\nIndeed, the mean source electron spectrum recovered through a regularized\ninversion of the hard X-ray spectrum, using a cross-section that includes both\nelectron-ion and electron-electron terms, has a relatively constant spectral\nindex $\\delta$ over the range from electron kinetic energy $E = 200$ keV to $E\n= 1$ MeV. However, the level of detail discernible in the recovered electron\nspectrum is not sufficient to determine whether or not any upper cutoff energy\nexists.",
+        "author": [
+          {
+            "name": "Eduard P. Kontar"
+          },
+          {
+            "name": "A. Gordon Emslie"
+          },
+          {
+            "name": "Anna Maria Massone"
+          },
+          {
+            "name": "Michele Piana"
+          },
+          {
+            "name": "John C. Brown"
+          },
+          {
+            "name": "Marco Prato"
+          }
+        ],
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1086/521977"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1086/521977",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/0707.4225v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/0707.4225v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "7 pages, 5 figures, submitted to Astrophysical Journal"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/astro-ph/9904306v1",
+        "updated": "1999-04-22T15:54:59Z",
+        "published": "1999-04-22T15:54:59Z",
+        "title": "Improved scenario of baryogenesis",
+        "summary": "It is assumed that, in the primordial plasma, at the temperatures above the\nmass of electron, fermions are in the neutral state being the superposition of\nparticle and antiparticle. There exists neutral proton-electron symmetry.\nProton-electron equilibrium is defined by the proton-electron mass difference.\nAt the temperature equal to the mass of electron, pairs of neutral electrons\nannihilate into photons, and pairs of neutral protons and electrons survive as\nprotons and electrons.",
+        "author": {
+          "name": "D. L. Khokhlov"
+        },
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "3 pages LaTeX"
+        },
+        "link": [
+          {
+            "@href": "http://arxiv.org/abs/astro-ph/9904306v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/astro-ph/9904306v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "astro-ph",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/cond-mat/0310615v1",
+        "updated": "2003-10-27T08:59:02Z",
+        "published": "2003-10-27T08:59:02Z",
+        "title": "Exact Electron-Pairing Ground States of Tight-Binding Models with Local\n  Attractive Interactions",
+        "summary": "We present a class of exactly solvable models of correlated electrons. The\nmodels are defined in any dimension $d$ and consist of electron-hopping terms\nand local attractive interactions between electrons. For each even number of\nelectrons less than or equal to $1/(d+1)$-filling, we find the exact ground\nstate in which all electrons form pairs of a certain type, and thus the models\nexhibit an electron-pair condensation.",
+        "author": {
+          "name": "Akinori Tanaka"
+        },
+        "arxiv:doi": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "10.1143/JPSJ.73.1107"
+        },
+        "link": [
+          {
+            "@title": "doi",
+            "@href": "http://dx.doi.org/10.1143/JPSJ.73.1107",
+            "@rel": "related"
+          },
+          {
+            "@href": "http://arxiv.org/abs/cond-mat/0310615v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/cond-mat/0310615v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "4 pages, 1 figure"
+        },
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      },
+      {
+        "id": "http://arxiv.org/abs/2101.10508v1",
+        "updated": "2021-01-26T01:15:10Z",
+        "published": "2021-01-26T01:15:10Z",
+        "title": "Insights into the Electron-Electron Interaction from Quantum Monte Carlo\n  Calculations",
+        "summary": "The effective electron-electron interaction in the electron gas depends on\nboth the density and spin local field factors. Variational Diagrammatic Quantum\nMonte Carlo calculations of the spin local field factor are reported and used\nto quantitatively present the full spin-dependent, electron-electron\ninteraction. Together with the charge local field factor from previous\nDiffusion Quantum Monte Carlo calculations, we obtain the complete form of the\neffective electron-electron interaction in the uniform three-dimensional\nelectron gas. Very simple quadratic formulas are presented for the local field\nfactors that quantitatively produce all of the response functions of the\nelectron gas at metallic densities.\n  Exchange and correlation become increasingly important at low densities. At\nthe compressibility divergence at rs = 5.25, both the direct (screened Coulomb)\nterm and the charge-dependent exchange term in the electron-electron\ninteraction at q=0 are separately divergent. However, due to large\ncancellations, their difference is finite, well behaved, and much smaller than\neither term separately. As a result, the spin contribution to the\nelectron-electron interaction becomes an important factor. The static\nelectron-electron interaction is repulsive as a function of density but is less\nrepulsive for electrons with parallel spins.\n  The effect of allowing a deformable, rather than rigid, positive background\nis shown to be as quantitatively important as exchange and correlation. As a\nsimple concrete example, the electron-electron interaction is calculated using\nthe measured bulk modulus of the alkali metals with a linear phonon dispersion.\nThe net electron-electron interaction in lithium is attractive for wave vectors\n$0-2k_F$, which suggests superconductivity, and is mostly repulsive for the\nother alkali metals.",
+        "author": [
+          {
+            "name": "Carl A. Kukkonen"
+          },
+          {
+            "name": "Kun Chen"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "16 pages, 20 figures"
+        },
+        "link": [
+          {
+            "@href": "http://arxiv.org/abs/2101.10508v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/2101.10508v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.quant-gas",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": [
+          {
+            "@term": "cond-mat.quant-gas",
+            "@scheme": "http://arxiv.org/schemas/atom"
+          },
+          {
+            "@term": "cond-mat.mtrl-sci",
+            "@scheme": "http://arxiv.org/schemas/atom"
+          },
+          {
+            "@term": "cond-mat.str-el",
+            "@scheme": "http://arxiv.org/schemas/atom"
+          }
+        ]
+      },
+      {
+        "id": "http://arxiv.org/abs/cond-mat/0205001v1",
+        "updated": "2002-04-30T20:00:18Z",
+        "published": "2002-04-30T20:00:18Z",
+        "title": "Electron-electron interactions in a weakly screened two-dimensional\n  electron system",
+        "summary": "We probe the strength of electron-electron interactions using\nmagnetoconductivity measurements of two-dimensional non-degenerate electrons on\nliquid helium at 1.22 K. Our data extend to electron densities that are two\norders of magnitude smaller than previously reported. We span both the\nindependent-electron regime where the data are qualitatively described by the\nself-consistent Born approximation (SCBA), and the strongly-interacting\nelectron regime. At finite fields we observe a crossover from SCBA to Drude\ntheory as a function of electron density.",
+        "author": [
+          {
+            "name": "I. Karakurt"
+          },
+          {
+            "name": "A. J. Dahm"
+          }
+        ],
+        "arxiv:comment": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "#text": "4 pages, 5 figures"
+        },
+        "link": [
+          {
+            "@href": "http://arxiv.org/abs/cond-mat/0205001v1",
+            "@rel": "alternate",
+            "@type": "text/html"
+          },
+          {
+            "@title": "pdf",
+            "@href": "http://arxiv.org/pdf/cond-mat/0205001v1",
+            "@rel": "related",
+            "@type": "application/pdf"
+          }
+        ],
+        "arxiv:primary_category": {
+          "@xmlns:arxiv": "http://arxiv.org/schemas/atom",
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        },
+        "category": {
+          "@term": "cond-mat.str-el",
+          "@scheme": "http://arxiv.org/schemas/atom"
+        }
+      }
+    ]
+  }
+}
