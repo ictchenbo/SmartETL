@@ -1,8 +1,7 @@
 from: local/db_envs.yaml
 
 name: arXiv数据采集
-description: 从指定时间开始，持续采集GDELT数据
-arguments: 0
+description: 从指定时间开始，持续采集arXiv论文
 
 consts:
   click1:

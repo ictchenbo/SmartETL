@@ -64,6 +64,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.3.29
+1. 集成并改造王宁的arxiv下载处理流程
+
 - 2025.3.10
 1. 新增`MySQL`数据库全量导出备份流程[查看详情](flows/dba/mysql_export.yaml)
 2. 完善新闻网页时间抽取逻辑 [查看详情](wikidata_filter/util/extractor/html.py)

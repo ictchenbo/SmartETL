@@ -1,0 +1,26 @@
+from: local/db_envs.yaml
+name: arxiv论文下载解析
+description: 通过命令行行输入搜索关键词，检索arXiv论文，下载PDF论文，调用Mineru解析pdf，对解析结果markdown内容进行向量化写入向量化库
+consts:
+  qdrant:
+    collection: chunk_arxiv
+  bge_large_zh: http://10.208.63.29:8001/embed
+  mineru_url: http://10.60.1.148:8268/api/file/_extract
+
+loader: Input('请输入arXiv论文搜索关键词：')
+
+nodes:
+  search: Map('gestata.arxiv_http.search', max_results=10)
+#  download: Map('util.http.content', key='url_pdf', target_key='content', most_times=3, ignore_error=True)
+  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  save_file: WriteFiles('data/arxiv', name_key='_id', suffix='.html')
+  pdf_extract: Map('gestata.mineru.extract', target_key='md_content', api_base=mineru_url, method='auto', response_content='markdown')
+  chunk: Map('util.split.simple', key='md_content',target_key='chunks')
+  flat_chunk: Flat(key='chunks', inherit_props=True)
+  vector: model.embed.Local(api_base=bge_large_zh, key='chunks', target_key='vector')
+  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=1)
+
+  chain1: Chain(search, Flat(), download, save_file, pdf_extract, chunk, flat_chunk, vector, write_qd, Count(ticks=1))
+  chain2: Chain(search, Flat(), download, save_file, Count(ticks=1))
+
+processor: chain2

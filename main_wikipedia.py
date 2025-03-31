@@ -3,7 +3,7 @@ from wikidata_filter.wikipedia import *
 from wikidata_filter.iterator import Chain, WriteJson, Count
 
 
-def process_page():
+def process_page(input_file: str, output_file: str):
     from wikidata_filter.iterator.wikipedia import Abstract
 
     processor = Chain(Count(ticks=1000), Abstract(), WriteJson(output_file))
@@ -11,19 +11,13 @@ def process_page():
     page_xml_dump(input_file, processor)
 
 
-def process_abstract():
+def process_abstract(input_file: str, output_file: str):
     processor = Chain(Count(ticks=1000), WriteJson(output_file))
     abstract_xml_dump(input_file, processor)
 
 
 if __name__ == '__main__':
     # input_file = r'zhwiki-latest-abstract.xml.gz'
-    input_file = sys.argv[1]
-    # wikipedia-page.json
-    output_file = sys.argv[2]
-
     # input4 = r'data/zhwiki-latest-pages-articles.xml.bz2'
-    # input_file = sys.argv[1]
-    # 'zhwiki-page.json'
-    # output_file = sys.argv[2]
-    # 'data/zhwiki-html'
+    # process_page(sys.argv[1], sys.argv[2])
+    process_abstract(sys.argv[1], sys.argv[2])

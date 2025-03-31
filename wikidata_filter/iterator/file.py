@@ -122,7 +122,7 @@ class WriteFiles(DictProcessorBase):
         self.suffix = suffix
 
         if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
+            os.makedirs(output_dir)
 
     def on_data(self, data: dict, *args):
         filename = f'{data[self.name_key]}'

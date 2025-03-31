@@ -1,11 +1,12 @@
 import requests
-
+from wikidata_filter.integrations.gne import GeneralNewsExtractor
 from wikidata_filter.iterator.mapper import Map
-from wikidata_filter.util.extractor.html import news_merge, news_gne
+from wikidata_filter.util.extractor.html import news_merge
 
 
 class Extract(Map):
     """基于gne抽取新闻的标题、正文、时间、作者、图片等信息"""
+    extractor = GeneralNewsExtractor()
 
     def __init__(self, **kwargs):
         super().__init__(self, **kwargs)
@@ -18,7 +19,7 @@ class Extract(Map):
 
     def extract(self, html: str) -> dict:
         try:
-            return news_gne(html)
+            return self.extractor.extract(html)
         except:
             return {}
 
