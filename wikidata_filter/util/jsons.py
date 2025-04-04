@@ -6,6 +6,8 @@ class DateTimeEncoder(json.JSONEncoder):
     def default(self, z):
         if isinstance(z, datetime.date) or isinstance(z, datetime.datetime):
             return str(z)
+        if isinstance(z, bytes):
+            return ''
         return super().default(z)
 
 

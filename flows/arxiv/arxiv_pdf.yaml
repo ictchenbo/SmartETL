@@ -1,19 +1,20 @@
-from: local/db_envs.yaml
+from:
+  - local/db_envs.yaml
+  - flows/arxiv/arxiv_p1_meta.yaml
 name: arxiv论文下载解析
 description: 通过命令行行输入搜索关键词，检索arXiv论文，获取其HTML网页，并解析，内容向量化写入向量化库
 consts:
   qdrant:
     collection: chunk_arxiv
   bge_large_zh: http://10.208.63.29:8001/embed
+  headers:
+    User-Agent: chenbo01@ict.ac.cn
 
-loader: Input('请输入arXiv论文搜索关键词：')
-loader2: JsonLine('data/arxiv.dump.json')
 
 nodes:
-#  search: Map('gestata.arxiv.search', max_results=1)
-  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  download: Map('util.http.content', key='url_pdf', target_key='content', most_times=3, ignore_error=True, headers=headers)
   filter: FieldsNonEmpty('content')
-  save_file: WriteFiles('data/arxiv', name_key='_id', suffix='.html')
+  save_file: WriteFiles('data/arxiv/pdf', name_key='_id', suffix='.pdf')
   pdf_extract: Map('gestata.arxiv.extract', target_key='paper')
 #  chunk: Map('util.split.simple', key='md_content',target_key='chunks')
 #  flat_chunk: Flat(key='chunks', inherit_props=True)
@@ -24,6 +25,7 @@ nodes:
 
   writer: WriteJson('test_data/arxiv_full.json', buffer_size=1)
 #  chain2: Chain(search, Flat(), download, filter, save_file, pdf_extract, writer)
-  chain2: Chain(download, filter, save_file, pdf_extract, writer)
+  chain2: Chain(SkipN(25), search, download, filter, save_file, Wait(5))
+#, pdf_extract, writer, Wait(3))
 
 processor: chain2
