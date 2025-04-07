@@ -3,11 +3,13 @@ description: 通过命令行行输入句子，调用embedding模型
 consts:
   bge_large_zh: http://10.208.63.29:8001/embed
   bge_large_en: http://10.208.63.29:6008/v1/embeddings
+  bge_vl_mllm: http://10.208.63.29:8001/embed_image
 
 loader: Input
 
 nodes:
 #  embed: Map('gestata.embedding.text_v1', api_base=bge_large_zh)
-  embed: Map('gestata.embedding.text_v2', api_base=bge_large_en)
+#  embed: Map('gestata.embedding.text_v2', api_base=bge_large_en)
+  embed: Map('gestata.embedding.image_v1', api_base=bge_vl_mllm)
 
 processor: Chain(embed, Print())
