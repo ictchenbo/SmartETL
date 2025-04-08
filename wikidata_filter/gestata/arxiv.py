@@ -45,6 +45,10 @@ def join_para(s: list):
 
 
 def parse_figures(section, base_url: str):
+    """
+        基于arxiv官网HTML网页抽取论文中的图
+        注意：网页布局可能发生变化，注意检查更新
+    """
     section_images = section.xpath('.//figure[contains(@class, "ltx_figure")]')
     images = []
     for fig in section_images:
@@ -66,6 +70,10 @@ def parse_figures(section, base_url: str):
 
 
 def parse_tables(section):
+    """
+    基于arxiv官网HTML网页抽取论文中的表格
+    注意：网页布局可能发生变化，注意检查更新
+    """
     tables = section.xpath('.//figure[contains(@class, "ltx_table")]')
     ret = []
     for table in tables:
@@ -105,6 +113,10 @@ def parse_tables(section):
 
 
 def extract_from_html(source: str, base_url: str):
+    """
+    基于arxiv官网HTML网页抽取论文信息，参考：https://arxiv.org/html/2503.15454v3
+    注意：网页布局可能发生变化，注意检查更新
+    """
     tree = fromstring(source)
 
     # 初始化结果字典
@@ -179,3 +191,15 @@ def extract(row: dict,
     html = row[content_key]
     base_url = row[base_url_key]
     return extract_from_html(html, base_url)
+
+
+def from_meta(row: dict):
+    """添加URL"""
+    _id = row["id"]
+    versions = row["versions"]
+    latest_version = versions[-1]["version"]
+    _id = _id + latest_version
+    row["_id"] = _id
+    row["url_pdf"] = f"{ARXIV_BASE}/pdf/{_id}"
+    row["url_html"] = f"{ARXIV_BASE}/html/{_id}"
+    return row

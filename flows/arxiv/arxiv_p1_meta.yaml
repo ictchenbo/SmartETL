@@ -1,0 +1,4 @@
+loader: JsonLine('test_data/arxiv.meta.1k.json')
+
+nodes:
+  search: Map('gestata.arxiv.from_meta')

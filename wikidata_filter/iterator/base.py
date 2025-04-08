@@ -216,3 +216,14 @@ class MaxValue(DictProcessorBase):
 
 class ReduceBase(JsonIterator):
     """对数据进行规约(many->1/0) 向后传递规约结果"""
+
+
+class Wait(JsonIterator):
+    """延时处理"""
+    def __init__(self, seconds: int = 1):
+        self.seconds = seconds
+
+    def on_data(self, data: Any, *args):
+        import time
+        time.sleep(self.seconds)
+        return data

@@ -1,0 +1,4 @@
+loader: Input('请输入arXiv论文搜索关键词：')
+
+nodes:
+  search: Map('gestata.arxiv.search', max_results=10)
