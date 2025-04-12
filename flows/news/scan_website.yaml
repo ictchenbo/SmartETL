@@ -10,15 +10,17 @@ consts:
     collection: site_icon
 
 nodes:
-  loader1: database.ES(**es1, fetch_size=100000)
-  db: util.database.mongodb.MongoDB(**mongo2)
+  db_es: util.database.elasticsearch.ES(**es1)
+  db_mongo: util.database.mongodb.MongoDB(**mongo2)
+  loader1: database.Scroll(db_es, fetch_size=100000)
+
   as_host: Map('util.urls.host_from_url', key='url', target_key='_id')
   select: Select('_id')
   unique: Distinct(key='_id')
   dedup: DistinctByDatabase(db, key='_id')
   get_favicon: Map('util.urls.website_favicon', key='_id', target_key='icon', proxy='http://localhost:8001', timeout=30)
   filter: FieldsNonEmpty('icon')
-  writer: database.MongoWriter(**mongo2, buffer_size=1)
+  writer: DatabaseWriter(db_mongo, buffer_size=1)
   chain2: Chain(dedup, get_favicon, filter, writer, Count())
   chain: Chain(as_host, select, unique, Count(label='url', ticks=100), dedup, get_favicon, filter, writer, Count(label='image', ticks=10))
   get_list: Chain(as_host, select, unique, dedup, WriteJson(arg1), Count())

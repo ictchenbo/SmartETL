@@ -1,4 +1,5 @@
-name: load json to clickhouse
+name: export clickhouse to json
+description: 导出ClickHouse表数据为JSON文件
 arguments: 1
 consts:
   click1:
@@ -6,11 +7,13 @@ consts:
     tcp_port: 59000
     database: gdelt
 
-loader: database.CK(**click1, table=arg1)
-
 nodes:
+  db1: util.database.clickhouse.CK(**click1, table=arg1)
+
   print: Print
   counter: Count
   writer: WriteJson(arg1+'.json')
+
+loader: database.Scroll(db1)
 
 processor: Chain(writer, counter)

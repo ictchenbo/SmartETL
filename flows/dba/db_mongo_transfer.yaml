@@ -1,5 +1,5 @@
 name: MongoDB数据库表迁移/拷贝
-description: MongoDB数据库表迁移/拷贝
+description: 指定MongoDB数据库的表，从一个数据库拷贝到另一个数据库
 arguments: 1
 consts:
   mongo1:
@@ -12,11 +12,14 @@ consts:
     password: *********
     database: <db2>
 
-loader: database.Mongo(**mongo1, collection=arg1)
 
 nodes:
+  db1: util.database.mongodb.MongoDB(**mongo1)
+  db2: util.database.mongodb.MongoDB(**mongo2)
   print: Print
   counter: Count
-  writer: database.MongoWriter(**mongo2, collection=arg1)
+  writer: DatabaseWriter(db2, table=arg1)
+
+loader: database.Scroll(db1, collection=arg1)
 
 processor: Chain(print, counter, writer)

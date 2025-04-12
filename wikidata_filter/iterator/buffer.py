@@ -1,5 +1,6 @@
 """本模块为聚合分析相关算子 提供分组、缓存"""
 from wikidata_filter.iterator.base import Message, ReduceBase
+from wikidata_filter.util.database.base import Database
 
 
 class Buffer(ReduceBase):
@@ -68,7 +69,7 @@ class Buffer(ReduceBase):
 
 class BufferedWriter(Buffer):
     """缓冲写 比如数据库或文件算子 默认作为普通算子加入流程"""
-    def __init__(self, buffer_size=1000, mode="single"):
+    def __init__(self, buffer_size=1000, mode="single", **kwargs):
         super().__init__(buffer_size, mode=mode)
 
     def commit(self):
@@ -76,3 +77,20 @@ class BufferedWriter(Buffer):
 
     def write_batch(self, data: list):
         pass
+
+
+class DatabaseWriter(BufferedWriter):
+    """基于数据库的缓存写"""
+    def __init__(self, db: Database, write_mode: str = "upsert", **kwargs):
+        super().__init__(**kwargs)
+        self.db = db
+        self.write_mode = write_mode
+        self.kwargs = dict(**kwargs)
+        if "buffer_size" in self.kwargs:
+            kwargs.pop("buffer_size")
+        if "mode" in self.kwargs:
+            kwargs.pop("mode")
+
+    def write_batch(self, rows: list):
+        n, _ = self.db.upsert(rows, write_mode=self.write_mode, **self.kwargs)
+        print(f"Write {n} rows")

@@ -23,10 +23,10 @@ def extract(row: dict,
     filename = row.get(name_key, 'auto_file')
 
     if isinstance(content, bytes):
-        files = {'file_name': (filename, content)}
+        files = {'file': (filename, content)}
     else:
         with open(content, 'rb') as reader:
-            files = {'file_name': (filename, reader.read())}
+            files = {'file': (filename, reader.read())}
 
     data = {
         'method': method,

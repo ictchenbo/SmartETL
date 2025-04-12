@@ -1,5 +1,6 @@
-name: load json to clickhouse
-arguments: 0
+name: transfer data from clickhouse to mongodb
+description: 将ClickHouse指定的表的数据同步到MongoDB中
+arguments: 1
 consts:
   click1:
     host: 10.208.57.5
@@ -10,12 +11,13 @@ consts:
     port: 27017
     database: gdelt
 
-loader: database.CK(**click1, table='domain_bnn')
-
 nodes:
+  db1: util.database.clickhouse.CK(**click1)
+  db2: util.database.mongodb.MongoDB(**mongo1)
   print: Print
   counter: Count
   rename: RenameFields(domain="_id")
-  writer: database.MongoWriter(**mongo1, collection='domain')
+  writer: DatabaseWriter(db2, collection=arg1)
 
+loader: database.Scroll(db1, table=arg1)
 processor: Chain(print, rename, writer, counter)

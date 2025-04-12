@@ -1,10 +1,4 @@
-from wikidata_filter.loader.database.rdb_base import RDBBase
-
-try:
-    import psycopg2
-except ImportError:
-    print('install import psycopg2 first!')
-    raise "import psycopg2 not installed"
+from .rdb_base import RDBBase
 
 
 class PG(RDBBase):
@@ -14,4 +8,11 @@ class PG(RDBBase):
                  password: str = "",
                  database: str = 'default', **kwargs):
         super().__init__(database=database, **kwargs)
+
+        try:
+            import psycopg2
+        except ImportError:
+            print('install import psycopg2 first!')
+            raise "import psycopg2 not installed"
+
         self.conn = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)

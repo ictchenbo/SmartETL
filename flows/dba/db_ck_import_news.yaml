@@ -1,4 +1,5 @@
 name: load json to clickhouse
+description: 将层级化JSON结构的新闻数据写入ClickHouse表中
 arguments: 2
 consts:
   click1:
@@ -9,6 +10,8 @@ consts:
 loader: Json('data/news/news_' + arg1 + '.json')
 
 nodes:
+  db1: util.database.clickhouse.CK(**click1, table='user_push')
+
   count: Count
   print: Print
   select: SelectVal('nodes')
@@ -17,6 +20,6 @@ nodes:
   rename: RenameFields(title='content')
   addi: AddFields(time=arg2, push_type='message',message_id='0002')
   counter: Count
-  writer: database.CKWriter(**click1, table='user_push')
+  writer: DatabaseWriter(db1)
 
 processor: Chain(select, flat, select, flat, select2, addi, rename, writer, count)

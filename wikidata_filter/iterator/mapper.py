@@ -16,7 +16,7 @@ class Function(JsonIterator):
         self.kwargs = kwargs
 
     def on_data(self, data, *args):
-        return self.function(data, *args)
+        return self.function(data, *self.args, **self.kwargs)
 
 
 class Map(JsonIterator):

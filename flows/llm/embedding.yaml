@@ -9,7 +9,7 @@ loader: Input
 
 nodes:
 #  embed: Map('gestata.embedding.text_v1', api_base=bge_large_zh)
-#  embed: Map('gestata.embedding.text_v2', api_base=bge_large_en)
-  embed: Map('gestata.embedding.image_v1', api_base=bge_vl_mllm)
+  embed: Map('gestata.embedding.text_v2', api_base=bge_large_en)
+#  embed: Map('gestata.embedding.image_v1', api_base=bge_vl_mllm)
 
 processor: Chain(embed, Print())

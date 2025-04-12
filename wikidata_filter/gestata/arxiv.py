@@ -29,7 +29,7 @@ def search(topic: str, max_results: int = 50):
         return []
     papers = feed.get("entry")
     for paper in papers:
-        print(paper)
+        # print(paper)
         _id = paper["id"]
         _id = _id[_id.rfind('/')+1:]
         paper["_id"] = _id
