@@ -1,0 +1,29 @@
+from: local/db_envs.yaml
+name: 从kafka中读取arxiv元数据信息进行消费处理，
+description:  从kafka中读取arxiv元数据信息进行消费处理，将元数据先写入es中，然后拼接arxiv的html url下载arxiv html数据，然后对html的摘要
+  和内容进行向量化处理如库
+consts:
+  bge_large_zh: http://10.208.63.29:8001/embed
+  qdrant_api_base: http://10.60.1.145:6333
+  es_config:
+    host: '10.208.61.117'
+    port: 9200
+    index: arxiv_html_index
+    buffer_size: 3
+  kafka_config:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_gather
+    group_id: arxiv_group
+
+loader: database.kafka_v2.KafkaConsumer(**kafka_config)
+nodes:
+  writer_es: database.ESWriter(**es_config)
+  search: Map('gestata.arxiv_utils.splicing_characters',key='id', target_key='url_html')
+  write_count: gestata.arxiv_utils.WriteCount('data/arxiv_kafka_pro.txt')
+  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  save_file: WriteFiles('data/arxiv_html', name_key='id', suffix='.html')
+  pdf_extract: Map('gestata.arxiv.extract', target_key='paper')
+  arxiv_pro: gestata.arxiv_utils.ArxivProcess(bge_large_zh, qdrant,es_config)
+
+processor: Chain(Print("id"),writer_es,search,download,save_file,pdf_extract,arxiv_pro,write_count)
+

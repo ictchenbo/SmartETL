@@ -1,0 +1,46 @@
+from: local/db_envs.yaml
+name: arxiv论文下载
+description: 下载数据集中arxiv论文html,pdf格式，并保存在data/arxiv_html,arxiv_pdf下
+
+consts:
+  es_config:
+    host: '10.208.61.117'
+    port: 9200
+    index: arxiv_html_index
+    buffer_size: 3
+  kafka_config:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_gather
+    group_id: arxiv_group1
+  kafka_config_parse:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_parse2
+    group_id: arxiv_parse_group
+
+
+loader: database.kafka_v2.KafkaConsumer(**kafka_config)
+nodes:
+
+  #拼接html下载url
+  search: Map('util.strings.splicing_characters',key='id', target_key='url_html')
+  #下载html内容
+  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  #元数据集写入kafka
+  write_kafka: database.kafka.KafkaWriter(**kafka_config_parse,buffer_size=1)
+  #保存html文件
+  save_file: WriteFiles('data/arxiv_html', name_key='id', suffix='.html')
+  #拼接pdf下载url
+  search_pdf: Map('util.strings.splicing_characters_pdf',key='id', target_key='url_pdf')
+  #下载pdf内容
+  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf_content', most_times=3, ignore_error=True)
+  #保存pdf文件
+  save_pdf_file: WriteFiles('data/arxiv_pdf', name_key='id',content_key='pdf_content', suffix='.pdf')
+  #记录处理了多少个数据
+  write_count: gestata.arxiv_utils.WriteCount('data/arxiv_download_count2.txt')
+  chain1: Chain(search, download, save_file)
+  chain2: Chain(search_pdf,download_pdf,save_pdf_file)
+  #并行执行两个流程
+  fork: Fork(chain1, chain2)
+
+#processor: Chain(Print("id"),write_count, fork)
+processor: Chain(Print("id"),write_count,write_kafka,search_pdf,download_pdf,save_pdf_file)
