@@ -3,6 +3,8 @@ from: local/db_envs.yaml
 name: remove invalid news
 
 nodes:
+  db_es: util.database.elasticsearch.ES(**es1, index="goinv3_document_news")
+  db_qdrant: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v2')
   current: util.dates.current_ts(True)
   flat: FlatProperty('hits')
   flat2: Flat('hits')
@@ -10,8 +12,10 @@ nodes:
   abnormal_time: "=lambda t, current=current: t >= current "
   filter: Filter(abnormal_time, key='publish_time')
   format_time: Map('util.dates.millis2datetime', key='publish_time')
-  delete: database.elasticsearch.Delete(**es1, id_key="_id", index="goinv3_document_news")
+  delete_es: Map('gestata.dbops.delete', key='_id', target_key='_delete_es', db=db_es)
+  as_int: Map(int, key='_id')
+  delete_qd: Map('gestata.dbops.delete', key='_id', target_key='_delete_qd', db=db_qdrant)
 
 loader: web.api.Get('http://10.208.61.117:9200/goinv3_document_news/_search?sort=publish_time:desc&size=1000&_source=publish_time,title')
 
-processor: Chain(flat, flat2, select, filter, format_time, Print(), delete, Count())
+processor: Chain(flat, flat2, select, filter, format_time, Print(), delete_es, as_int, delete_qd, Count())

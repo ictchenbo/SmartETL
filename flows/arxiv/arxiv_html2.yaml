@@ -1,0 +1,15 @@
+from:
+  - local/db_envs.yaml
+  - flows/arxiv/arxiv_p1_search.yaml
+name: arxiv论文下载解析
+description: 通过命令行行输入搜索关键词，检索arXiv论文，获取其HTML网页，并解析，内容向量化写入向量化库
+
+nodes:
+  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  filter: FieldsNonEmpty('content')
+  save_file: WriteFiles('data/arxiv', name_key='_id', suffix='.html')
+  pdf_extract: Map('gestata.arxiv.extract', target_key='paper')
+  writer: WriteJson('test_data/arxiv_full_search.json', buffer_size=1)
+  chain2: Chain(search, Flat(), download, filter, save_file, pdf_extract, writer)
+
+processor: chain2

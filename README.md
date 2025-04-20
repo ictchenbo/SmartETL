@@ -64,6 +64,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.4.12
+1. **重要更新** 重构数据库相关组件，统一数据库操作导`util.database`模块中，Loader和Processor组件根据需要与特定数据库组件进行绑定 如`database.Scroll(mongo)`实现MongoDB数据库的数据读取
+2. 新增`SQLite`数据库组件
+3. 数据库操作相关流程全部更新
+4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](wikidata_filter/gestata/arxiv.py)
+
 - 2025.3.29
 1. 集成并改造王宁的arxiv下载处理流程
 

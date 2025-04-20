@@ -6,7 +6,7 @@ from .filter import (Filter, BlackList, WhiteList, Sample, Distinct, DistinctByD
 from .field_based import (Select, SelectVal, AddFields, RemoveFields, ReplaceFields, MergeFields, RenameFields,
                           CopyFields,
                           InjectField, ConcatFields, ConcatArray, RemoveEmptyOrNullFields)
-from .buffer import Buffer
+from .buffer import Buffer, DatabaseWriter
 from .collect import Collect, Sort
 from .aggs import Group, Reduce, ReduceBy
 

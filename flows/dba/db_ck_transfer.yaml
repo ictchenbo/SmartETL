@@ -1,5 +1,5 @@
 name: copy clickhouse table data from one server to another
-description: ClickHouse数据库表迁移/拷贝
+description: 对指定ClickHouse表，从一个数据库迁移/拷贝到另一个数据库
 arguments: 1
 consts:
   click1:
@@ -10,11 +10,11 @@ consts:
     host: <host2>
     tcp_port: 9000
 
-loader: database.CK(**click1, table=arg1)
-
 nodes:
+  db1: util.database.clickhouse.CK(**click1)
   print: Print
   counter: Count
   writer: database.CKWriter(**click2, table=arg1)
 
+loader: database.Scroll(db1, table=arg1)
 processor: Chain(print, counter, writer)

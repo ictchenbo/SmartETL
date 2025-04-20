@@ -12,13 +12,15 @@ consts:
     database: goinv3
     buffer_size: 1000
 
-loader: database.ES(**es_config, index=arg1)
 
 nodes:
+  db1: util.database.elasticsearch.ES(**es_config, index=arg1)
+  db2: util.database.clickhouse.CK(**ck_config, table=arg2)
+
   id_set: util.sets.from_csv('data/entity_id.csv')
   matcher: "=lambda item: item.get('mongo_id') not in id_set"
   filter: Filter(matcher=matcher)
   counter: Count(ticks=1000, label='Row-Filter')
-  writer: database.CKWriter(**ck_config, table=arg2)
 
-processor: Chain(filter, counter, writer)
+loader: database.Scroll(db)
+processor: Chain(filter, counter, DatabaseWriter(db2))

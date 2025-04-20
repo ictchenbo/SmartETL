@@ -1,0 +1,23 @@
+from: local/db_envs.yaml
+
+name: remove invalid news
+
+nodes:
+  db_qdrant2: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v2')
+  db_qdrant3: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v3')
+  min_time: util.dates.date2ts('2025-02-10', millis=True)
+  max_time: util.dates.current_ts(True)
+  normal_time: "=lambda r, min_time=min_time, max_time=max_time: r.get('publish_time') and min_time <= r['publish_time'] < max_time"
+  abnormal_time: "=lambda r, min_time=min_time, max_time=max_time: not r.get('publish_time') or r['publish_time'] >= max_time or len(r.get('content', '')) < 30 "
+  filter: Filter(normal_time)
+
+  select: Select('id', 'vector', 'title', 'content', 'publish_time', 'url', 'source')
+  delete: Function('wikidata_filter.gestata.dbops.delete', db_qdrant2)
+  writer: Function('wikidata_filter.gestata.dbops.upsert', db_qdrant3)
+  p_transfer: Chain(Filter(normal_time), select, Print('id', 'publish_time'), writer, Count())
+  p_delete: Chain(Filter(abnormal_time), Print('id', 'origin_publish_time', 'content'), delete, Count())
+
+
+loader: Function('wikidata_filter.gestata.dbops.scroll', db_qdrant2, with_vector=True, offset=1225767398)
+
+processor: p_delete

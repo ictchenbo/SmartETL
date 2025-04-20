@@ -7,7 +7,7 @@ consts:
     varchar: String
 
 nodes:
-  loader: database.clickhouse.CK(**click1, database='goinv3_2410')
+  db: util.database.clickhouse.CK(**click1, database='goinv3_2410')
 
   rename: RenameFields(name='table_name')
   flat_cols: Flat(key='columns', inherit_props=True)
@@ -19,5 +19,5 @@ nodes:
   adds: AddFields(database_name='goinv3_2410')
   write_csv: WriteCSV(f'data/{arg1}.csv', 'database_name', 'table_name', 'original_column_name', 'description')
 
-loader: database.meta.DBTables(loader)
+loader: Function('wikidata_filter.gestata.dbops.tables', db)
 processor: Chain(rename, flat_cols, rename1, map_type, map_nullable, filter, rename2, adds, Print(), write_csv)

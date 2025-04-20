@@ -7,13 +7,12 @@ consts:
   es1:
     index: goinv3_document_news
     buffer_size: 10
-  qdrant:
-    collection: chunk
   bge_large_zh: http://10.208.63.29:8001/embed
 
 loader: Directory('data/news', 'all')
 
 nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant)
   print: Print
   count1: Count(label='json')
 
@@ -24,7 +23,7 @@ nodes:
   flat_chunk: Flat(key='chunks', inherit_props=True)
   count3: Count(label='chunk')
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant)
+  write_qd: DatabaseWriter(qd, collection='chunk')
 #  chain_vector: vector
 
   rm_content: RemoveFields('title')

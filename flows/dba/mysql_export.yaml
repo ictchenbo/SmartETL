@@ -5,11 +5,11 @@ consts:
   save_path: data/goin_db/
 
 nodes:
-  loader1: database.mysql.MySQL(**mysql7, database=arg1)
+  mysql: util.database.mysql.MySQL(**mysql7, database=arg1)
   rename: RenameFields(name='table')
   get_name: SelectVal('name')
-  query: dbops.SQLDump(loader1)
+  query: Function('wikidata_filter.gestata.dbops.dump')
   writer: WriteJson(save_path + arg1+'.json', mode='gzip')
 
-loader: database.meta.DBTables(loader1)
+loader: Function('wikidata_filter.gestata.dbops.tables', mysql)
 processor: Chain(rename, query, writer, Count())

@@ -1,15 +1,18 @@
-import json
-
+from wikidata_filter.util.database.base import Database
 import requests
 
 
-class Qdrant:
-    def __init__(self, host: str = 'localhost', port: int = 6333, api_key=None):
+class Qdrant(Database):
+    def __init__(self, host: str = 'localhost',
+                 port: int = 6333,
+                 api_key=None,
+                 collection: str = None):
         self.api_base = f'http://{host}:{port}'
         self.api_key = api_key
         self.headers = {}
         if api_key:
             self.headers['api-key'] = api_key
+        self.collection = collection
 
     def index_exists(self, index: str):
         res = requests.get(f'{self.api_base}/collections/{index}/exists', headers=self.headers)
@@ -40,11 +43,52 @@ class Qdrant:
         print("ERROR: ", res.text)
         return False
 
-    def upsert(self, index: str, items: list):
+    def scroll(self, batch_size: int = 1000,
+               with_payload: bool = True,
+               with_vector: bool = False,
+               flat: bool = True,
+               offset: int or str = None,
+               collection: str = None,
+               **kwargs):
+        collection = collection or self.collection
+        data = {
+            "limit": batch_size,
+            "with_payload": with_payload,
+            "with_vector": with_vector
+        }
+        if offset is not None:
+            data["offset"] = offset
+        while True:
+            res = requests.post(f'{self.api_base}/collections/{collection}/points/scroll', json=data,
+                                headers=self.headers)
+            if res.status_code == 200:
+                result = res.json()["result"]
+                for point in result["points"]:
+                    ret = {'id': point['id']}
+                    if flat:
+                        if with_payload:
+                            ret.update(**point.get('payload', {}))
+                        if with_vector:
+                            ret['vector'] = point.get('vector')
+                    yield ret
+                if "next_page_offset" in result:
+                    data["offset"] = result["next_page_offset"]
+                else:
+                    break
+            else:
+                print(res.text)
+                break
+
+    def upsert(self, items: dict or list,
+               vector_field: str = 'vector',
+               collection: str = None, **kwargs):
         rows = []
+        if not isinstance(items, list):
+            items = [items]
+        collection = collection or self.collection
         for item in items:
             row = {
-                'id': item.pop('_id'),
+                'id': item.pop('_id') if '_id' in item else item.pop('id'),
                 'vector': item.pop('vector'),
                 'payload': item
             }
@@ -52,8 +96,7 @@ class Qdrant:
         data = {
             "points": rows
         }
-        print(json.dumps(data, ensure_ascii=False))
-        res = requests.put(f'{self.api_base}/collections/{index}/points', json=data, headers=self.headers)
+        res = requests.put(f'{self.api_base}/collections/{collection}/points', json=data, headers=self.headers)
         if res.status_code == 200:
             data = res.json()
             if data['status'] == 'ok':
@@ -63,16 +106,22 @@ class Qdrant:
         print("ERROR: ", res.text)
         return False
 
-    def search(self, index: str, query_vector: list, filter_=None, offset: int = 0, limit: int = 5):
+    def search(self, query_vector: list,
+               filter_: dict = None,
+               offset: int = 0,
+               limit: int = 5,
+               collection: str = None,
+               **kwargs):
         data = {
             'vector': query_vector,
             'offset': offset,
             'limit': limit,
             'with_payload': True
         }
+        collection = collection or self.collection
         if filter_:
             data['filter'] = filter_
-        res = requests.post(f'{self.api_base}/collections/{index}/points/search', json=data, headers=self.headers)
+        res = requests.post(f'{self.api_base}/collections/{collection}/points/search', json=data, headers=self.headers)
         if res.status_code == 200:
             result = res.json()['result']
             rows = []
@@ -83,3 +132,29 @@ class Qdrant:
                 rows.append(payload)
             return rows
         return None
+
+    def delete(self, ids, collection: str = None, **kwargs):
+        rows = ids
+        if not isinstance(rows, list):
+            rows = [ids]
+        ids = []
+        for row in rows:
+            if isinstance(row, dict):
+                ids.append(row.get("_id") or row.get("id"))
+            else:
+                ids.append(row)
+        collection = collection or self.collection
+        data = {
+            "points": ids
+        }
+        res = requests.post(f'{self.api_base}/collections/{collection}/points/delete', json=data, headers=self.headers)
+        if res.status_code == 200:
+            return True
+        else:
+            print(res.text)
+            return False
+
+
+if __name__ == '__main__':
+    client = Qdrant("10.60.1.145", collection="chunk_news_v2")
+    client.delete(1235312132)

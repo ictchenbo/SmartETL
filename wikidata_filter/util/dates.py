@@ -15,7 +15,7 @@ YEAR_DAYS = [365, 366]
 def date2ts(dt: str, fmt='%Y-%m-%d', millis=False) -> int:
     """字符串日期转时间戳"""
     time1 = datetime.strptime(dt, fmt)
-    time2 = datetime.strptime("1970-01-01 00:00:00", fmt)
+    time2 = datetime.strptime("1970-01-01", fmt)
 
     diff = time1 - time2
     if millis:

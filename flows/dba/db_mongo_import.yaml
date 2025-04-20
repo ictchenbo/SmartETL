@@ -18,8 +18,9 @@ consts:
 loader: JsonLine(arg1)
 
 nodes:
+  db: util.database.mongodb.MongoDB(**mongo1)
   print: Print
   counter: Count
-  writer: database.MongoWriter(**mongo2)
+  writer: DatabaseWriter(db, table=arg1)
 
 processor: Chain(writer, counter)

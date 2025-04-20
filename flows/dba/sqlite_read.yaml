@@ -1,0 +1,13 @@
+name: sqlite db read
+arguments: 0
+consts:
+  db_path: data/专利/CN20250401截止.db
+
+nodes:
+  db: util.database.sqlite.SQLite(db_path, paging=False)
+
+#loader: database.Tables(db, columns=True)
+loader: database.Scroll(db, table='Data')
+
+#processor: Chain(Print(), Count())
+processor: Chain(WriteJson('data/专利/patent.json'), Count())

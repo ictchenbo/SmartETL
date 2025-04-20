@@ -3,14 +3,14 @@ from: flows/news/p1_kafka.yaml
 name: translate and vectorize
 description: 对新闻标题和正文基于大模型翻译，向量化并写入向量库
 consts:
-  qdrant:
-    collection: chunk_news_v2
   es1:
     index: goinv3_document_news
   chatglm4: http://10.208.63.29:8888
   bge_large_zh: http://10.208.63.29:8001/embed
 
 nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v3')
+
   prompt: util.files.text('config/prompt/news_translate.txt')
   prompt1: util.files.text('config/prompt/news_translate_abs.txt')
   count_es: Count(ticks=10, label='Write-ES')
@@ -26,7 +26,7 @@ nodes:
 
   write_es: database.ESWriter(**es1, buffer_size=1)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=1)
+  write_qd: DatabaseWriter(qd, buffer_size=1)
   fork: Fork(Chain(write_es, count_es), Chain(vector, write_qd, count_qd), copy_data=True)
 
   chain3: Chain(rename, trans_title, translate, fork)
