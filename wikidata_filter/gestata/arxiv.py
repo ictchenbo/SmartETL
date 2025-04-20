@@ -188,6 +188,9 @@ def extract(row: dict,
     对输入的arxiv论文字典对象进行解析（假设其包含html网页正文字段及其url字段）
     输出解析后的结果
     """
+    if not row.get(content_key):
+        print('当前论文id没有html文件')
+        return None
     html = row[content_key]
     base_url = row[base_url_key]
     return extract_from_html(html, base_url)
