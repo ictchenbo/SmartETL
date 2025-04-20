@@ -112,7 +112,7 @@ def parse_tables(section):
     return ret
 
 
-def extract_from_html(source: str, base_url: str):
+def extract_from_html(source: str, base_url: str = None):
     """
     基于arxiv官网HTML网页抽取论文信息，参考：https://arxiv.org/html/2503.15454v3
     注意：网页布局可能发生变化，注意检查更新
@@ -164,7 +164,7 @@ def extract_from_html(source: str, base_url: str):
         paper_info['sections'].append({
             'title': title,
             'content': content,
-            'figures': parse_figures(section, base_url),
+            'figures': parse_figures(section, base_url) if base_url else None,
             'tables': parse_tables(section)
         })
 

@@ -2,7 +2,7 @@ from:
   - local/db_envs.yaml
   - flows/arxiv/arxiv_p1_meta.yaml
 name: arxiv论文下载解析
-description: 通过命令行行输入搜索关键词，检索arXiv论文，获取其HTML网页，并解析，内容向量化写入向量化库
+description: 获取其HTML网页，解析论文结构，内容向量化写入向量化库
 consts:
   bge_large_zh: http://10.208.63.29:8001/embed
 
@@ -12,17 +12,10 @@ nodes:
 
   download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
   filter: FieldsNonEmpty('content')
-  save_file: WriteFiles('data/arxiv', name_key='_id', suffix='.html')
-  pdf_extract: Map('gestata.arxiv.extract', target_key='paper')
-#  chunk: Map('util.split.simple', key='md_content',target_key='chunks')
-#  flat_chunk: Flat(key='chunks', inherit_props=True)
-#  vector: model.embed.Local(api_base=bge_large_zh, key='chunks', target_key='vector')
-#  write_qd: DatabaseWriter(qd, buffer_size=1)
-
-#  chain1: Chain(search, Flat(), download, save_file, pdf_extract, chunk, flat_chunk, vector, write_qd, Count(ticks=1))
+  save: WriteFiles('data/arxiv', name_key='_id', suffix='.html')
+  extract: Map('gestata.arxiv.extract', target_key='paper')
 
   writer: WriteJson('test_data/arxiv_full.json', buffer_size=1)
-#  chain2: Chain(search, Flat(), download, filter, save_file, pdf_extract, writer)
-  chain2: Chain(search, download, filter, save_file, pdf_extract, writer)
+  chain2: Chain(search, download, filter, save, extract, writer)
 
 processor: chain2

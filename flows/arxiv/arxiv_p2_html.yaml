@@ -1,0 +1,26 @@
+from:
+  - local/db_envs.yaml
+name: arXiv论文HTML解析与索引流程
+description: 对论文HTML进行解析并建立摘要和正文的向量索引
+
+loader: Directory('data/arxiv', '.html')
+
+nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant)
+
+  select: SelectVal('data')
+  extract: Map('gestata.arxiv.extract_from_html')
+
+  vector1: model.embed.Local(api_base=bge_large_en, key='abstract', target_key='vector')
+  write1: DatabaseWriter(qd, buffer_size=1, collection='chunk_abstract')
+  chain1: Chain(Select('abstract'), vector1, write1)
+
+  flat: FlatProperty('sections', inherit_props=True)
+  select2: Select('content')
+  chunk: Map('util.split.simple', key='content',target_key='chunks')
+  flat_chunk: Flat(key='chunks')
+  vector2: model.embed.Local(api_base=bge_large_en, key='chunks', target_key='vector')
+  write2: DatabaseWriter(qd, buffer_size=1, collection='chunk_content')
+  chain2: Chain(Select('sections', flat, select2, chunk, flat_chunk, vector2, write2)
+
+processor: Chain(select, extract, Fork(chain1, chain2, copy_data=True))
