@@ -27,6 +27,7 @@ class KafkaConsumer(DataProvider):
         }
         # 创建消费者实例
         self.consumer = Consumer(self.conf)
+
     def iter(self) -> Iterable[Any]:
         # 订阅主题
         self.consumer.subscribe([self.topic])
@@ -54,4 +55,3 @@ class KafkaConsumer(DataProvider):
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
-

@@ -1,0 +1,11 @@
+name: json数据写入kafka
+consts:
+  kafka_config:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic:  arxiv_gather
+
+loader: JsonLine('test_data/sorted_arxiv.json')
+nodes:
+  writer: database.kafka.KafkaWriter(**kafka_config, buffer_size=50)
+
+processor: writer

@@ -1,0 +1,22 @@
+name: arxiv论文入库ES和Qdrant
+
+consts:
+  bge_large: http://10.208.63.29:8001/embed
+  qd_config:
+    host: '10.60.1.145'
+  es_config:
+    host: '10.208.61.117'
+    port: 9200
+    index: doc_arxiv
+    buffer_size: 3
+  consumer:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_parse
+    group_id: arxiv_parse
+
+loader: database.kafka_v2.KafkaConsumer(**consumer)
+nodes:
+  # 入库处理
+  write: gestata.arxiv.ArxivProcess(bge_large, qd_config, es_config)
+
+processor: write

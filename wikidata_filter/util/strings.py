@@ -19,15 +19,3 @@ def format(val: str, *args, **kwargs):
 def f(method: str):
     assert method in methods, "method not supported"
     return methods[method]
-
-
-def splicing_characters(string_data: str):
-    import time
-    time.sleep(7)
-    return f"https://arxiv.org/html/{string_data}"
-
-
-def splicing_characters_pdf(string_data: str):
-    import time
-    time.sleep(7)
-    return f"https://arxiv.org/pdf/{string_data}"

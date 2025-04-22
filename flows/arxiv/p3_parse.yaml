@@ -1,0 +1,19 @@
+name: arxiv论文解析
+
+consts:
+  consumer:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_html
+    group_id: arxiv_html
+  producer:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_parse
+
+loader: database.kafka_v2.KafkaConsumer(**consumer)
+nodes:
+  #论文解析
+  parse: Map('gestata.arxiv.extract')
+  #元数据集写入kafka
+  write: database.kafka.KafkaWriter(**producer, buffer_size=1)
+
+processor: Chain(parse, write)

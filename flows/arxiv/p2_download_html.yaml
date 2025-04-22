@@ -1,0 +1,24 @@
+name: arxiv论文HTML下载
+
+consts:
+  consumer:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_task
+    group_id: arxiv_task
+  producer:
+    kafka_ip: 10.60.1.148:9092
+    kafka_topic: arxiv_html
+
+
+loader: database.kafka_v2.KafkaConsumer(**consumer)
+nodes:
+  #拼接html下载url
+  mk_url: Map('gestata.arxiv.url4html',key='id', target_key='url_html')
+  #下载html内容
+  download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
+  #保存html文件
+  save_file: WriteFiles('data/arxiv_html', name_key='id', suffix='.html')
+  #元数据集写入kafka
+  write_kafka: database.kafka.KafkaWriter(**producer, buffer_size=1)
+
+processor: Chain(mk_url, download, save_file, write_kafka)
