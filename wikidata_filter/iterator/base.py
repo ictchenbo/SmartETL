@@ -227,3 +227,13 @@ class Wait(JsonIterator):
         import time
         time.sleep(self.seconds)
         return data
+
+
+class WriteQueue(JsonIterator):
+    """写入队列"""
+    def __init__(self, queue):
+        self.queue = queue
+
+    def on_data(self, data: Any, *args):
+        self.queue.append(data)
+        return data

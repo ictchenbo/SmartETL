@@ -24,6 +24,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
    - [Common Crawl网页存档数据](flows/cc.yaml)
    - [arXiv论文下载](flows/arxiv.yaml)
+   - [通用网站采集](flows/crawler/gen1.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -64,6 +65,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - ...
 
 ## New！
+- 2025.4.24
+1. 实现[通用爬虫采集流程](flows/crawler/gen1.yaml)，基于提供的网站地址，不断发现链接并采集内容，提取标题和正文
+
+- 2025.4.20
+1. 完善arxiv论文采集处理流程
+
 - 2025.4.12
 1. **重要更新** 重构数据库相关组件，统一数据库操作导`util.database`模块中，Loader和Processor组件根据需要与特定数据库组件进行绑定 如`database.Scroll(mongo)`实现MongoDB数据库的数据读取
 2. 新增`SQLite`数据库组件

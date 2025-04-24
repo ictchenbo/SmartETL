@@ -19,3 +19,7 @@ def format(val: str, *args, **kwargs):
 def f(method: str):
     assert method in methods, "method not supported"
     return methods[method]
+
+
+def decode(v: bytes, encoding='utf8'):
+    return v.decode(encoding)

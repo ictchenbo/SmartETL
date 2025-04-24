@@ -118,3 +118,30 @@ class Function(DataProvider):
                 yield item
         else:
             yield res
+
+
+class QueueLoader(DataProvider):
+    """基于本地队列的加载器"""
+    def __init__(self, timeout: int = 60):
+        self.queue = []
+        self.timeout = timeout
+
+    def iter(self):
+        while self.queue:
+            item = self.queue.pop(0)
+            yield item
+
+
+class MultiLoader(DataProvider):
+    """组合多个loader"""
+    def __init__(self, *loaders: DataProvider):
+        self.loaders = loaders
+
+    def iter(self):
+        for loader in self.loaders:
+            res = loader.iter()
+            if isinstance(res, GeneratorType):
+                for item in res:
+                    yield item
+            else:
+                yield res
