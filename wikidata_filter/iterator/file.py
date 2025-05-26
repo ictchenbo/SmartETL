@@ -1,6 +1,5 @@
 """输出到文件的算子"""
 import os
-import json
 import gzip
 from typing import Any
 
@@ -115,11 +114,24 @@ class WriteCSV(WriteText):
 
 class WriteFiles(DictProcessorBase):
     """将每个输入按照指定模式写到单独的文件中"""
-    def __init__(self, output_dir: str, name_key='id', content_key='content', suffix=None):
+    def __init__(self,
+                 output_dir: str,
+                 name_key='id',
+                 content_key='content',
+                 suffix=None,
+                 output_format='auto'):
+        """
+        :param output_dir 输出目录
+        :param name_key 文件名成字段名
+        :param content_key 文件内容字段名，根据数据类型生成文件及output_format参数，`bytes`写二进制文件；`dict`写JSON文件；其他按字符串
+        :param suffix 文件后缀名
+        :param output_format 指定非`bytes`类型数据的输出方式  `auto` dict按JSON格式，其他按字符串；`json`按JSON格式；`str`按简单字符串
+        """
         self.output_dir = output_dir
         self.name_key = name_key
         self.content_key = content_key
         self.suffix = suffix
+        self.output_format = output_format
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -136,14 +148,24 @@ class WriteFiles(DictProcessorBase):
                 print("Warning: empty content to write", filepath)
                 return data
         if isinstance(content, bytes):
+            # bytes类型，忽略output_format参数
             with open(filepath, 'wb') as fout:
                 fout.write(content)
-        elif isinstance(content, dict):
-            with open(filepath, 'w', encoding='utf8') as fout:
-                dump(content, fout)
         else:
+            # 其他类型 结合output_format进行不同输出
             with open(filepath, 'w', encoding='utf8') as fout:
-                fout.write(str(data[self.content_key]))
+                if self.output_format == 'auto':
+                    # 自动选择类型：dict->json, otherwise->str
+                    if isinstance(content, dict):
+                        dump(content, fout)
+                    else:
+                        fout.write(str(content))
+                elif self.output_format == 'json':
+                    # *->json
+                    dump(content, fout)
+                else:
+                    # *->str
+                    fout.write(str(content))
         print("file saved:", filepath)
         return data
 
@@ -174,7 +196,7 @@ class WriteJsonScroll(DictProcessorBase):
 
 
 class WriteJsonIf(WriteJsonScroll):
-    """基于过滤器判断，如果条件不满足，则进行备份；否则正常通过"""
+    """基于过滤器判断，如果条件不满足，则进行备份；否则正常通过。可替换为IfElse(chain, WriteJsonScroll)"""
     def __init__(self, the_filter, output_dir: str, mode="gzip", scroll=100):
         super().__init__(output_dir, mode=mode, scroll=scroll)
         self.the_filter = the_filter

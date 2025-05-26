@@ -1,42 +1,49 @@
-from wikidata_filter.util.database.base import Database
+import uuid
 import requests
+
+from wikidata_filter.util.database.base import Database
 
 
 class Qdrant(Database):
     def __init__(self, host: str = 'localhost',
                  port: int = 6333,
                  api_key=None,
-                 collection: str = None):
+                 auto_create: bool = False,
+                 collection: str = None,
+                 **kwargs):
         self.api_base = f'http://{host}:{port}'
         self.api_key = api_key
         self.headers = {}
         if api_key:
             self.headers['api-key'] = api_key
         self.collection = collection
+        if collection and auto_create and not self.index_exists(collection):
+            self.index_create(collection, **kwargs)
 
     def index_exists(self, index: str):
+        """判断集合是否存在"""
         res = requests.get(f'{self.api_base}/collections/{index}/exists', headers=self.headers)
         if res.status_code == 200 and res.json()['result']['exists']:
             return True
         print("ERROR: ", res.text)
         return False
 
-    def index_create(self, index: str, size: int, distance: str = 'Cosine'):
-        if not self.index_exists(index):
-            data = {
-                "vectors": {
-                    "size": size,
-                    "distance": distance
-                }
+    def index_create(self, index: str, size: int = 1024, distance: str = 'Cosine'):
+        """创建集合"""
+        data = {
+            "vectors": {
+                "size": size,
+                "distance": distance
             }
-            res = requests.put(f'{self.api_base}/collections/{index}', json=data, headers=self.headers)
-            if res.status_code == 200 and res.json()['status'] == 'ok':
-                return True
-            print("ERROR: ", res.text)
-            return False
-        return True
+        }
+        res = requests.put(f'{self.api_base}/collections/{index}', json=data, headers=self.headers)
+        if res.status_code == 200 and res.json()['status'] == 'ok':
+            return True
+        print("ERROR: ", res.text)
+        return False
 
     def index_drop(self, index: str):
+        """删除集合"""
         res = requests.delete(f'{self.api_base}/collections/{index}', headers=self.headers)
         if res.status_code == 200 and res.json()['status'] == 'ok':
             return True
@@ -50,6 +57,7 @@ class Qdrant(Database):
                offset: int or str = None,
                collection: str = None,
                **kwargs):
+        """滚动遍历数据"""
         collection = collection or self.collection
         data = {
             "limit": batch_size,
@@ -87,8 +95,15 @@ class Qdrant(Database):
             items = [items]
         collection = collection or self.collection
         for item in items:
+            _id = None
+            if '_id' in item:
+                _id = item.pop('_id')
+            elif 'id' in item:
+                _id = item.pop('id')
+            else:
+                _id = str(uuid.uuid4())
             row = {
-                'id': item.pop('_id') if '_id' in item else item.pop('id'),
+                'id': _id,
                 'vector': item.pop('vector'),
                 'payload': item
             }

@@ -2,7 +2,7 @@ from .base import JsonIterator, ToDict, ToArray, Repeat, Prompt, Print, Count, A
 from .flow_control import Fork, Chain, If, IfElse, While
 from .mapper import Function, Map, MapMulti, MapFill, MapRules, Flat, FlatMap, FlatProperty
 from .filter import (Filter, BlackList, WhiteList, Sample, Distinct, DistinctByDatabase,
-                     TakeN, SkipN, FieldsExist, FieldsNonEmpty, All, Any, Not)
+                     TakeN, SkipN, FieldsExist, FieldsNonEmpty, All, Any, Not, FilterByTime, KeywordFilter, LengthFilter)
 from .field_based import (Select, SelectVal, AddFields, RemoveFields, ReplaceFields, MergeFields, RenameFields,
                           CopyFields,
                           InjectField, ConcatFields, ConcatArray, RemoveEmptyOrNullFields)

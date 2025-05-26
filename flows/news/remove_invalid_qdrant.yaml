@@ -18,6 +18,6 @@ nodes:
   p_delete: Chain(Filter(abnormal_time), Print('id', 'origin_publish_time', 'content'), delete, Count())
 
 
-loader: Function('wikidata_filter.gestata.dbops.scroll', db_qdrant2, with_vector=True, offset=1225767398)
+loader: Function('wikidata_filter.gestata.dbops.scroll', db_qdrant2, with_vector=True, offset=1225767275)
 
 processor: p_delete

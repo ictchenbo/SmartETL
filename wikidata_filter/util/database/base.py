@@ -14,12 +14,20 @@ class Database:
         """以upsert模式写入数据"""
         pass
 
+    def search(self, **kwargs):
+        """搜索数据"""
+        pass
+
     def scroll(self, **kwargs):
         """扫描数据库"""
         pass
 
     def exists(self, _id, **kwargs):
         """判断制定记录是否存在"""
+        pass
+
+    def get(self, _id, **kwargs):
+        """根据ID获取记录"""
         pass
 
     def delete(self, ids, **kwargs):

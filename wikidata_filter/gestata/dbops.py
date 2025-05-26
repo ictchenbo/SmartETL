@@ -18,12 +18,17 @@ def tables(db: Database, *database_list, columns: bool = False):
             }
 
 
+def search(db: Database, **kwargs):
+    return db.search(**kwargs)
+
+
 def scroll(db: Database, **kwargs):
     return db.scroll(**kwargs)
 
 
 def upsert(row: dict or list, db: Database, **kwargs):
     db.upsert(row, **kwargs)
+    return row
 
 
 def delete(_id, db: Database, **kwargs):

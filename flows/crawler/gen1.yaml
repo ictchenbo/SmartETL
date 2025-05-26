@@ -1,5 +1,5 @@
 name: 通用爬虫流程
-arguments: 1
+arguments: 2
 consts:
   headers:
     User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -12,10 +12,10 @@ nodes:
   loader2: QueueLoader
   distinct: Distinct
   as_dict: ToDict
-  download: Map('util.http.text', key='d', target_key='content', most_times=1, ignore_error=True, content_type='text/html', timeout=30, headers=headers, proxies=proxy)
+  download: Map('util.http.text', key='d', target_key='content', most_times=1, ignore_error=True, content_type='text/html', timeout=30, headers=headers, proxies=proxy, verify=False)
   filter: FieldsNonEmpty('content')
   extract: Map('gestata.crawler.extract', base_url_key='d')
-  writer: WriteJson('data/spider/pages.json', append=True, buffer_size=1)
+  writer: WriteJson(f'data/spider/pages-{arg2}.json', append=True, buffer_size=1)
   flat: Flat(key='links')
   append: WriteQueue(loader2.queue)
 

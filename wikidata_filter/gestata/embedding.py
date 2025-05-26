@@ -48,13 +48,28 @@ def text_v2(text: str,
 def image_v1(data: str or bytes,
              api_base: str = 'http://10.208.63.29:8001/embed_image',
              **kwargs):
-    """简单图片embedding接口"""
+    """图文多模态的图片embedding接口"""
     if isinstance(data, bytes):
-        files = {"file": ("image.jpg", data, "image/jpeg")}
+        files = {"file": ("image.jpg", data, "image/jpg")}
     else:
-        files = {"file": (data, open(data, "rb"), "image/jpeg")}
+        files = {"file": (data, open(data, "rb"), "image/jpg")}
     try:
         response = requests.post(api_base, files=files)
+        if response.status_code == 200:
+            res = response.json()
+            return res
+        else:
+            print(f"Error: {response.status_code}", response.text)
+    except:
+        print("Error when access", api_base)
+
+    return []
+
+
+def image_text_v1(text: str, api_base: str = 'http://10.208.63.29:8001/embed_image', **kwargs):
+    """图文多模态的文本embedding接口"""
+    try:
+        response = requests.post(api_base, data={"text": text})
         if response.status_code == 200:
             res = response.json()
             return res

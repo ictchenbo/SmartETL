@@ -1,0 +1,43 @@
+from: local/db_envs.yaml
+name: arxiv论文解析
+description: 对本地html/pdf格式论文，按照arxiv格式进行解析，内容向量化写入向量化库
+consts:
+  qdrant:
+    collection: chunk_arxiv
+  bge_large_zh: http://10.208.63.29:8001/embed
+  mineru_api: http://10.60.1.148:6200/api/file/_extract
+  path: data/arxiv/task/
+  type_mapping:
+    .html: .raw
+    .pdf: .raw
+
+nodes:
+  loader1: directory.Directory(path, 'all', type_mapping=type_mapping)
+#  loader2: JsonLine('data/arxiv/mineru.result.json')
+
+  is_html: "=lambda r: r['filename'].endswith('.html')"
+  html_extract: Map('gestata.arxiv.extract', target_key='paper', content_key='data')
+
+  mk_html_name: "Map(lambda r: 'data/arxiv/task/' + r['filename'][:-3] + 'html', target_key='html_file')"
+  no_html: Not(Filter('util.files.exists'), key='html_file')
+  pdf2md: Map('gestata.mineru.extract', target_key='paper_md', api_base=mineru_api, name_key='filename', content_key='data')
+  md_save: WriteFiles('data/arxiv/markdown', name_key='filename', content_key='paper_md', suffix='.md')
+  md2json: Map('gestata.markdown.extract', key='paper_md', target_key='paper_json_tree', tables='json')
+  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+  pdf_chain: Chain(mk_html_name, no_html, pdf2md, md_save, md2json, json2paper)
+
+  ifelse: IfElse(html_extract, pdf_chain, matcher=is_html)
+
+  remove: RemoveFields('html_file', 'data', 'paper_md', 'paper_json_tree')
+  select: FlatProperty('paper', inherit_props=True)
+  writer: WriteJson('data/arxiv/result.json', buffer_size=1)
+
+  test_md: Chain(TakeN(1), md2json, md_save, writer, Print('paper'))
+
+loader: loader1
+processor: Chain(ifelse, remove, select, writer, Count(ticks=1))
+
+#loader: loader2
+#processor: test_md
+
+#processor: Chain(mk_html_name, Print('filename', 'html_file'))

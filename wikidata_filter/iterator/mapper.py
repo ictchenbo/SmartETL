@@ -43,18 +43,17 @@ class Map(JsonIterator):
         self.kwargs = kwargs
 
     def on_data(self, data: Any, *args):
-        # print('on_data', data)
-        val = data
-        if self.key is not None:
-            if isinstance(data, dict):
-                if self.key in data:
-                    val = data[self.key]
-                else:
-                    # print("Warning, no such field:", self.key)
-                    return data
-            else:
+        if self.key or not self.target_key:
+            if not isinstance(data, dict):
                 print("Warning, data is not dict:", data)
                 return data
+
+        val = data
+        if self.key is not None:
+            if self.key not in data:
+                print(f"Warning, the key'{self.key}' not in data:", data)
+                return data
+            val = data[self.key]
         try:
             # 直接传递构造器中的其他位置参数和命名参数
             res_val = self.mapper(val, *self.args, **self.kwargs)
@@ -62,15 +61,10 @@ class Map(JsonIterator):
             traceback.print_exc()
             res_val = None
 
-        if not self.target_key:
-            return res_val
-
-        if not isinstance(data, dict):
-            print("Warning, data is not dict, can't set property")
-            return res_val
-
-        data[self.target_key] = res_val
-        return data
+        if self.target_key:
+            data[self.target_key] = res_val
+            return data
+        return res_val
 
     def __str__(self):
         s1 = f"'{self.key}'" if self.key else "None"

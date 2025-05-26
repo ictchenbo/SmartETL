@@ -1,7 +1,9 @@
 import os
+import traceback
 from typing import Iterable, Any
 
 from wikidata_filter.loader.base import DataProvider
+from .file import BinaryFile
 from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
 from .markdown import Markdown
 # from .xls import ExcelStream
@@ -12,6 +14,7 @@ from .markdown import Markdown
 
 
 LOADERS = {
+    '.raw': BinaryFile,
     '.txt': Text,
     '.csv': CSV,
     '.yaml': Yaml,
@@ -80,11 +83,15 @@ class Directory(DataProvider):
     def gen_doc(self, file_path):
         filename = os.path.split(file_path)[1]
         print("processing", file_path)
-        for row in self.get_loader(file_path):
-            yield {
-                "filename": filename,
-                "data": row
-            }
+        try:
+            for row in self.get_loader(file_path):
+                yield {
+                    "filename": filename,
+                    "data": row
+                }
+        except:
+            print("Error occur when opening file:", file_path)
+            traceback.print_exc()
 
     def iter(self) -> Iterable[Any]:
         for file_path in self.path:

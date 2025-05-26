@@ -7,11 +7,10 @@ import xmltodict
 import base64
 from lxml.html import fromstring, HtmlElement, etree
 from wikidata_filter.util.http import download_image
-from wikidata_filter.gestata.embedding import text_v2
+from wikidata_filter.gestata.embedding import text_v2, image_v1
 from wikidata_filter.iterator import JsonIterator
-from wikidata_filter.iterator.database import ESWriter
-from wikidata_filter.iterator.database.qdrant import Qdrant
-from wikidata_filter.iterator.model.embed import Local
+from wikidata_filter.iterator.database.elasticsearch import ESWriter
+from wikidata_filter.util.database.qdrant import Qdrant
 from wikidata_filter.util.logger import ProductionLogger
 from wikidata_filter.util.split import simple
 
@@ -192,17 +191,17 @@ def extract_from_html(source: str, base_url: str = None):
 
 def extract(row: dict,
             content_key: str = "content",
-            base_url_key: str = "url_html",
+            url_key: str = "url_html",
             **kwargs):
     """
     对输入的arxiv论文字典对象进行解析（假设其包含html网页正文字段及其url字段）
     输出解析后的结果
     """
-    if not row.get(content_key):
+    html = row.get(content_key)
+    if not html:
         print('当前论文id没有html文件')
         return None
-    html = row[content_key]
-    base_url = row[base_url_key]
+    base_url = row.get(url_key)
     return extract_from_html(html, base_url)
 
 
@@ -289,14 +288,16 @@ class ArxivProcess(JsonIterator):
     """
     arxiv html页面数据处理类
     """
-
-    def __init__(self, bge_large_zh: str, qd_config: Dict[str, Any] = None, es_config: Dict[str, Any] = None):
-
-        self.embed_local = Local(api_base=bge_large_zh, key='content', target_key='vector')
-
-        self.bge_large_zh = bge_large_zh  # 向量化服务ip
+    def __init__(self,
+                 text_embedding_api: str,
+                 image_embedding_api: str = None,
+                 qd_config: Dict[str, Any] = None,
+                 es_config: Dict[str, Any] = None,
+                 **kwargs):
+        self.text_embedding_api = text_embedding_api
+        self.image_embedding_api = image_embedding_api
         self.headers = {}
-        self.qdrant_writer = Qdrant(**qd_config, buffer_size=1)
+        self.qdrant_writer = Qdrant(**qd_config)
         self.ESWriter = ESWriter(**es_config)
         self.es_index = 'arxiv_extract_html_v2'
         self.logger = ProductionLogger(name="arxiv_pro", log_level=logging.DEBUG,
@@ -312,12 +313,13 @@ class ArxivProcess(JsonIterator):
             return {}
         if paper:
             abstract = paper.get('abstract')
-            self.embed_and_write2(index=1, _id=_id, content=abstract, collection='chunk_arxiv_abstract2505')
+            self.embed_and_write2(_id=_id, content=abstract, collection='chunk_arxiv_abstract2505')
             sections = paper.get('sections')
-            for index, section in enumerate(sections,start=1):
+            all_figures = []
+            for index, section in enumerate(sections, start=1):
                 figures = section.get('figures')
                 if figures:
-                    self.image_embed_and_write(_id=_id, index=index, figures=figures)
+                    all_figures.extend(figures)
                 title = section['title'].lower()
                 content = section['content']
                 collection = 'chunk_arxiv_discusss2505'
@@ -327,48 +329,39 @@ class ArxivProcess(JsonIterator):
                     collection = 'chunk_arxiv_method2505'
                 elif 'experiment' in title:
                     collection = 'chunk_arxiv_experiment2505'
-                self.embed_and_write2(index=index, _id=_id, content=content, collection=collection)
+                self.embed_and_write2(_id=_id, content=content, collection=collection)
                 self.ESWriter.index_name = self.es_index
-                es_data = [paper]
-                self.ESWriter.write_batch(rows=es_data)
+                self.ESWriter.write_batch(rows=[paper])
+            if all_figures and self.image_embedding_api:
+                self.image_embed_and_write(_id=_id, figures=all_figures)
         return data
 
-    def embed_and_write2(self, index: int, _id: int, content: str, collection: str):
-        """arxiv内容向量化方法"""
-
-        emb_data = {
-            "id": int(f"{_id * 100}{index}"),
-            "content": content
-        }
-        emb_content = text_v2(content)
+    def embed_and_write2(self, _id: int, content: str, collection: str):
+        """文本向量化"""
+        emb_data = []
+        for i, chunk in enumerate(simple(content)):
+            emb_data.append({
+                "id": int(f"{_id * 100}{i:02d}"),
+                "content": chunk,
+                "vector": text_v2(chunk, self.text_embedding_api)
+            })
         self.qdrant_writer.collection = collection
-
-        emb_data['vector'] = emb_content
-        insert_data = [emb_data]
-        write_qdrant_msg = self.qdrant_writer.write_batch(insert_data)
+        write_qdrant_msg = self.qdrant_writer.upsert(emb_data)
         self.logger.info(f"内容向量化写入qdrant库  {write_qdrant_msg}")
-        print(write_qdrant_msg)
 
-    def image_embed_and_write(self, _id: int, index: int, figures: list):
-        """
-        图片向量化方法
-        """
-        if figures:
-            for _i, fig in enumerate(figures, start=1):
-                data = fig.get('data')
-                caption = fig.get('caption')
-                emb_data = {
-                    "id": int(f"{_id * 100}{index}{_i}"),
-                    "content": caption,
-                }
-                # 调用向量化方法
-                emb_content = text_v2(data)
-                emb_data['vector'] = emb_content
-                self.qdrant_writer.collection = "figure_arxiv_2504_2"
-                insert_data = [emb_data]
-                print(self.qdrant_writer.collection )
-                write_qdrant_msg = self.qdrant_writer.write_batch(insert_data)
-                print(f"图片向量化写入qdrant库  {write_qdrant_msg}")
-                self.logger.info(f"图片向量化写入qdrant库  {write_qdrant_msg}")
-                if data:
-                    fig.pop('data')
+    def image_embed_and_write(self, _id: int, figures: list):
+        """图片向量化"""
+        emb_data = []
+        for i, fig in enumerate(figures, start=1):
+            if not fig.get('data'):
+                continue
+            data = fig.pop('data')
+            caption = fig.get('caption')
+            emb_data.append({
+                "id": int(f"{_id * 100}{i:02d}"),
+                "content": caption,
+                "vector": image_v1(data, self.image_embedding_api)
+            })
+        self.qdrant_writer.collection = "figure_arxiv_2504_2"
+        write_qdrant_msg = self.qdrant_writer.upsert(emb_data)
+        self.logger.info(f"图片向量化写入qdrant库  {write_qdrant_msg}")

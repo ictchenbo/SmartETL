@@ -3,8 +3,6 @@ from: flows/news/p1_kafka.yaml
 name: translate and vectorize
 description: 对新闻标题和正文基于大模型翻译，向量化并写入向量库
 consts:
-  es1:
-    index: goinv3_document_news
   chatglm4: http://10.208.63.29:8888
   bge_large_zh: http://10.208.63.29:8001/embed
 
@@ -13,8 +11,6 @@ nodes:
 
   prompt: util.files.text('config/prompt/news_translate.txt')
   prompt1: util.files.text('config/prompt/news_translate_abs.txt')
-  count_es: Count(ticks=10, label='Write-ES')
-  count_qd: Count(ticks=10, label='Write-Qdrant')
 
   map: Map(int, key='id')
   add_ts: AddTS('inserted_time')
@@ -24,10 +20,14 @@ nodes:
   trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
   translate: model.GoGPT(api_base=chatglm4, key='content_origin', prompt=prompt1, target_key='content')
 
-  write_es: database.ESWriter(**es1, buffer_size=1)
+  write_es: Function('wikidata_filter.gestata.dbops.upsert', db_es)
+  count_es: Count(ticks=10, label='Write-ES')
+
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: DatabaseWriter(qd, buffer_size=1)
-  fork: Fork(Chain(write_es, count_es), Chain(vector, write_qd, count_qd), copy_data=True)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
+  count_qd: Count(ticks=10, label='Write-Qdrant')
+
+  fork: Fork(Chain(write_es, count_es), Chain(vector, FieldsNonEmpty('vector'), write_qd, count_qd), copy_data=True)
 
   chain3: Chain(rename, trans_title, translate, fork)
 

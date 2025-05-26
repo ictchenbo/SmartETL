@@ -1,4 +1,6 @@
 import os
+from typing import Iterable, Any
+
 from wikidata_filter.loader.base import DataProvider
 
 
@@ -25,3 +27,7 @@ class BinaryFile(File):
         if auto_open:
             self.instream = open(input_file, "rb")
         self.input_file = input_file
+
+    def iter(self) -> Iterable[Any]:
+        raw_data = self.instream.read()
+        yield raw_data

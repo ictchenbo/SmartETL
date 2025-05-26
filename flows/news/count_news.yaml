@@ -1,0 +1,21 @@
+from: local/db_envs.yaml
+
+name: 从ES中获取新闻，按照发布时间进行统计
+consts:
+  es1:
+    index: goinv3_document_news
+  query_body:
+    sort:
+      - publish_time:
+          order: desc
+
+
+nodes:
+  db_es: util.database.elasticsearch.ES(**es1)
+
+  today2: Map('util.dates.millis2datetime', key='publish_time', target_key='days', fmt='%Y-%m-%d')
+  group: Group(by='days')
+  g_count: aggs.Count
+
+loader: database.Scroll(db_es, fetch_size=10000, _scroll='1m', query_body=query_body)
+processor: Chain(today2, group, g_count, Print())

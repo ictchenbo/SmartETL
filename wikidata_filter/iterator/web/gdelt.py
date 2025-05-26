@@ -22,7 +22,7 @@ def parse_csv(url: str, save_path: str = None):
     """解析GDELT CSV文件内容"""
     # 处理URL地址
     if url.startswith("http://") or url.startswith("https://"):
-        content = get_content(url, most_times=30, ignore_error=True)
+        content = get_content(url, most_times=5, ignore_error=True)
         if len(content) < 100:
             return
         if save_path:

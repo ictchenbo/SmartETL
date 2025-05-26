@@ -5,6 +5,10 @@ arguments: 1
 consts:
   es1:
     index: goinv3_document_news
+  query_body:
+    sort:
+      - publish_time:
+          order: desc
   mongo2:
     database: gdelt
     collection: site_icon
@@ -12,12 +16,12 @@ consts:
 nodes:
   db_es: util.database.elasticsearch.ES(**es1)
   db_mongo: util.database.mongodb.MongoDB(**mongo2)
-  loader1: database.Scroll(db_es, fetch_size=100000)
+  loader1: database.Scroll(db_es, fetch_size=10000, _scroll='1m', query_body=query_body)
 
   as_host: Map('util.urls.host_from_url', key='url', target_key='_id')
   select: Select('_id')
   unique: Distinct(key='_id')
-  dedup: DistinctByDatabase(db, key='_id')
+  dedup: DistinctByDatabase(db_mongo, key='_id')
   get_favicon: Map('util.urls.website_favicon', key='_id', target_key='icon', proxy='http://localhost:8001', timeout=30)
   filter: FieldsNonEmpty('icon')
   writer: DatabaseWriter(db_mongo, buffer_size=1)

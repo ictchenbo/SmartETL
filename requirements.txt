@@ -12,3 +12,4 @@ py-wikimarkup==2.3.0
 requests
 clickhouse-driver==0.2.8
 pymongo==3.11.1
+minio

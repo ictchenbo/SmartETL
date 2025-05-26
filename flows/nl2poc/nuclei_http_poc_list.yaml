@@ -12,10 +12,10 @@ nodes:
   select1: SelectVal('data')
   filter1: FieldsExist('info')
   rename1: RenameFields(id='_id')
-  writer1: WriteJson('data/vul/nuclei_poc.jsonl')
+  writer1: WriteJson('data/vul/2505/nuclei_poc.jsonl')
   filter: FieldsExist('http')
   select: Select('_id', 'info.name', 'info.description', 'http', short_key=True)
   rename: RenameFields(http='code')
-  writer: WriteJson('data/vul/nuclei_poc_http.jsonl')
+  writer: WriteJson('data/vul/2505/nuclei_poc_http.jsonl')
 
 processor: Chain(select1, filter1, rename1, count1, writer1, filter, select, rename, writer, count2)

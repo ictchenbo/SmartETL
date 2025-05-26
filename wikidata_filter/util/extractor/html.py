@@ -108,7 +108,10 @@ def news_merge(html: str, doc: dict = None):
         if not news.get(key) and key in doc:
             news[key] = doc[key]
 
-    news["title"] = my_extractor.find_value_from_meta("title") or doc.get("title") or my_extractor.get_title()
+    title = my_extractor.find_value_from_meta("title") or doc.get("title") or my_extractor.get_title()
+    if '|' in title:
+        title = title[:title.find('|')].strip()
+    news["title"] = title
     news["content"] = doc.get("content")
 
     pt = doc.get("publish_time") or doc.get("time")

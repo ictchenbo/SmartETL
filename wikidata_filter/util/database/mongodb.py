@@ -1,5 +1,11 @@
 from .base import Database
 
+try:
+    import pymongo
+except:
+    print('install pymongo first!')
+    raise "pymongo not installed"
+
 
 class MongoDB(Database):
     def __init__(self,
@@ -12,12 +18,6 @@ class MongoDB(Database):
                  collection: str = None,
                  **kwargs):
         self.url = f'{host}:{port}/{database}/{collection}'
-
-        try:
-            import pymongo
-        except:
-            print('install pymongo first!')
-            raise "pymongo not installed"
 
         self.client = pymongo.MongoClient(host=host, port=port)
         if username:
@@ -42,9 +42,11 @@ class MongoDB(Database):
         for doc in cursor:
             yield doc
 
-    def exists(self, _id, **kwargs):
+    def exists(self, _id, collection: str = None, **kwargs):
         query = {"_id": _id}
-        res = self.table(**kwargs).find_one(query)
+        collection = collection or self.collection
+        coll = self.db[collection]
+        res = coll.find_one(query)
         return res is not None
 
     def close(self):

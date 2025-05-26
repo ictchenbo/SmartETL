@@ -1,0 +1,19 @@
+name: transfer qdrant news
+
+consts:
+  qdrant1:
+    host: 10.60.1.145
+    port: 6333
+  qdrant2:
+    host: 192.168.30.20
+    port: 5107
+
+nodes:
+  db_qdrant1: util.database.qdrant.Qdrant(**qdrant1, collection='chunk_news_v2')
+  db_qdrant2: util.database.qdrant.Qdrant(**qdrant2, collection='chunk_news')
+
+  select: Select('id', 'vector', 'title', 'content', 'publish_time', 'url', 'source')
+  writer: Function('wikidata_filter.gestata.dbops.upsert', db_qdrant2)
+
+loader: Function('wikidata_filter.gestata.dbops.scroll', db_qdrant1, with_vector=True, offset=1225767398)
+processor: Chain(select, Print('id', 'publish_time'), writer, Count())

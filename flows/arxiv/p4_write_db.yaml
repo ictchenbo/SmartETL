@@ -17,6 +17,6 @@ consts:
 loader: database.kafka_v2.KafkaConsumer(**consumer)
 nodes:
   # 入库处理
-  write: gestata.arxiv.ArxivProcess(bge_large, qd_config, es_config)
+  write: gestata.arxiv.ArxivProcess(bge_large, qd_config=qd_config, es_config=es_config)
 
 processor: write

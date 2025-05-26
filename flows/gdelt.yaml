@@ -12,6 +12,8 @@ consts:
 loader: web.gdelt.GdeltTaskEmit(2025, 1, 1)
 
 nodes:
+  ck1: util.database.clickhouse.CK(**click1)
+
   print: Print
   filter1: "Filter(lambda row: 'export.CSV' in row['url'])"
   filter2: "Filter(lambda row: 'mentions.CSV' in row['url'])"
@@ -19,9 +21,9 @@ nodes:
   select: Select('GlobalEventID','Day','EventCode','NumMentions','NumSources','NumArticles','AvgTone','Actor1Code','Actor1Name','Actor1CountryCode','Actor2Code','Actor2Name','Actor2CountryCode','ActionGeo_Type','ActionGeo_Type_Fullname','ActionGeo_CountryCode','ActionGeo_Lat','ActionGeo_Long','SOURCEURL')
 #  writer: WriteJson('test_data/gdelt.export.json', append=True)
 #  writer2: WriteJson('test_data/gdelt.mention.json', append=True)
-  writer: database.clickhouse.CKWriter(**click1, buffer_size=10)
+  writer: Function('wikidata_filter.gestata.dbops.upsert', ck1)
   chain1: Chain(filter1, row, print)
   chain2: Chain(filter2, row, print)
   fork: Fork(chain1, chain2)
 
-processor: Chain(print, row, select, writer)
+processor: Chain(print, row, select, Buffer(buffer_size=1000), writer)

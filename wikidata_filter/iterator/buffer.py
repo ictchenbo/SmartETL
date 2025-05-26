@@ -80,7 +80,7 @@ class BufferedWriter(Buffer):
 
 
 class DatabaseWriter(BufferedWriter):
-    """基于数据库的缓存写"""
+    """基于数据库的缓存写；等价于  Chain(Buffer, gestata.dbops.upsert)"""
     def __init__(self, db: Database, write_mode: str = "upsert", **kwargs):
         super().__init__(**kwargs)
         self.db = db
@@ -92,5 +92,5 @@ class DatabaseWriter(BufferedWriter):
             kwargs.pop("mode")
 
     def write_batch(self, rows: list):
-        n, _ = self.db.upsert(rows, write_mode=self.write_mode, **self.kwargs)
-        print(f"Write {n} rows")
+        self.db.upsert(rows, write_mode=self.write_mode, **self.kwargs)
+        # print(f"Write {n} rows")

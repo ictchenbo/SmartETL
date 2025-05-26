@@ -3,12 +3,16 @@ from: local/db_envs.yaml
 name: load and extract news from web page
 description: 接收采集平台通过Kafka推送的网页数据，进行标题、时间、作者、正文等抽取
 
+consts:
+  es1:
+    index: goinv3_document_news
+
 #loader: database.kafka.WebConsumer(**kafka, topics=['gdelt'])
 loader: database.kafka.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=15)
 #loader: JsonLine('data/news2.jsonl')
 
 nodes:
-  db_es: util.database.elasticsearch.ES(**es1, index="goinv3_document_news")
+  db_es: util.database.elasticsearch.ES(**es1)
   dedup: DistinctByDatabase(db_es, key='id')
 
   count: Count(ticks=10)
@@ -22,6 +26,6 @@ nodes:
   valid_time: "=lambda r:  True if r.get('publish_time') else False"
   backup_bad: WriteJsonIf(valid_time, 'data/news/bad', scroll=100)
   rm_html: RemoveFields('html')
-  chain: Chain(dedup, select, extract, flat, backup_bad, rm_html)
+  chain: Chain(dedup, select, extract, FieldsNonEmpty('info'), flat, backup_bad, FilterByTime(key='publish_time'), rm_html)
 
 processor: Chain(chain, Print(), count)

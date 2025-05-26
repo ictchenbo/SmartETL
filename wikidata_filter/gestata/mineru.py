@@ -1,4 +1,5 @@
 import requests
+import traceback
 
 
 def extract(row: dict,
@@ -32,7 +33,10 @@ def extract(row: dict,
         'method': method,
         'response_content': response_content
     }
-
-    response = requests.post(api_base, files=files, data=data)
-    response_data = response.json()
-    return response_data['data']
+    try:
+        response = requests.post(api_base, files=files, data=data)
+        response_data = response.json()
+        return response_data['data']['extract_data']
+    except:
+        traceback.print_exc()
+        return None

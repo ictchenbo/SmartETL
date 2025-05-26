@@ -13,9 +13,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 2. 丰富的ETL算子**180+**：提供**数据集成治理**、**图谱构建**、**大模型**、**NLP**、**信息抽取**等常用算子
 3. 开箱即用的数据流程**50+**：面向开源情报分析提供多样化流程，覆盖数据清洗、大模型/大数据预处理、知识图谱构建、机器学习数据集生成、信息抽取、技术评估预测、数据库备份等任务。开箱即用，具体在[这里](flows)查看
 4. 持续积累开源情报数据资源10+，所见即所得：
-   - [wikipedia 维基百科页面处理](main_wikipedia.py) [建立索引](flows/wikipedia/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
+   - [wikipedia 维基百科数据](main_wikipedia.py) [建立索引](flows/wikipedia/index_wikipedia.yaml) [ES索引配置](config/es-mappings/enwiki.json)
    - [wikidata 维基数据](flows/wikidata/p1_graph_simple.yaml)
-   - [GDELT 谷歌全球社会事件数据库 （流式，直接下载）](flows/gdelt.yaml)
+   - [GDELT 谷歌全球社会事件数据库 （轮询式下载）](flows/gdelt.yaml)
+   - [新闻网页数据](flows/news/p1_kafka.yaml)
    - [GTD 全球恐怖主义事件库](flows/gtd.yaml)
    - [民调数据（经济学人美国大选专题）](flows/polls.yaml)
    - [预测市场数据](flows/futures.yaml)
@@ -23,25 +24,26 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
    - [Common Crawl网页存档数据](flows/cc.yaml)
-   - [arXiv论文下载](flows/arxiv.yaml)
+   - [arXiv论文数据](flows/arxiv/p2_html4all.yaml)
    - [通用网站采集](flows/crawler/gen1.yaml)
+   - [网站图标采集](flows/news/scan_website.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
    - csv
    - html
-   - Markdown
-   - [pdf](flows/file_pdf.yaml) 
-   - [docx](flows/file_docx.yaml)(doc, docx)
-   - [eml](flows/file_eml.yaml)
+   - [Markdown](flows/files/file_markdown.yaml)（支持识别内容层级，支持提取表格、图片）
+   - [pdf](flows/files/file_pdf.yaml) 
+   - [docx](flows/files/file_docx.yaml)(doc, docx)
+   - [eml](flows/files/file_eml.yaml)
    - Excel(xls, xlsx)
    - PPT(ppt, pptx)
    - PST
    - OST
    - OMG
-   - [json](flows/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
+   - [json](flows/files/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
    - [yaml](flows/nl2poc/nuclei_http_poc_desc.yaml)
-   - [parquet](flows/file_parquet.yaml)
+   - [parquet](flows/files/file_parquet.yaml)
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
    - MySQL
    - PostgreSQL
@@ -50,21 +52,27 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - ElasticSearch（全文索引）
    - Qdrant（向量数据库）
    - Kafka（消息队列）
-7. 弹性伸缩的运行模式：支持本地运行、多进程并行，支持对接Spark/Flink等分布式计算框架（待实现）
+   - SQLite
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
 - 大模型数据预处理：调用大模型进行主题分类、文本翻译、Embedding处理等。参考[大模型调用示例](flows/llm/siliconflow.yaml) [新闻处理](flows/news/p2_text.yaml)
 - 信息抽取与NLP处理：网页信息抽取、新闻主题分类、新闻地区识别、文档专门解析。参考[网页信息抽取](flows/news/p1_kafka.yaml) [新闻处理](flows/news/p2_text.yaml)
+- 多模态数据处理：调用多模态embedding对图像进行Embedding处理 参考[图像索引](flows/news/index_image.yaml)
 - 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏、科技评估预测等。参考[poc构建](flows/nl2poc/nuclei_http_poc_desc.yaml)
-- 开源数据采集处理：wikidata维基数据、维基百科、GDELT全球事件、全球新闻等采集处理，Web API数据集成，网页URL数据采集，JsonP数据解析，新闻图片采集等。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml) [图片采集](flows/news/p2_image.yaml)
+- 开源数据采集：[GDELT全球事件](flows/gdelt.yaml)、Web API数据集成、[网页URL数据采集](flows/crawler/gen1.yaml)，JsonP数据解析，[图片采集](flows/news/p2_image.yaml)等
+- 开源数据处理：wikidata维基数据、维基百科、新闻、图片等数据处理。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml) 
 - 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。参考[wikidata知识图谱](flows/wikidata/p3_relation_of_human.yaml) 关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
 - 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等。参考[项目数据统计1](flows/unesco-projects.yaml) [项目数据统计2](flows/unesco-projects-aggs.yaml)
 - 数据库管理/DBA：数据库备份、同步、查询分析等。参考[ClickHouse导出](flows/dba/db_ck_export.yaml) [MongoDB数据迁移](flows/dba/db_mongo_transfer.yaml)
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
-- ...
 
 ## New！
+- 2025.5.26
+1. 实现图片扫描、生成特征ID、建立索引流程 [本地图片处理](flows/news/index_image.yaml) 
+2. 实现对本地arxiv论文html/PDF解析流程 [论文下载](flows/arxiv/task_download.yaml) [arXiv论文解析](flows/arxiv/task_process.yaml)
+3. 完善了 ElasticSearch、MinIO、Qdrant数据库组件
+
 - 2025.4.24
 1. 实现[通用爬虫采集流程](flows/crawler/gen1.yaml)，基于提供的网站地址，不断发现链接并采集内容，提取标题和正文
 
@@ -76,17 +84,6 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 2. 新增`SQLite`数据库组件
 3. 数据库操作相关流程全部更新
 4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](wikidata_filter/gestata/arxiv.py)
-
-- 2025.3.29
-1. 集成并改造王宁的arxiv下载处理流程
-
-- 2025.3.10
-1. 新增`MySQL`数据库全量导出备份流程[查看详情](flows/dba/mysql_export.yaml)
-2. 完善新闻网页时间抽取逻辑 [查看详情](wikidata_filter/util/extractor/html.py)
-
-- 2025.3.8
-1. 新增`Markdown`格式解析为json层级结构，支持提取表格
-2. 新增`arXiv`论文下载
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -252,6 +249,17 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.3.29
+1. 集成并改造王宁的arxiv下载处理流程
+
+- 2025.3.10
+1. 新增`MySQL`数据库全量导出备份流程[查看详情](flows/dba/mysql_export.yaml)
+2. 完善新闻网页时间抽取逻辑 [查看详情](wikidata_filter/util/extractor/html.py)
+
+- 2025.3.8
+1. 新增`Markdown`格式解析为json层级结构，支持提取表格
+2. 新增`arXiv`论文下载
+
 - 2025.3.4
 1. 实现Common Crawl WARC/WAT/WET文件解析，参考 https://commoncrawl.org/get-started
 

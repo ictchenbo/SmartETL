@@ -1,0 +1,8 @@
+name: arXiv论文HTML解析测试
+
+loader: directory.Directory('data/arxiv', '.html')
+
+nodes:
+  extract: Map('gestata.arxiv.extract_from_html', key='data')
+
+processor: Chain(extract, TakeN(1), Print())

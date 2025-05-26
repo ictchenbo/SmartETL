@@ -1,0 +1,25 @@
+from: local/db_envs.yaml
+
+name: 基于nuclei的HTTP协议PoC建立向量化索引
+consts:
+  input_file_raw: data/vul/2505/nuclei_poc.jsonl
+  input_file: data/vul/2505/nuclei_poc_http.jsonl
+  bge_large_en: http://10.208.63.29:6008/v1/embeddings
+  es1:
+    index: chenbo_zgc_poc
+
+nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='chunk_poc')
+  es: util.database.elasticsearch.ES(**es1)
+
+  filter_no_desc: FieldsNonEmpty('description')
+  rename: RenameFields(_id='cve_id')
+  vector: Map('gestata.embedding.text_v2', key='description', target_key='vector', api_base=bge_large_en)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
+  write_es: Function('wikidata_filter.gestata.dbops.upsert', es)
+
+loader: JsonLine(input_file_raw)
+
+#processor: Chain(filter_no_desc, rename, Print('_id', 'name'), vector, Print(), write_qd)
+#processor: Chain(filter_no_desc, Print('_id', 'name'), Buffer(buffer_size=100), write_es)
+processor: Chain(Print('_id', 'name'), Buffer(buffer_size=100), write_es)

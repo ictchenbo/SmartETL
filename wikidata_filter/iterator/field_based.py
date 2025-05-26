@@ -63,7 +63,11 @@ class RemoveFields(DictProcessorBase):
         self.keys.extend(keys)
 
     def on_data(self, data: dict, *args):
-        return {k: v for k, v in data.items() if k not in self.keys}
+        for k in self.keys:
+            if k in data:
+                del data[k]
+        return data
+        # return {k: v for k, v in data.items() if k not in self.keys}
 
     def __str__(self):
         return f"{self.name}(keys={self.keys})"

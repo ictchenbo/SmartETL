@@ -3,6 +3,7 @@ from random import random
 
 from wikidata_filter.util.mod_util import load_util
 from wikidata_filter.util.database.base import Database
+from wikidata_filter.util.dates import current_ts
 from wikidata_filter.iterator.base import JsonIterator
 
 
@@ -27,7 +28,7 @@ class Filter(JsonIterator):
             return data
 
     def __call__(self, val, *args, **kwargs):
-        return self.matcher(val)
+        return self.matcher(val, *args, **kwargs)
 
 
 class WhiteList(Filter):
@@ -186,3 +187,42 @@ class Not(Filter):
 
     def __call__(self, val, *args, **kwargs):
         return not self.that(val, *args, **kwargs)
+
+
+class FilterByTime(Filter):
+    """根据当前时间戳值进行过滤"""
+    def __init__(self, key: str = None, offset_days: int = 0, **kwargs):
+        super().__init__(key=key, **kwargs)
+        self.offset_days = offset_days
+        self.offset_millis = offset_days * 86400000
+
+    def __call__(self, val, *args, **kwargs):
+        return isinstance(val, int) and val <= current_ts(millis=True) + self.offset_millis
+
+
+class KeywordFilter(Filter):
+    """根据关键词进行匹配过滤"""
+    def __init__(self, key: str = None, keywords: list = None, action: str = "drop", **kwargs):
+        super().__init__(key=key, **kwargs)
+        self.keywords = keywords
+        self.keep = action == "keep"
+
+    def __call__(self, val, *args, **kwargs):
+        for kw in self.kwargs:
+            if kw.lower() in val:
+                return self.keep
+        return not self.keep
+
+
+class LengthFilter(Filter):
+    def __init__(self, key: str = None, min_length: int = 1, max_length: int = None, **kwargs):
+        super().__init__(key=key, **kwargs)
+        self.min_length = min_length
+        self.max_length = max_length
+
+    def __call__(self, val, *args, **kwargs):
+        if 0 < self.min_length and self.min_length > len(val):
+            return False
+        if self.max_length is not None and len(val) > self.max_length:
+            return False
+        return True

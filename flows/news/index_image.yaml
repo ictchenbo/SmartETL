@@ -1,0 +1,36 @@
+from: local/db_envs.yaml
+
+name: index images
+description: 扫描文件夹读取图片，生成哈希id，转存到minio指定桶，进行向量化并写入qdrant
+arguments: 1
+
+consts:
+  minio_config:
+    key_key: store_path
+    value_key: data
+    value_type: bytes
+  bge_vl_large: http://10.208.63.29:8001/embed_image
+  type_mapping:
+    .jpg: .raw
+    .png: .raw
+    .gif: .raw
+    .bmp: .raw
+
+nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='image-news-2505', auto_create=True, size=768)
+  minio: util.database.minio.MinIO(**minio, bucket='image-news-2505', auto_create=True)
+
+  min_size: "=lambda s: len(s) >= 51200"
+  filter: Filter(min_size, key='data')
+
+  add_id: Map('gestata.digest.sha256_id', key='data', target_key='_id')
+  add_meta: Map('gestata.image.add_meta', target_key=None)
+
+  save_image: Map('gestata.dbops.upsert', minio, **minio_config)
+  vector: Map('gestata.embedding.image_v1', key='data', target_key='vector', api_base=bge_vl_large)
+  remove: RemoveFields('data')
+  write_qd: Map('gestata.dbops.upsert', qd)
+
+loader: directory.Directory(arg1, *type_mapping.keys(), type_mapping=type_mapping)
+processor: Chain(Count(label='all'), filter, Count(label='filtered'), add_id, add_meta, Print('_id', 'filename', 'name'), save_image, vector, remove, write_qd, Count())
+#processor: Chain(add_id, add_meta, Print('_id', 'filename', 'store_path', 'image_type', 'size'))

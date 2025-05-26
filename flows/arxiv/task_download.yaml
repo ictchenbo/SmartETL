@@ -1,0 +1,28 @@
+from:
+  - local/db_envs.yaml
+name: arxiv指定论文下载
+consts:
+  headers:
+    User-Agent: chenbo01@ict.ac.cn
+
+loader: xls.ExcelStream('data/arxiv/papers_to_be_crawled-0519.xlsx')
+
+nodes:
+  f_id: "=lambda s: s[s.rfind('/')+1:]"
+  make_id: Map(f_id, key='url', target_key='_id')
+
+  make_filename: ConcatFields('filename', '_id', prefix='data/arxiv/task/', suffix='.pdf')
+  file_not_exists: Not('util.files.exists', key='filename')
+
+  make_html_url: Map('gestata.arxiv.url4html', key='_id', target_key='url_html')
+  download_html: Map('util.http.content', key='url_html', target_key='html', most_times=1, ignore_error=True, timeout=60, headers=headers)
+  save_html: WriteFiles('data/arxiv/task', name_key='_id', content_key='html', suffix='.html')
+  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+
+  make_pdf_url: Map('gestata.arxiv.url4pdf', key='_id', target_key='url_pdf')
+  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf', most_times=1, ignore_error=True, timeout=60, headers=headers)
+  save_pdf: WriteFiles('data/arxiv/task', name_key='_id', content_key='pdf', suffix='.pdf')
+  chain2: Chain(make_pdf_url, download_pdf, FieldsNonEmpty('pdf'), Count(label='pdf'), save_pdf)
+
+processor: Chain(make_id, make_filename, file_not_exists, Print(), Count(label='task'), Fork(chain1, chain2), Wait(5))
+#processor: Chain(make_id, make_filename, file_not_exists, Print())

@@ -7,124 +7,6 @@ from wikidata_filter.util.dicts import copy_val
 from wikidata_filter.util.mod_util import load_cls
 
 
-class If(JsonIterator):
-    """流程选择节点，指定条件满足时执行"""
-    def __init__(self, node: JsonIterator, matcher=None, key: str = None):
-        assert node, "node is None"
-        assert matcher or key, "matcher and key both None"
-        if matcher is None:
-            matcher = lambda r: r.get(key)
-        elif isinstance(matcher, str):
-            matcher = load_cls(matcher)[0]
-        self.matcher = matcher
-        self.node = node
-
-    def __process__(self, data: Any, *args):
-        if data is None:
-            return None
-        if isinstance(data, Message):
-            if data.msg_type == 'end':
-                res = self.node.__process__(data)
-                if isinstance(res, GeneratorType):
-                    for one in res:
-                        if one is not None:
-                            yield one
-                return None
-            data = data.data
-
-        if not self.matcher(data):
-            return data
-
-        res = self.node.__process__(data)
-        if isinstance(res, GeneratorType):
-            for one in res:
-                if one is not None:
-                    yield one
-        else:
-            return res
-
-
-class IfElse(JsonIterator):
-    """流程选择节点，指定条件满足时执行node_a，否则执行node_b"""
-    def __init__(self, node_a: JsonIterator, node_b: JsonIterator, matcher=None, key: str = None):
-        assert node_a and node_b, "node_a or node_b is None"
-        assert matcher or key, "matcher and key both None"
-        if matcher is None:
-            matcher = lambda r: r.get(key)
-        elif isinstance(matcher, str):
-            matcher = load_cls(matcher)[0]
-        self.matcher = matcher
-        self.node_a = node_a
-        self.node_b = node_b
-
-    def __process__(self, data: Any, *args):
-        if data is None:
-            return None
-        if isinstance(data, Message):
-            if data.msg_type == 'end':
-                self.node_a.__process__(data)
-                self.node_b.__process__(data)
-                return None
-            data = data.data
-        if self.matcher(data):
-            res = self.node_a.__process__(data)
-        else:
-            res = self.node_b.__process__(data)
-
-        if isinstance(res, GeneratorType):
-            for one in res:
-                if one is not None:
-                    yield one
-
-
-class While(If):
-    """循环节点，重复执行某个节点，直到条件不满足"""
-    def __init__(self, node: JsonIterator, matcher=None, key: str = None, max_iterations: int = -1):
-        super().__init__(node, matcher=matcher, key=key)
-        self.max_iterations = max_iterations
-
-    def __process__(self, data: Any, *args):
-        if data is None:
-            return None
-        if isinstance(data, Message):
-            if data.msg_type == 'end':
-                res = self.node.__process__(data)
-                if isinstance(res, GeneratorType):
-                    for one in res:
-                        if one is not None:
-                            yield one
-                    return
-                else:
-                    return res
-            data = data.data
-
-        ith = 0
-        queue = [data]
-        while queue:
-            new_queue = []
-            unfinished = False
-            for one in queue:
-                if one and self.matcher(one):
-                    unfinished = True
-                    res = self.node.__process__(one)
-                    if isinstance(res, GeneratorType):
-                        for one2 in res:
-                            if one2 is not None:
-                                new_queue.append(one2)
-                    else:
-                        new_queue.append(res)
-            if not unfinished:
-                break
-            else:
-                queue = new_queue
-                ith += 1
-                if 0 < self.max_iterations <= ith:
-                    break
-
-        for one in queue:
-            yield one
-
-
 class Multiple(JsonIterator):
     """多个节点组合"""
     def __init__(self, *nodes):
@@ -241,3 +123,127 @@ class Chain(Multiple):
         if queue:
             for one in queue:
                 yield one
+
+
+class If(JsonIterator):
+    """流程选择节点，指定条件满足时执行"""
+
+    def __init__(self, node: JsonIterator, matcher=None, key: str = None):
+        assert node, "node is None"
+        assert matcher or key, "matcher and key both None"
+        if matcher is None:
+            matcher = lambda r: r.get(key)
+        elif isinstance(matcher, str):
+            matcher = load_cls(matcher)[0]
+        self.matcher = matcher
+        self.node = node
+
+    def __process__(self, data: Any, *args):
+        if data is None:
+            return None
+        if isinstance(data, Message):
+            if data.msg_type == 'end':
+                res = self.node.__process__(data)
+                if isinstance(res, GeneratorType):
+                    for one in res:
+                        if one is not None:
+                            yield one
+                return None
+            data = data.data
+
+        if not self.matcher(data):
+            return data
+
+        res = self.node.__process__(data)
+        if isinstance(res, GeneratorType):
+            for one in res:
+                if one is not None:
+                    yield one
+        else:
+            return res
+
+
+class IfElse(JsonIterator):
+    """流程选择节点，指定条件满足时执行node_a，否则执行node_b"""
+
+    def __init__(self, node_a: JsonIterator, node_b: JsonIterator, matcher=None, key: str = None):
+        assert node_a and node_b, "node_a or node_b is None"
+        assert matcher or key, "matcher and key both None"
+        if matcher is None:
+            matcher = lambda r: r.get(key)
+        elif isinstance(matcher, str):
+            matcher = load_cls(matcher)[0]
+        self.matcher = matcher
+        self.node_a = node_a
+        self.node_b = node_b
+
+    def __process__(self, data: Any, *args):
+        if data is None:
+            return None
+        if isinstance(data, Message):
+            if data.msg_type == 'end':
+                self.node_a.__process__(data)
+                self.node_b.__process__(data)
+                return None
+            data = data.data
+        if self.matcher(data):
+            res = self.node_a.__process__(data)
+        else:
+            res = self.node_b.__process__(data)
+
+        return res
+        # if isinstance(res, GeneratorType):
+        #     for one in res:
+        #         if one is not None:
+        #             yield one
+        # else:
+        #     return res
+
+
+class While(If):
+    """循环节点，重复执行某个节点，直到条件不满足"""
+
+    def __init__(self, node: JsonIterator, matcher=None, key: str = None, max_iterations: int = -1):
+        super().__init__(node, matcher=matcher, key=key)
+        self.max_iterations = max_iterations
+
+    def __process__(self, data: Any, *args):
+        if data is None:
+            return None
+        if isinstance(data, Message):
+            if data.msg_type == 'end':
+                res = self.node.__process__(data)
+                if isinstance(res, GeneratorType):
+                    for one in res:
+                        if one is not None:
+                            yield one
+                    return
+                else:
+                    return res
+            data = data.data
+
+        ith = 0
+        queue = [data]
+        while queue:
+            new_queue = []
+            unfinished = False
+            for one in queue:
+                if one and self.matcher(one):
+                    unfinished = True
+                    res = self.node.__process__(one)
+                    if isinstance(res, GeneratorType):
+                        for one2 in res:
+                            if one2 is not None:
+                                new_queue.append(one2)
+                    else:
+                        new_queue.append(res)
+            if not unfinished:
+                break
+            else:
+                queue = new_queue
+                ith += 1
+                if 0 < self.max_iterations <= ith:
+                    break
+
+        for one in queue:
+            yield one
