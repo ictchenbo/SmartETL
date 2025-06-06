@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 from typing import Any
 from wikidata_filter.util.dates import current_ts
@@ -117,17 +118,20 @@ class Print(JsonIterator):
     """
     打印数据，方便查看中间结果
     """
-    def __init__(self, *keys, with_id: bool = False):
+    def __init__(self, *keys, with_id: bool = False, pretty: bool = False):
         if keys and isinstance(keys[0], list):
             self.keys = keys[0]
         else:
             self.keys = keys
         self.with_id = with_id
+        self.pretty = pretty
 
     def on_data(self, data, *args):
         _data = data
         if self.keys and isinstance(data, dict):
             _data = {k: data[k] for k in self.keys if k in data}
+        if self.pretty:
+            _data = json.dumps(_data, ensure_ascii=False, indent=2)
         if self.with_id:
             print(id(data), _data)
         else:

@@ -6,7 +6,7 @@ import requests
 import xmltodict
 import base64
 from lxml.html import fromstring, HtmlElement, etree
-from wikidata_filter.util.http import download_image
+from wikidata_filter.util.http import image as download_image
 from wikidata_filter.gestata.embedding import text_v2, image_v1
 from wikidata_filter.iterator import JsonIterator
 from wikidata_filter.iterator.database.elasticsearch import ESWriter

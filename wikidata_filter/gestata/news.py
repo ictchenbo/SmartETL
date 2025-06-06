@@ -1,3 +1,6 @@
+"""
+提供新闻网页的基本处理，包括文章解析和图片解析
+"""
 import os
 import re
 from urllib.parse import urljoin, urlsplit, parse_qs
@@ -14,7 +17,7 @@ article_tags = ['article']
 article_ids = ['content']
 
 
-def extract_news_article(source: str):
+def extract_article(source: str):
     """ 从新闻HTML中提取网页"""
     # 使用BeautifulSoup解析HTML
     soup = BeautifulSoup(source, 'lxml')
@@ -66,16 +69,23 @@ def clean_filename(url):
 def get_extension_from_url(img_url):
     """ 从 URL 提取有效的文件扩展名，去掉查询参数部分 """
     # 使用正则表达式提取扩展名
-    match = re.search(r'\.(jpg|jpeg|png|gif|bmp|webp)(?=\?|$)', img_url.lower())
+    match = re.search(r'\.(jpg|jpeg|png|gif|bmp|webp|avif|ico|apng|svg)(?=\?|$)', img_url.lower())
     if match:
         return match.group(0)
 
 
-def extract_images(url, article):
+def images(article: dict,
+           url_key: str = "url",
+           html_key: str = "html",
+           **kwargs):
     """ 从正文部分提取图片、描述和上下文 """
+    url = article[url_key]
+    html = article[html_key]
+    e_article = extract_article(html)
+    if not e_article:
+        return
     # 查找所有的img标签，包括可能的data-src属性
-    img_tags = article.find_all('img')
-
+    img_tags = e_article.find_all('img')
     for img in img_tags:
         img_url = img.get('src') or img.get('data-src')  # 获取图片URL（可能存储在data-src属性中）
         if not img_url:
@@ -122,8 +132,11 @@ def extract_images(url, article):
         if img_desc in img_context:
             img_context = img_context.replace(img_desc, "").strip()
 
-        ext = get_extension_from_url(img_url)
         img_name = clean_filename(img_url)
+        ext = '.png'
+        if '.' in img_name:
+            ext = img_name[img_name.rfind('.'):].lower()
+        # get_extension_from_url(img_url) or '.png'
 
         yield {
             "url": img_url,

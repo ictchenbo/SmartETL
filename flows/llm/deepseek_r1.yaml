@@ -3,7 +3,7 @@ from: local/llm_keys.yaml
 name: DeepSeek-R1推理测试
 arguments: 1
 
-loader: TextPlain(arg1)
+loader: Text(arg1) #注意，输入为文本行文件 如果按一条数据处理，请使用TextPlain
 
 nodes:
 #  model: modelv2.DeepSeek(deepseek['api_key'], model='deepseek-chat')

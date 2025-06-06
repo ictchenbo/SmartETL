@@ -28,7 +28,7 @@ nodes:
   count_minio: Count(ticks=10, label='Write-Minio')
   count_mongo: Count(ticks=10, label='Write-Mongo')
 
-  extract_image: nlp.news.Image
+  extract_image: Map('gestata.news.images', url_key='url', html_key='html')
   filter_format: WhiteList(allowed_formats, 'ext')
   make_id: UUID
   append_ext: ConcatFields('_id', '_id', 'ext', separator='')

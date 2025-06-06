@@ -3,7 +3,7 @@ from: local/llm_keys.yaml
 name: DeepSeek-R1推理测试
 arguments: 1
 
-loader: TextPlain(arg1)
+loader: Text(arg1)
 
 nodes:
   model: modelv2.LLMModel(**cstcloud, model='deepseek-r1:671b')

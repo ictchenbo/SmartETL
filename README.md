@@ -68,6 +68,21 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.6.5
+1. 支持打包压缩文件：zip/tar/tar.gz/tar.bz2/tar.xz/rar/7z 注意，rar 7z需要安装相关依赖
+2. `util.files.open`支持gz/bz2/xz文件以及`IO[bytes]`文件流
+3. YAML文件新增`limit`配置，控制处理数据条数（可能抛出`GeneratorExit`异常）
+4. 数据库`util.database.clickhouse.CK`写入增加重试
+
+
+- 2025.6.4
+1. 新增支持`zip`文件压缩包
+2. `Directory`支持`all` `other`类型映射，支持复杂文件加载器模块的动态加载
+3. 完善`WriteFiles`，支持文件名带路径
+4. 移动`base64`方法到`gestata.digest`模块中
+5. `util.database.clickhouse`数据库`upsert`方法增加错误重试机制
+
+
 - 2025.5.26
 1. 实现图片扫描、生成特征ID、建立索引流程 [本地图片处理](flows/news/index_image.yaml) 
 2. 实现对本地arxiv论文html/PDF解析流程 [论文下载](flows/arxiv/task_download.yaml) [arXiv论文解析](flows/arxiv/task_process.yaml)

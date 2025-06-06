@@ -138,6 +138,12 @@ class WriteFiles(DictProcessorBase):
 
     def on_data(self, data: dict, *args):
         filename = f'{data[self.name_key]}'
+        # 处理文件名中包含路径名的情况
+        if '/' in filename:
+            path = filename[:filename.rfind('/')]
+            path = os.path.join(self.output_dir, path)
+            if not os.path.exists(path):
+                os.makedirs(path)
         if self.suffix:
             filename += self.suffix
         filepath = os.path.join(self.output_dir, filename)

@@ -1,5 +1,3 @@
-from:
-  - local/db_envs.yaml
 name: arxiv指定论文下载
 consts:
   headers:

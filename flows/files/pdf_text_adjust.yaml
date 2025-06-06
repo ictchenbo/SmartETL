@@ -1,0 +1,22 @@
+name: PDF File Loader
+description: 读取pdfminer/markitdown等解析的文本内容进行处理
+arguments: 0
+
+consts:
+  type_mapping:
+    'all': '.plain'
+
+loader: directory.Directory('data/paper/pdf-text/markitdown', 'all', type_mapping=type_mapping)
+
+nodes:
+  select: SelectVal('data')
+  split: Map('gestata.pdftext.split')
+  p1: Map('gestata.pdftext.p1')
+  p2: Map('gestata.pdftext.p2')
+  org: Map('gestata.pdftext.organize')
+  join: Map('gestata.pdftext.join')
+  print: Print
+  count: Count
+
+#processor: Chain(select, split, p1, p2, join, Print(), Count())
+processor: Chain(select, split, p1, org, Print(pretty=True), Count())

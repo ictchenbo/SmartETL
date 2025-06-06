@@ -1,2 +1,18 @@
 bs4
+pymongo==3.11.1
+
+# Wiki XML文件处理
+lxml
+xmltodict==0.13.0
+wikitextparser==0.55.13
+py-wikimarkup==2.3.0
+
+clickhouse-driver==0.2.8
+
+minio
+
 arxiv
+
+# archive files
+rarfile
+unrar

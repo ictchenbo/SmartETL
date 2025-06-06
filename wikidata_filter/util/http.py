@@ -62,19 +62,36 @@ def json(url, method='get', **kwargs):
     return None
 
 
-def download_image(url: str, *args, min_width: int = 10, min_height: int = 10, **kwargs):
+def image(url: str, *args,
+          min_size: int = 2048,
+          min_width: int = 10,
+          min_height: int = 10,
+          max_width: int = 2000,
+          min_ratio: float = 0.4,
+          **kwargs):
+    """下载图片 并判断图片大小是否符合要求"""
     try:
         c = content(url, **kwargs)
-        # 使用PIL来打开图片
+    except:
+        print("Failed to download image:", url)
+        return None
+
+    if len(c) < min_size:
+        print("image file size too small")
+        return None
+
+    try:
         img = Image.open(BytesIO(c))
     except:
-        print("Open image error:", url)
+        print("Failed to open image:", url)
         return None
 
     width, height = img.size
-    # print(f"下载的图片尺寸: {width}x{height}")
     # 判断图片尺寸是否符合要求
-    if width < min_width or height < min_height:
-        print(f"图片尺寸过小: {url}")
+    if width < min_width or height < min_height or width >= max_width:
+        print("image size too small or too big:", url)
+        return None
+    if height / width < min_ratio:
+        print("height/width ratio too low:", url)
         return None
     return c

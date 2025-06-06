@@ -30,12 +30,12 @@ nodes:
 
   remove: RemoveFields('html_file', 'data', 'paper_md', 'paper_json_tree')
   select: FlatProperty('paper', inherit_props=True)
-  writer: WriteJson('data/arxiv/result.json', buffer_size=1)
+  writer: WriteJson('data/arxiv/result.json', append=True, buffer_size=1)
 
   test_md: Chain(TakeN(1), md2json, md_save, writer, Print('paper'))
 
 loader: loader1
-processor: Chain(ifelse, remove, select, writer, Count(ticks=1))
+processor: Chain(SkipN(99), ifelse, remove, select, writer, Count(ticks=1))
 
 #loader: loader2
 #processor: test_md

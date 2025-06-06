@@ -5,7 +5,7 @@ import re
 import traceback
 
 from typing import Iterable, Any
-from wikidata_filter.loader.file import BinaryFile
+from .file import BinaryFile
 
 import email
 import email.utils

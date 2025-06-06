@@ -1,0 +1,32 @@
+from: local/db_envs.yaml
+name: 论文解析入库建索引流程
+description: 对pdf格式论文进行解析，对markdown格式进行拆分，建立ES全文索引，向量化写入Qdrant
+consts:
+  bge_large_en: http://10.208.63.29:6008/v1/embeddings
+  mineru_api: http://10.60.1.148:6200/api/file/_extract
+  path: data/paper/0529
+
+loader: directory.Directory(path, '.pdf', type_mapping={'all':'.raw'})
+
+nodes:
+  es: util.database.elasticsearch.ES(**es1, index='paper-0529')
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='paper-0529', auto_create=True, size=1024)
+
+  pdf2md: Map('gestata.mineru.extract', target_key='content', api_base=mineru_api, name_key='filename', content_key='data')
+  md_save: WriteFiles(path, name_key='filename', content_key='content', suffix='.md')
+  md2json: Map('gestata.markdown.extract', key='content', target_key='paper_json_tree', tables='json')
+  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+  json_save: WriteFiles(path, name_key='filename', content_key='paper', suffix='.json')
+
+  remove: RemoveFields('data', 'paper_json_tree')
+  flat: FlatProperty('paper', inherit_props=True)
+  write_es: Function('wikidata_filter.gestata.dbops.upsert', es)
+
+  remove2: RemoveFields('paper')
+  chunks: Map('util.split.simple', key='content', target_key='chunks')
+  flat2: Flat(key='chunks', inherit_props=True)
+  auto_id: UUID
+  vector: Map('gestata.embedding.text_v2', key='chunks', target_key='vector', api_base=bge_large_en)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
+
+processor: Chain(pdf2md, md_save, md2json, json2paper, json_save, remove, flat, write_es, remove2, chunks, flat2, auto_id, vector, write_qd)

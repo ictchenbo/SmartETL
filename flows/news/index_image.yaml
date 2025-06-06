@@ -11,16 +11,13 @@ consts:
     value_type: bytes
   bge_vl_large: http://10.208.63.29:8001/embed_image
   type_mapping:
-    .jpg: .raw
-    .png: .raw
-    .gif: .raw
-    .bmp: .raw
+    all: .raw
 
 nodes:
   qd: util.database.qdrant.Qdrant(**qdrant, collection='image-news-2505', auto_create=True, size=768)
   minio: util.database.minio.MinIO(**minio, bucket='image-news-2505', auto_create=True)
 
-  min_size: "=lambda s: len(s) >= 51200"
+  min_size: "=lambda s: 10240 <= len(s) < 51200"
   filter: Filter(min_size, key='data')
 
   add_id: Map('gestata.digest.sha256_id', key='data', target_key='_id')
@@ -31,6 +28,6 @@ nodes:
   remove: RemoveFields('data')
   write_qd: Map('gestata.dbops.upsert', qd)
 
-loader: directory.Directory(arg1, *type_mapping.keys(), type_mapping=type_mapping)
+loader: directory.Directory(arg1, 'all', type_mapping=type_mapping)
 processor: Chain(Count(label='all'), filter, Count(label='filtered'), add_id, add_meta, Print('_id', 'filename', 'name'), save_image, vector, remove, write_qd, Count())
 #processor: Chain(add_id, add_meta, Print('_id', 'filename', 'store_path', 'image_type', 'size'))

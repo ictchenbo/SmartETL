@@ -112,18 +112,7 @@ class LLM(JsonIterator):
             raise Exception(f"Access {url} Error!")
 
     def on_data(self, row, *args):
-        if isinstance(row, dict):
-            # if self.key:
-            #     val = row.get(self.key)
-            # else:
-            #     print("Warning: got dict data but the value field not specified!")
-            #     return row
-            pass
-        elif isinstance(row, str):
-            if self.key:
-                print("Warning: got str, the specified field ignored")
-            val = row
-        else:
+        if not isinstance(row, dict) and not isinstance(row, str):
             print("Warning: input data type not supported! Must be dict or str")
             return row
 
@@ -142,6 +131,7 @@ class LLM(JsonIterator):
                 for k in key:
                     query = query.replace('{'+k+'}', row.get(k))
 
+        print('query', query)
         result = self.request_service(query)
 
         if result:

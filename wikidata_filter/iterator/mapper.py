@@ -43,7 +43,7 @@ class Map(JsonIterator):
         self.kwargs = kwargs
 
     def on_data(self, data: Any, *args):
-        if self.key or not self.target_key:
+        if self.key or self.target_key:
             if not isinstance(data, dict):
                 print("Warning, data is not dict:", data)
                 return data

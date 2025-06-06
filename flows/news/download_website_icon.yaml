@@ -12,6 +12,15 @@ consts:
   mongo2:
     database: gdelt
     collection: site_icon
+  request_args:
+    ignore_error: yes
+    timeout: 15
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+    proxies:
+      http: "http://localhost:8001"
+      https: "http://localhost:8001"
+    verify: false
 
 nodes:
   db_es: util.database.elasticsearch.ES(**es1)
@@ -22,13 +31,16 @@ nodes:
   select: Select('_id')
   unique: Distinct(key='_id')
   dedup: DistinctByDatabase(db_mongo, key='_id')
-  get_favicon: Map('util.urls.website_favicon', key='_id', target_key='icon', proxy='http://localhost:8001', timeout=30)
+
+  make_url: ConcatFields('url', '_id', suffix='/favicon.ico')
+  download: Map('util.http.content', key='url', target_key='icon', most_times=1, **request_args)
+  base64: Map('gestata.digest.base64', key='icon')
+
   filter: FieldsNonEmpty('icon')
   writer: DatabaseWriter(db_mongo, buffer_size=1)
-  chain2: Chain(dedup, get_favicon, filter, writer, Count())
-  chain: Chain(as_host, select, unique, Count(label='url', ticks=100), dedup, get_favicon, filter, writer, Count(label='image', ticks=10))
   get_list: Chain(as_host, select, unique, dedup, WriteJson(arg1), Count())
-  chain3: Chain(get_favicon, filter, WriteJson(arg1, buffer_size=1), Count(ticks=1))
 
-loader: JsonLine(arg1)
-processor: chain
+loader: loader1
+#loader: JsonLine(arg1)
+#processor: chain
+processor: Chain(as_host, select, unique, Count(label='url', ticks=100), dedup, make_url, download, filter, base64, writer, Count(label='image', ticks=10))

@@ -2,15 +2,14 @@ import os
 import traceback
 from typing import Iterable, Any
 
-from wikidata_filter.loader.base import DataProvider
+from wikidata_filter.base import ROOT, LOADER_MODULE
+from wikidata_filter.util.mod_util import load_cls
+
+from .base import DataProvider
 from .file import BinaryFile
 from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
 from .markdown import Markdown
-# from .xls import ExcelStream
-# from .parquet import Parquet
-# from .docx import Doc, Docx
-# from .pptx import PPT, PPTX
-# from .pdf import PDF
+from .file_entry import ALL_LOADERS
 
 
 LOADERS = {
@@ -26,19 +25,7 @@ LOADERS = {
     '.html': TextPlain,
     '.plain': TextPlain,
     '.md': Markdown
-    # '.xls': ExcelStream,
-    # '.parquet': Parquet,
-    # '.doc': Doc,
-    # '.docx': Docx,
-    # '.pdf': PDF,
-    # '.ppt': PPT,
-    # '.pptx': PPTX
 }
-
-
-def mk_builder(_type: str, *args, **kwargs):
-    assert _type in LOADERS, f"{_type} file not supported"
-    return LOADERS[_type]
 
 
 class Directory(DataProvider):
@@ -48,7 +35,7 @@ class Directory(DataProvider):
         :param path 指定文件夹路径（单个或数组）
         :param *suffix 文件的后缀 'all' 表示全部
         :param recursive 是否递归遍历文件夹
-        :param type_mapping 类型映射 例如{'.json':'.jsonl' }表示将.json文件当做.jsonl（JSON行）文件处理
+        :param type_mapping 类型映射 例如{'.json':'.jsonl' }表示将.json文件当做.jsonl（JSON行）文件处理；支持两个特殊键：'all' 所有类型都映射到这个；'other' 除了声明的其他都映射到这个
         """
         self.path = path
         if isinstance(path, str):
@@ -69,22 +56,33 @@ class Directory(DataProvider):
         return False
 
     def get_filetype(self, file_path: str):
+        if 'all' in self.type_mapping:
+            return self.type_mapping['all']
         filename = os.path.split(file_path)[1]
         if '.' not in filename:
             return ''
         suffix = filename[filename.rfind('.'):]
-        return self.type_mapping.get(suffix) or suffix
+        if suffix in self.type_mapping:
+            return self.type_mapping[suffix]
+        if 'other' in self.type_mapping:
+            return self.type_mapping['other']
+        return suffix
 
-    def get_loader(self, file_path: str):
-        filetype = self.get_filetype(file_path)
-        cls = mk_builder(filetype)
-        return cls(file_path, **self.extra_args)()
+    def mk_builder(self, _type: str, *args, **kwargs):
+        assert _type in LOADERS or _type in ALL_LOADERS, f"{_type} file not supported"
+        if _type in LOADERS:
+            return LOADERS[_type]
+        loader = load_cls(f'{ROOT}.{LOADER_MODULE}.{ALL_LOADERS[_type]}')[0]
+        LOADERS[_type] = loader
+        return loader
 
     def gen_doc(self, file_path):
+        filetype = self.get_filetype(file_path)
+        cls = self.mk_builder(filetype)
         filename = os.path.split(file_path)[1]
         print("processing", file_path)
         try:
-            for row in self.get_loader(file_path):
+            for row in cls(file_path, **self.extra_args)():
                 yield {
                     "filename": filename,
                     "data": row

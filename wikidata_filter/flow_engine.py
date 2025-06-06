@@ -21,7 +21,7 @@ def handle_sigint(signum, frame):
         sys.exit(0)
 
 
-def run(data_provider: DataProvider, processor: JsonIterator):
+def run(data_provider: DataProvider, processor: JsonIterator, limit: int = None):
     # 注册信号处理程序
     signal.signal(signal.SIGINT, handle_sigint)
 
@@ -38,9 +38,13 @@ def run(data_provider: DataProvider, processor: JsonIterator):
         if isinstance(res, GeneratorType):
             for _ in res:
                 pass
-
+    row_count = 0
     for item in data_provider.iter():
         execute(item)
+        row_count += 1
+        if limit and row_count >= limit:
+            print('\n达到limit限制，停止加载数据...')
+            break
         if process_status["stop"] > 0:
             print("\n接收到 Ctrl+C 信号，正在优雅退出...")
             processor.on_complete()
@@ -57,4 +61,4 @@ def run(data_provider: DataProvider, processor: JsonIterator):
 def run_flow(flow: Flow):
     print('starting flow:', flow.name)
     assert flow.loader is not None, "loader为空！可通过yaml文件或命令行参数进行配置"
-    run(flow.loader, flow.processor)
+    run(flow.loader, flow.processor, limit=flow.limit)

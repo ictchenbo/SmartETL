@@ -4,6 +4,8 @@ import yaml
 from wikidata_filter.util.files import open_file
 from wikidata_filter.loader.file import File
 
+# ---------------------以下为单记录的文本文件---------------------
+
 
 class TextBase(File):
     """文本文件基类，可加载整个文件作为一个字符串输出 仅适合小文件"""
@@ -21,30 +23,19 @@ TextPlain = TextBase
 
 class Yaml(TextBase):
     """加载yaml文件作为一个dict对象 仅适合小文件"""
-    def __init__(self, input_file: str,  **kwargs):
-        super().__init__(input_file, **kwargs)
-
     def iter(self):
         yield yaml.load(self.instream, Loader=yaml.FullLoader)
 
 
 class Json(TextBase):
     """整个文件作为一个JSON对象（不管是dict还是list），仅适合小文件"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
     def iter(self):
         content = self.instream.read()
         yield json.loads(content)
 
 
 class JsonArray(TextBase):
-    """
-    整个文件作为JsonArray，输出数组中的每一项，仅适合小文件
-    """
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
+    """整个文件作为JsonArray，输出数组中的每一项，仅适合小文件"""
     def iter(self):
         content = self.instream.read()
         json_array = json.loads(content)
@@ -56,21 +47,13 @@ class JsonArray(TextBase):
 
 class Text(TextBase):
     """输出文本文件的每一行"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
     def iter(self):
         for line in self.instream:
             yield line
 
 
 class JsonLine(Text):
-    """
-     Json行文件加载器
-    """
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
+    """Json行文件加载器"""
     def iter(self):
         for line in super().iter():
             yield json.loads(line)
@@ -78,9 +61,6 @@ class JsonLine(Text):
 
 class JsonFree(Text):
     """对格式化JSON文件进行加载 自动检测边界。【注意】此加载器可能不够鲁棒"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
     def iter(self):
         lines = []
         for line in super().iter():

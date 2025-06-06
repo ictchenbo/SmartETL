@@ -1,14 +1,14 @@
 
 
-def template(temp: str = None):
+def template(temp: str = None, variables: list = ['data']):
     def _format1(data: str or dict):
         if isinstance(data, dict):
             query = temp
-            for key, val in data.items():
-                query = query.replace('{'+key+'}', str(val))
-                # query = query.format(**{key: val})
+            for var in variables:
+                query = query.replace('{'+var+'}', str(data.get(var)))
         else:
-            query = temp.format(data=data)
+            values = {variables[0]: data}
+            query = temp.format(**values)
         return query
 
     def _format2(data: str or dict):

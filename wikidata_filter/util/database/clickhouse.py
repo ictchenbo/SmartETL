@@ -1,3 +1,5 @@
+"""ClickHouse数据库操作封装"""
+import time
 import json
 from .rdb_base import RDBBase
 
@@ -5,8 +7,8 @@ from .rdb_base import RDBBase
 class CK(RDBBase):
     def __init__(self, host: str = 'localhost',
                  tcp_port: int = 9000,
-                 username: str = "default",
-                 password: str = "",
+                 username: str = 'default',
+                 password: str = '',
                  database: str = 'default',
                  **kwargs):
         super().__init__(database=database, **kwargs)
@@ -15,13 +17,17 @@ class CK(RDBBase):
         except:
             print('install clickhouse_driver first!')
             raise "clickhouse_driver not installed"
-        self.client = Client(host=host,
-                             port=tcp_port,
-                             database=database,
-                             user=username,
-                             password=password,
-                             send_receive_timeout=20)
-        print('connected to CK', host, tcp_port, database)
+        self.connect_params = dict(host=host,
+                                   port=tcp_port,
+                                   database=database,
+                                   user=username,
+                                   password=password,
+                                   send_receive_timeout=20)
+
+    def connect(self):
+        from clickhouse_driver import Client
+        self.client = Client(**self.connect_params)
+        print(f"connected to CK:{self.connect_params}")
 
     def make_gen(self, it):
         cols = None
@@ -61,5 +67,16 @@ class CK(RDBBase):
             self.client.execute(sql)
             return True
         except Exception as e:
-            print(e)
-            return False
+            # 失败后等待、重试最多3次
+            for i in range(3):
+                print('reconnect in 5 minutes')
+                time.sleep(300)
+                try:
+                    self.connect()
+                    self.client.execute(sql)
+                    return True
+                except Exception as e2:
+                    pass
+                    # print(e2)
+            print('clickhouse operation failed for 3 times, giveing up')
+            raise e

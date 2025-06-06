@@ -1,0 +1,6 @@
+You are give news title, please translate into Chinese, without any other words.
+
+News Title：
+{data}
+
+Translation：

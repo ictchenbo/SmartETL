@@ -1,0 +1,41 @@
+from: local/db_envs.yaml
+
+name: consume news html and download images
+
+consts:
+  kafka:
+    group_id: jss_image
+  request_args:
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+    proxies:
+      http: "http://localhost:8001"
+      https: "http://localhost:8001"
+#    allow_redirects: true
+    verify: false
+  allowed_formats:
+    - .jpg
+    - .jpeg
+    - .png
+    - .webp
+    - .bmp
+
+nodes:
+  today: util.dates.current_date
+  extract_image: Map('gestata.news.images', url_key='url', html_key='html')
+  filter_format: WhiteList(allowed_formats, 'ext')
+  filter1: "Filter(lambda r: 'logo' in r['name'] or 'icon' in r['name'])"
+  filter2: "Filter(lambda r: '/ads' in r['url'] or 'banner' in r['url'])"
+  filter_url: Not(Any(filter1, filter2))
+  make_id: UUID
+  append_ext: ConcatFields('_id', '_id', 'ext', separator='')
+  download: Map('util.http.image', key='url', target_key='data', min_size=10240, min_width=200, min_height=150, **request_args)
+  filter: FieldsNonEmpty('data')
+  writer: WriteFiles('data/images/'+today, name_key='_id', content_key='data')
+  select: Select('_id', 'url', 'name')
+  writer2: WriteJson('data/images/news.json', append=True, buffer_size=10)
+
+loader: database.kafka.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=15)
+
+#processor: Chain(extract_image, filter_format, make_id, append_ext, download, Print())
+processor: Chain(Print('id', 'url'), extract_image, filter_format, filter_url, make_id, append_ext, download, filter, writer, select, writer2, Wait(3))

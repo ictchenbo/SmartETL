@@ -1,4 +1,5 @@
 import hashlib
+import base64 as __base64
 
 
 def md5_simple(text: str, bits: int = 16) -> str:
@@ -27,6 +28,10 @@ def pad20(_id: int or str):
     while len(s_id) < 20:
         s_id = '0' + s_id
     return s_id
+
+
+def base64(data: bytes):
+    return __base64.b64encode(data).decode('utf-8')
 
 
 if __name__ == "__main__":

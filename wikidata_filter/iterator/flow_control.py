@@ -143,24 +143,13 @@ class If(JsonIterator):
             return None
         if isinstance(data, Message):
             if data.msg_type == 'end':
-                res = self.node.__process__(data)
-                if isinstance(res, GeneratorType):
-                    for one in res:
-                        if one is not None:
-                            yield one
-                return None
+                return self.node.__process__(data)
             data = data.data
 
         if not self.matcher(data):
             return data
 
-        res = self.node.__process__(data)
-        if isinstance(res, GeneratorType):
-            for one in res:
-                if one is not None:
-                    yield one
-        else:
-            return res
+        return self.node.__process__(data)
 
 
 class IfElse(JsonIterator):
@@ -192,12 +181,6 @@ class IfElse(JsonIterator):
             res = self.node_b.__process__(data)
 
         return res
-        # if isinstance(res, GeneratorType):
-        #     for one in res:
-        #         if one is not None:
-        #             yield one
-        # else:
-        #     return res
 
 
 class While(If):
@@ -217,9 +200,9 @@ class While(If):
                     for one in res:
                         if one is not None:
                             yield one
-                    return
                 else:
-                    return res
+                    yield res
+                return
             data = data.data
 
         ith = 0

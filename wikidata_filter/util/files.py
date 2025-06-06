@@ -1,4 +1,5 @@
 import os
+import io
 import json as JSON
 
 
@@ -28,13 +29,29 @@ def get_lines(filename: str, encoding="utf8", **kwargs):
 
 
 def open_file(filename: str, mode: str = "rb", encoding: str = "utf8", **kwargs):
-    """打开文件 返回文件流 根据文件名判断是否为bz2 gz或普通文件"""
-    if filename.endswith('.bz2'):
-        import bz2
-        stream = bz2.open(filename, mode, encoding=encoding, **kwargs)
-    elif filename.endswith('.gz'):
+    """打开文件 返回文件流 根据文件名判断是否为gz bz2 xz压缩文件或普通文件"""
+    # 首先判断是否为字节流
+    if isinstance(filename, io.IOBase):
+        if 'b' in mode:
+            return filename
+        # 包装为文本流
+        return io.TextIOWrapper(filename, encoding=encoding)
+    # 判断是否为字节数据
+    if isinstance(filename, bytes):
+        stream = io.BytesIO(filename)
+        if 'b' in mode:
+            return stream
+        return io.TextIOWrapper(stream, encoding=encoding)
+
+    if filename.endswith('.gz'):
         import gzip
         stream = gzip.open(filename, mode, **kwargs)
+    elif filename.endswith('.bz2'):
+        import bz2
+        stream = bz2.open(filename, mode, encoding=encoding, **kwargs)
+    elif filename.endswith('.xz'):
+        import lzma
+        stream = lzma.open(filename, mode, encoding=encoding, **kwargs)
     else:
         stream = open(filename, mode, encoding=encoding, **kwargs)
     return stream

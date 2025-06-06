@@ -1,15 +1,4 @@
 # 基本依赖
 zhconv
 PyYAML==6.0.1
-
-# Wiki XML文件处理
-lxml
-xmltodict==0.13.0
-wikitextparser==0.55.13
-py-wikimarkup==2.3.0
-
-# 其他
 requests
-clickhouse-driver==0.2.8
-pymongo==3.11.1
-minio

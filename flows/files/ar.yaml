@@ -1,0 +1,15 @@
+name: zip文件加载示例
+
+consts:
+  type_mapping:
+    all: .jsonl
+
+nodes:
+  select: SelectVal('data')
+  select2: Select('id', 'title')
+
+#loader: ar.Zip('C:/work/data4X/论文/arxiv/x10.zip', 'all', type_mapping=type_mapping)
+loader: ar.Rar('C:/work/data4X/论文/arxiv/x10.rar', 'all', type_mapping=type_mapping)
+limit: 10
+
+processor: Chain(select, Print('id', 'title'))

@@ -5,11 +5,16 @@ description: 对新闻标题和正文基于大模型翻译，向量化并写入�
 consts:
   chatglm4: http://10.208.63.29:8888
   bge_large_zh: http://10.208.63.29:8001/embed
+  llm_params:
+    api_base: http://10.208.63.29:8000/v1/completions
+    api_key: sk-tccpivmjxbfffcrgjyyalnotwzsfzidxnwtlsoylgtmckcrg
+    model: DeepSeek-R1-Distill-Qwen-32B
+    remove_think: true
 
 nodes:
   qd: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v3')
 
-  prompt: util.files.text('config/prompt/news_translate.txt')
+  prompt: util.files.text('config/prompt/news_translate_v2.txt')
   prompt1: util.files.text('config/prompt/news_translate_abs.txt')
 
   map: Map(int, key='id')
@@ -17,7 +22,9 @@ nodes:
   chain2: Chain(map, add_ts)
 
   rename: RenameFields(title='title_origin', content='content_origin')
-  trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
+  trans_title: Map('gestata.llm.invoke', key='title_origin', target_key='title', prompt=prompt, **llm_params)
+  filter: "Filter(lambda s: s and 'INVALID' not in s, key='title')"
+#  trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
   translate: model.GoGPT(api_base=chatglm4, key='content_origin', prompt=prompt1, target_key='content')
 
   write_es: Function('wikidata_filter.gestata.dbops.upsert', db_es)
@@ -29,6 +36,6 @@ nodes:
 
   fork: Fork(Chain(write_es, count_es), Chain(vector, FieldsNonEmpty('vector'), write_qd, count_qd), copy_data=True)
 
-  chain3: Chain(rename, trans_title, translate, fork)
+  chain3: Chain(rename, trans_title, filter, translate, fork)
 
 processor: Chain(chain, Print('id', 'title', 'origin_publish_time', 'url'), chain2, chain3)
