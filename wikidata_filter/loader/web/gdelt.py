@@ -53,7 +53,7 @@ class GdeltLatest(DataProvider):
 
 class GdeltTaskEmit(DataProvider):
     """每隔15分钟左右获取最新的GDELT事件列表，输出每一个事件"""
-    ts_file = ".ts"
+    ts_file = ".gdelt.ts"
 
     def __init__(self, *dates):
         use_dates = dates

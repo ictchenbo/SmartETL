@@ -23,9 +23,9 @@ def sha256_id(data: bytes, length: int = 8):
     return _id
 
 
-def pad20(_id: int or str):
+def pad20(_id: int or str, length: int = 20):
     s_id = str(_id)
-    while len(s_id) < 20:
+    while len(s_id) < length:
         s_id = '0' + s_id
     return s_id
 

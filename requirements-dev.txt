@@ -16,3 +16,4 @@ arxiv
 # archive files
 rarfile
 unrar
+docling

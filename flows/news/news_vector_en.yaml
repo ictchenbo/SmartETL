@@ -1,7 +1,7 @@
 from: flows/news/p1_kafka.yaml
 
 name: translate and vectorize
-description: 对新闻标题和正文基于大模型翻译，向量化并写入向量库
+description: 从ES读取新闻进行向量化并写入向量库
 consts:
   es1:
     index: goinv3_document_news
@@ -20,14 +20,14 @@ consts:
 
 nodes:
   es: util.database.elasticsearch.ES(**es1)
-  qd: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v4_en', auto_create=True, size=1024)
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='chunk_news_v5_en', auto_create=True, size=1024)
 
   len_filter: LengthFilter(key='title', min_length=6)
   filter: KeywordFilter(key='title', keywords=keywords)
   select: Select('_id', 'title', 'content', 'url', 'publish_time', 'title_origin', 'content_origin')
   as_int: Map(int, key='_id')
-  vector: Map('gestata.embedding.text_v2', key='content_origin', target_key='vector', api_base=bge_large_en)
+  vector: Map('gestata.embedding.text_v2', key='title_origin', target_key='vector', api_base=bge_large_en)
   write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
 
 loader: database.Scroll(es, fetch_size=10000, _scroll='1m', query_body=query_body)
-processor: Chain(len_filter, filter, select, as_int, vector, FieldsNonEmpty('vector'), Print(), write_qd, Count(ticks=1))
+processor: Chain(len_filter, filter, select, as_int, vector, FieldsNonEmpty('vector'), Print('_id', 'title'), write_qd, Count(ticks=1))

@@ -30,11 +30,17 @@ LOADERS = {
 
 class Directory(DataProvider):
     """扫描文件夹 对指定后缀的文件按照默认参数进行读取 返回 (filename, data_row)"""
-    def __init__(self, path: str or list, *suffix, recursive: bool = False, type_mapping: dict = None, **kwargs):
+    def __init__(self, path: str or list,
+                 *suffix,
+                 recursive: bool = False,
+                 type_mapping: dict = None,
+                 filename_only: bool = False,
+                 **kwargs):
         """
         :param path 指定文件夹路径（单个或数组）
         :param *suffix 文件的后缀 'all' 表示全部
         :param recursive 是否递归遍历文件夹
+        :param filename_only 只获取文件名（及路径）
         :param type_mapping 类型映射 例如{'.json':'.jsonl' }表示将.json文件当做.jsonl（JSON行）文件处理；支持两个特殊键：'all' 所有类型都映射到这个；'other' 除了声明的其他都映射到这个
         """
         self.path = path
@@ -43,6 +49,9 @@ class Directory(DataProvider):
         self.suffix = suffix
         self.all_file = 'all' in suffix
         self.recursive = recursive
+        self.filename_only = filename_only
+        if filename_only and type_mapping is not None:
+            print("Warning, when filename_only=True, type_mapping would not take effect")
         self.type_mapping = type_mapping or {}
         self.extra_args = kwargs
 
@@ -77,10 +86,18 @@ class Directory(DataProvider):
         return loader
 
     def gen_doc(self, file_path):
+        print("processing", file_path)
+        filename = os.path.split(file_path)[1]
+        if self.filename_only:
+            # 不需要加载文件
+            yield {
+                "filename": filename,
+                "filepath": file_path
+            }
+            return
+        # 加载文件
         filetype = self.get_filetype(file_path)
         cls = self.mk_builder(filetype)
-        filename = os.path.split(file_path)[1]
-        print("processing", file_path)
         try:
             for row in cls(file_path, **self.extra_args)():
                 yield {

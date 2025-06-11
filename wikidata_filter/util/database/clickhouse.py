@@ -1,6 +1,14 @@
 """ClickHouse数据库操作封装"""
 import time
 import json
+import traceback
+
+try:
+    from clickhouse_driver import Client
+except:
+    print('install clickhouse_driver first!')
+    raise "clickhouse_driver not installed"
+
 from .rdb_base import RDBBase
 
 
@@ -12,22 +20,13 @@ class CK(RDBBase):
                  database: str = 'default',
                  **kwargs):
         super().__init__(database=database, **kwargs)
-        try:
-            from clickhouse_driver import Client
-        except:
-            print('install clickhouse_driver first!')
-            raise "clickhouse_driver not installed"
         self.connect_params = dict(host=host,
                                    port=tcp_port,
                                    database=database,
                                    user=username,
                                    password=password,
                                    send_receive_timeout=20)
-
-    def connect(self):
-        from clickhouse_driver import Client
         self.client = Client(**self.connect_params)
-        print(f"connected to CK:{self.connect_params}")
 
     def make_gen(self, it):
         cols = None
@@ -54,6 +53,8 @@ class CK(RDBBase):
                write_mode: str = "upsert",
                table: str = None,
                cluster: str = None,
+               retry_times: int = 3,
+               ignore_error: bool = False,
                **kwargs):
         table = table or self.table
         if not isinstance(items, list):
@@ -67,16 +68,20 @@ class CK(RDBBase):
             self.client.execute(sql)
             return True
         except Exception as e:
-            # 失败后等待、重试最多3次
-            for i in range(3):
-                print('reconnect in 5 minutes')
-                time.sleep(300)
+            # 失败后等待、重试{retry_times}次
+            traceback.print_exc()
+            time.sleep(10)
+            for i in range(retry_times):
                 try:
-                    self.connect()
+                    self.client = Client(**self.connect_params)
                     self.client.execute(sql)
                     return True
                 except Exception as e2:
                     pass
                     # print(e2)
+                print('reconnect in 5 minutes')
+                time.sleep(300)
             print('clickhouse operation failed for 3 times, giveing up')
+            if ignore_error:
+                return False
             raise e

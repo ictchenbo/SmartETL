@@ -39,7 +39,7 @@ class MinIO(Database):
     def upsert(self, items: dict or list, **kwargs):
         """将数据以指定格式写入指定桶和指定的文件。
             其中key_key指定文件名的字段；value_key指定写入文件数据所在字段，该字段含义由value_type指定。
-            value_type=file表示是本地文件路径；value_type=json表示将数据以json写入文件；value_type=str表示将数据以简单字符串写入文件。
+            value_type=auto 自动选择 value_type=file表示是本地文件路径；value_type=json表示将数据以json写入文件；value_type=str表示将数据以简单字符串写入文件。
         """
         merged_kwargs = dict(**self.kwargs, **kwargs)
         if isinstance(items, list):
@@ -51,22 +51,38 @@ class MinIO(Database):
     def on_data(self, data: dict,
                 key_key: str = "_id",
                 value_key: str = "_value",
-                value_type: str = "file",
+                value_type: str = "auto",
                 encoding: str = "utf8", **kwargs):
         """
         :param data 待处理数据
         :param key_key="object_key" 指定对象ID所在的列
         :param value_key="object_value" 指定对象值所在的列
-        :param value_type="file" 指定对象值类型 'file' 表示指定的文件路径（读取文件内容并写入MinIO） 'bytes' 指定直接内容（直接写入MinIO） 'json'指定将对象进行JSON序列化后写入MinIO
+        :param value_type="auto" 自动选择 指定对象值类型 'file' 表示指定的文件路径（读取文件内容并写入MinIO） 'bytes' 指定直接内容（直接写入MinIO） 'json'指定将对象进行JSON序列化后写入MinIO
         :param encoding 文本文件的编码
         """
         object_key = data[key_key]
         object_value = data[value_key]
-
-        if value_type == 'file':
+        if value_type == 'auto':
+            # auto时 根据数据类型自动选择输出方式
+            if isinstance(object_value, bytes):
+                buffer = BytesIO(object_value)
+                self.minio_client.put_object(self.bucket, object_key, buffer, len(object_value))
+            else:
+                bytes_val = object_value
+                if isinstance(object_value, str):
+                    bytes_val = object_value.encode(encoding)
+                else:
+                    import json
+                    bytes_val = json.dumps(object_value, ensure_ascii=False).encode(encoding)
+                buffer = BytesIO(bytes_val)
+                self.minio_client.put_object(self.bucket, object_key, buffer, len(bytes_val))
+        elif value_type == 'file':
+            # 指定为文件
             self.minio_client.fput_object(self.bucket, object_key, object_value)
         else:
+            # 其他指定方式
             bytes_val = object_value
+
             if value_type == "json":
                 import json
                 bytes_val = json.dumps(object_value, ensure_ascii=False).encode(encoding)

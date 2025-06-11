@@ -3,7 +3,6 @@ import logging
 from typing import Any, Dict
 
 import requests
-import xmltodict
 import base64
 from lxml.html import fromstring, HtmlElement, etree
 from wikidata_filter.util.http import image as download_image
@@ -21,6 +20,7 @@ ARXIV_BASE = "http://arxiv.org"
 
 def search(topic: str, max_results: int = 50):
     """基于arXiv API的论文搜索"""
+    import xmltodict
     if ':' not in topic:
         topic = 'all:' + topic
     params = {
@@ -53,7 +53,7 @@ def join_para(s: list):
     return '\n'.join(s1).strip()
 
 
-def parse_figures(section, base_url: str):
+def parse_figures(section, base_url: str, image_format: str = None):
     """
         基于arxiv官网HTML网页抽取论文中的图
         注意：网页布局可能发生变化，注意检查更新
@@ -72,7 +72,10 @@ def parse_figures(section, base_url: str):
             fig_info['url'] = base_url + '/' + url
             data = download_image(fig_info['url'])
             if data:
-                fig_info['data'] = base64.b64encode(data).decode('utf-8')
+                if image_format == "base64":
+                    fig_info['data'] = base64.b64encode(data).decode('utf-8')
+                else:
+                    fig_info['data'] = data
         images.append(fig_info)
 
     return images
@@ -121,7 +124,7 @@ def parse_tables(section):
     return ret
 
 
-def extract_from_html(source: str, base_url: str = None):
+def extract_from_html(source: str, base_url: str = None, image_format: str = None):
     """
     基于arxiv官网HTML网页抽取论文信息，参考：https://arxiv.org/html/2503.15454v3
     注意：网页布局可能发生变化，注意检查更新
@@ -173,7 +176,7 @@ def extract_from_html(source: str, base_url: str = None):
         paper_info['sections'].append({
             'title': title,
             'content': content,
-            'figures': parse_figures(section, base_url) if base_url else None,
+            'figures': parse_figures(section, base_url, image_format=image_format) if base_url else [],
             'tables': parse_tables(section)
         })
 
@@ -192,6 +195,8 @@ def extract_from_html(source: str, base_url: str = None):
 def extract(row: dict,
             content_key: str = "content",
             url_key: str = "url_html",
+            image_key: str = None,
+            image_format: str = None,
             **kwargs):
     """
     对输入的arxiv论文字典对象进行解析（假设其包含html网页正文字段及其url字段）
@@ -202,7 +207,15 @@ def extract(row: dict,
         print('当前论文id没有html文件')
         return None
     base_url = row.get(url_key)
-    return extract_from_html(html, base_url)
+    paper_info = extract_from_html(html, base_url, image_format=image_format)
+    if image_key:
+        images = []
+        for section in paper_info.get("sections"):
+            for figure in section.get("figures"):
+                if "data" in figure:
+                    images.append(figure['data'])
+        row[image_key] = images
+    return paper_info
 
 
 def from_meta(row: dict):

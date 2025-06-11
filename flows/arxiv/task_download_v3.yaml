@@ -1,0 +1,35 @@
+name: arxiv指定论文下载
+description: 对指定论文优先下载html，否则下载pdf
+consts:
+  request_args:
+    ignore_error: yes
+    timeout: 60
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+    verify: false
+  path: "G:/数据资源/papers/arxiv-0527"
+
+loader: JsonLine(arxiv_25_123.json)
+
+nodes:
+  pdf_file: ConcatFields('pdf_file', 'id', prefix=path, suffix='.pdf')
+  html_file: ConcatFields('html_file', 'id', prefix=path, suffix='.html')
+  pdf_not_exists: Not('util.files.exists', key='pdf_file')
+  html_not_exists: Not('util.files.exists', key='html_file')
+
+  make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
+  download_html: Map('util.http.content', key='url_html', target_key='html', most_times=1, ignore_error=True, timeout=60, headers=headers)
+
+  has_html: FieldsNonEmpty('html')
+
+  save_html: WriteFiles('data/arxiv/task', name_key='id', content_key='html', suffix='.html')
+#  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+
+  make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
+  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf', )
+  save_pdf: WriteFiles('data/arxiv/task', name_key='id', content_key='pdf', suffix='.pdf')
+  chain_pdf: Chain(make_pdf_url, download_pdf, FieldsNonEmpty('pdf'), Count(label='pdf'), save_pdf)
+
+  ifelse: IfElse(save_html, chain_pdf, matcher=has_html)
+
+processor: Chain(pdf_file, html_file, pdf_not_exists, html_not_exists, make_html_url, download_html, ifelse, Wait(7))

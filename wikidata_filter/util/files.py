@@ -3,6 +3,12 @@ import io
 import json as JSON
 
 
+def content(filename: str):
+    """读取文件字节内容"""
+    with open(filename, "rb") as fin:
+        return fin.read()
+
+
 def text(filename: str, encoding="utf8", **kwargs):
     """读取文本文件"""
     with open(filename, encoding=encoding, **kwargs) as fin:

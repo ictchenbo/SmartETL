@@ -24,9 +24,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
    - [Common Crawl网页存档数据](flows/cc.yaml)
-   - [arXiv论文数据](flows/arxiv/p2_html4all.yaml)
+   - [论文数据](flows/paper/uni_process.yaml) [arXiv论文](flows/arxiv/p2_html4all.yaml)
+   - [新闻图片数据](flows/news/index_image.yaml)
    - [通用网站采集](flows/crawler/gen1.yaml)
-   - [网站图标采集](flows/news/scan_website.yaml)
+   - [网站图标采集](flows/news/download_website_icon.yaml)
    - more...
 5. 支持常见文档文件/数据文件格式读取
    - txt
@@ -44,6 +45,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [json](flows/files/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
    - [yaml](flows/nl2poc/nuclei_http_poc_desc.yaml)
    - [parquet](flows/files/file_parquet.yaml)
+   - zip
+   - rar
+   - 7zip
+   - tar(.gz|.bz2|.xz)
+   - gzip
+   - bz2
+   - xz
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
    - MySQL
    - PostgreSQL
@@ -68,6 +76,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.6.11
+1. 集成`docling`进行进行PDF抽取
+2. 按照论文数据统一存储与处理设计，实现新的[论文处理流程](flows/paper/uni_process.yaml)
+3. `Directory`增加`filename_only`参数，可以先获取文件名，在后续处理时通过`util.files`模块读取文件
+
+
 - 2025.6.5
 1. 支持打包压缩文件：zip/tar/tar.gz/tar.bz2/tar.xz/rar/7z 注意，rar 7z需要安装相关依赖
 2. `util.files.open`支持gz/bz2/xz文件以及`IO[bytes]`文件流
@@ -81,24 +95,6 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 3. 完善`WriteFiles`，支持文件名带路径
 4. 移动`base64`方法到`gestata.digest`模块中
 5. `util.database.clickhouse`数据库`upsert`方法增加错误重试机制
-
-
-- 2025.5.26
-1. 实现图片扫描、生成特征ID、建立索引流程 [本地图片处理](flows/news/index_image.yaml) 
-2. 实现对本地arxiv论文html/PDF解析流程 [论文下载](flows/arxiv/task_download.yaml) [arXiv论文解析](flows/arxiv/task_process.yaml)
-3. 完善了 ElasticSearch、MinIO、Qdrant数据库组件
-
-- 2025.4.24
-1. 实现[通用爬虫采集流程](flows/crawler/gen1.yaml)，基于提供的网站地址，不断发现链接并采集内容，提取标题和正文
-
-- 2025.4.20
-1. 完善arxiv论文采集处理流程
-
-- 2025.4.12
-1. **重要更新** 重构数据库相关组件，统一数据库操作导`util.database`模块中，Loader和Processor组件根据需要与特定数据库组件进行绑定 如`database.Scroll(mongo)`实现MongoDB数据库的数据读取
-2. 新增`SQLite`数据库组件
-3. 数据库操作相关流程全部更新
-4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](wikidata_filter/gestata/arxiv.py)
 
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
@@ -264,6 +260,23 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.5.26
+1. 实现图片扫描、生成特征ID、建立索引流程 [本地图片处理](flows/news/index_image.yaml) 
+2. 实现对本地arxiv论文html/PDF解析流程 [论文下载](flows/arxiv/task_download.yaml) [arXiv论文解析](flows/arxiv/task_process.yaml)
+3. 完善了 ElasticSearch、MinIO、Qdrant数据库组件
+
+- 2025.4.24
+1. 实现[通用爬虫采集流程](flows/crawler/gen1.yaml)，基于提供的网站地址，不断发现链接并采集内容，提取标题和正文
+
+- 2025.4.20
+1. 完善arxiv论文采集处理流程
+
+- 2025.4.12
+1. **重要更新** 重构数据库相关组件，统一数据库操作导`util.database`模块中，Loader和Processor组件根据需要与特定数据库组件进行绑定 如`database.Scroll(mongo)`实现MongoDB数据库的数据读取
+2. 新增`SQLite`数据库组件
+3. 数据库操作相关流程全部更新
+4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](wikidata_filter/gestata/arxiv.py)
+
 - 2025.3.29
 1. 集成并改造王宁的arxiv下载处理流程
 
