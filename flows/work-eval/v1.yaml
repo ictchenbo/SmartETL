@@ -1,0 +1,19 @@
+from: local/llm_keys.yaml
+
+name: 工作周报评估
+description: 读取指定文件夹的周报文件，基于`docling`提取word文件内容，提示大模型进行评阅，生成对应的markdown文件
+arguments: 1
+
+consts:
+  type_mapping:
+    all: .raw
+
+nodes:
+  prompt: util.files.text('config/prompt/work-eval.txt')
+  content_extract: Map('gestata.docling.extract_word', key='data', target_key='content')
+  llm_invoke: Map('gestata.llm.invoke_v2', target_key='review', **cstcloud, model='deepseek-v3:671b', prompt=prompt, variables=['filename', 'content'], remove_think=True)
+  writer: WriteFiles(arg1, name_key='filename', content_key='review', suffix='.md')
+
+loader: directory.Directory(arg1, '.docx', type_mapping=type_mapping)
+
+processor: Chain(Print('filename'), content_extract, llm_invoke, writer)

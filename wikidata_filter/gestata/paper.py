@@ -14,11 +14,10 @@ def add_meta(row: dict):
         row['id'] = _did
         row['sid'] = sid
         store_path = '/'.join([sid[:3], sid[3:6], _id])
-        row['store_path'] = store_path
         row['path_html'] = store_path + '.html'
         row['path_pdf'] = store_path + '.pdf'
         row['path_md'] = store_path + '.md'
-        row['path_json'] = store_path + '.json'
+        row['store_path'] = store_path + '.json' # 主数据
 
     return row
 
@@ -54,9 +53,9 @@ def image_list(row: dict, key='images'):
             "_id": row["id"] * 100 + i,
             "index": i, # 图片在论文中的序号
             "paper_id": row["_id"],
-            "paper_store_path": row["store_path"],
+            "paper_store_path": row["store_path"], #指向主数据
             "data": image,  # 作为payload或单独存储 通过store_path查找
-            "store_path": row["store_path"] + f'.{i:02d}.png'
+            "store_path": row["store_path"][:-5] + f'.{i:02d}.png'
         })
     return results
 
@@ -73,7 +72,7 @@ def __chunks(row: dict, content: str):
             "_id": row["id"] * 100 + i,
             "index": i,  # chunk在论文中的序号
             "paper_id": row["_id"],
-            "paper_store_path": row["store_path"],
+            "paper_store_path": row["store_path"], #指向主数据
             "text": chunk  # 作为payload而不必单独存储
         })
 
@@ -106,6 +105,7 @@ def chunks_from_markdown(row: dict, key='md'):
 
 
 def from_json(doc: dict):
+    """基于已经解析的层级化json文档结构进行转换"""
     nodes = doc.get("children") or []
     if not nodes:
         return None

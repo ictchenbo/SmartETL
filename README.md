@@ -76,6 +76,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.6.12
+1. 新增[基于大模型的工作周报评审流程](flows/work-eval/v1.yaml)
+2. 集成`docling`进行word抽取
+
 - 2025.6.11
 1. 集成`docling`进行进行PDF抽取
 2. 按照论文数据统一存储与处理设计，实现新的[论文处理流程](flows/paper/uni_process.yaml)

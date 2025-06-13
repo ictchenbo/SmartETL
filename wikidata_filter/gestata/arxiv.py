@@ -18,6 +18,19 @@ ARXIV_API_BASE = "http://export.arxiv.org/api/query"
 ARXIV_BASE = "http://arxiv.org"
 
 
+def make_id(filename: str, keep_version: bool = True):
+    """
+    构造arXiv论文ID：
+    arXiv有两种ID，详见https://info.arxiv.org/help/arxiv_identifier.html
+    """
+    name = filename[:filename.rfind('.')]
+    if '/' in name:
+        name = name.replace('/', ':')
+    if not keep_version and 'v' in name:
+        name = name[:name.rfind('v')]
+    return 'arxiv:' + name
+
+
 def search(topic: str, max_results: int = 50):
     """基于arXiv API的论文搜索"""
     import xmltodict
@@ -206,6 +219,8 @@ def extract(row: dict,
     if not html:
         print('当前论文id没有html文件')
         return None
+    if isinstance(html, bytes):
+        html = html.decode('utf8')
     base_url = row.get(url_key)
     paper_info = extract_from_html(html, base_url, image_format=image_format)
     if image_key:

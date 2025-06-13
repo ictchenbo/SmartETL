@@ -1,5 +1,7 @@
 from typing import Any
+from types import GeneratorType
 import traceback
+
 from wikidata_filter.util.mod_util import load_cls, load_util
 from wikidata_filter.util.jsons import parse_rules, parse_field
 from wikidata_filter.iterator.base import JsonIterator, DictProcessorBase

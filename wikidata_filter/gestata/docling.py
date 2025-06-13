@@ -9,8 +9,9 @@ __start = time.time()
 
 try:
     from docling.datamodel.base_models import InputFormat
+    from docling.pipeline.simple_pipeline import SimplePipeline
     from docling.datamodel.pipeline_options import PdfPipelineOptions
-    from docling.document_converter import DocumentConverter, PdfFormatOption
+    from docling.document_converter import DocumentConverter, PdfFormatOption, WordFormatOption
     from docling_core.types.io import DocumentStream
     from docling_core.types.doc import ImageRefMode, PictureItem, TableItem, TextItem
 except:
@@ -28,6 +29,13 @@ converter_with_image = DocumentConverter(
         InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
     }
 )
+
+converter_word = DocumentConverter(
+    format_options={
+        InputFormat.DOCX: WordFormatOption(pipeline_cls=SimplePipeline)  # , backend=MsWordDocumentBackend
+    }
+)
+
 __end = time.time()
 print(f'docling DocumentConverter init using {__end - __start} seconds')
 
@@ -59,3 +67,15 @@ def extract_pdf(row: dict,
         row[image_key] = images
 
     return row
+
+
+def extract_word(data: str or bytes):
+    """解析Word文件提取文字内容 生成markdown格式"""
+    if isinstance(data, bytes):
+        result = converter_word.convert(DocumentStream(name="doc.docx", stream=io.BytesIO(data)))
+    else:
+        result = converter_word.convert(data)
+
+    doc = result.document
+
+    return doc.export_to_markdown()

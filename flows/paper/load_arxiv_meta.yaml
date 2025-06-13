@@ -1,0 +1,21 @@
+from: local/db_envs.yaml
+
+name: load arXiv meta flow
+description: 读取arXiv-meta数据集，写入ES
+arguments: 1
+
+consts:
+  type_mapping:
+    all: .jsonl
+
+nodes:
+  es: util.database.elasticsearch.ES(**es1, index='arxiv-meta-2505')
+
+  select: SelectVal('data')
+  rename: RenameFields(id='_id')
+  change_id: "Map(lambda s: s.replace('/', ':'), key='_id')"
+# 建立ES全文索引
+  write_es: Map('gestata.dbops.upsert', es)
+
+loader: ar.Zip(arg1, 'all', type_mapping=type_mapping)
+processor: Chain(select, rename, change_id, Buffer(1000), write_es)

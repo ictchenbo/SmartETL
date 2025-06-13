@@ -75,9 +75,13 @@ def invoke_v2(data: str or dict,
         return None
 
     if local_api:
-        return parse_result_local(res, stream=stream, remove_think=remove_think)
+        llm_result = parse_result_local(res, stream=stream, remove_think=remove_think)
     else:
-        return parse_result(res, stream=stream, remove_think=remove_think)
+        llm_result = parse_result(res, stream=stream, remove_think=remove_think)
+
+    if isinstance(llm_result, GeneratorType) and not stream:
+        return list(llm_result)[-1]
+    return llm_result
 
 
 def parse_result(res, stream: bool = False, remove_think: bool = False):
