@@ -1,0 +1,53 @@
+from: local/db_envs.yaml
+
+name: 文件处理建向量简单流程
+description: 处理过程：（1）扫描指定文件夹下的指定类型文件 （2）基于docling提取文字和图片，文字以markdown格式输出 （3）对文字调用文本向量化模型并写入向量数据库 （4）对图片调用多模态向量化模型并写入向量数据库
+arguments: 1
+
+consts:
+# 文本向量化服务 如果不存在 可以写一个本地函数
+  bge_large_en: http://10.208.63.29:6008/v1/embeddings
+# 图片向量化服务
+  bge_vl_large: http://10.208.63.29:8001/embed_image
+# 读取文件类型
+  type_mapping:
+    .pdf: .raw
+    .ppt: .raw
+
+nodes:
+# Qdrant组件 分别对应文本向量索引和图片向量索引 指定的向量维度需要跟向量化模型对应
+  qd1: util.database.qdrant.Qdrant(**qdrant, collection='file-text', auto_create=True, size=768)
+  qd2: util.database.qdrant.Qdrant(**qdrant, collection='file-image', auto_create=True, size=1024)
+
+# 论文ID：`arxiv:<arxiv-id>`
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+  add_meta: Map('gestata.paper.add_meta')
+
+# 读取文件内容
+  read_file: Map('util.files.content', key='filepath', target_key='data')
+
+#PDF解析
+  extract_pdf: Map('gestata.docling.extract_pdf')
+#  md2json: Map('gestata.markdown.extract', key='md', target_key='paper_json_tree', tables='json')
+#  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+#  pdf_chain: Chain(extract_pdf, save_md, md2json, json2paper)
+
+# 保存图片&建立图片向量索引 | 也可以把图片字节作为向量的payload
+  to_images: Map('gestata.paper.image_list')
+  flat1: Flat()
+  save_image: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='data')
+  vector1: Map('gestata.embedding.image_v1', key='data', target_key='vector', api_base=bge_vl_large)
+  write_qd1: Map('gestata.dbops.upsert', qd1)
+  chain_image: Chain(to_images, flat1, save_image, vector1, RemoveFields('data'), write_qd1, Count(label='image'))
+
+# 建立文本向量索引
+  to_chunks2: Map('gestata.paper.chunks_from_markdown')
+  flat2: Flat()
+  vector2: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base=bge_large_en)
+  write_qd2: Map('gestata.dbops.upsert', qd2)
+  chain_text: Chain(to_chunks2, flat2, vector2, write_qd2, Count(label='chunk'))
+
+  fork: Fork(chain_image, chain_text, copy_data=True)
+
+loader: directory.Directory(arg1, '.html', type_mapping=type_mapping, filename_only=True)
+processor: Chain(read_file, extract_pdf, fork)

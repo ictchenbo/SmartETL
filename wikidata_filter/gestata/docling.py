@@ -18,23 +18,9 @@ except:
     print("docling required: pip install dockling")
     raise ModuleNotFoundError("docling not installed")
 
-converter_no_image = DocumentConverter()
-
-pipeline_options = PdfPipelineOptions()
-pipeline_options.images_scale = 2.0
-pipeline_options.generate_picture_images = True
-
-converter_with_image = DocumentConverter(
-    format_options={
-        InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
-    }
-)
-
-converter_word = DocumentConverter(
-    format_options={
-        InputFormat.DOCX: WordFormatOption(pipeline_cls=SimplePipeline)  # , backend=MsWordDocumentBackend
-    }
-)
+converter_basic = DocumentConverter()
+converter_pdf = None
+converter_word = None
 
 __end = time.time()
 print(f'docling DocumentConverter init using {__end - __start} seconds')
@@ -45,11 +31,22 @@ def extract_pdf(row: dict,
                 md_key: str = 'md',
                 image_key: str = 'images'):
     """解析PDF文件提取文字"""
-    converter = converter_with_image if image_key else converter_no_image
+    global converter_pdf
+    if image_key and converter_pdf is None:
+        pipeline_options = PdfPipelineOptions()
+        pipeline_options.images_scale = 2.0
+        pipeline_options.generate_picture_images = True
+        converter_pdf = DocumentConverter(
+            format_options={
+                InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
+            }
+        )
+    converter = converter_pdf if image_key else converter_basic
 
     data = row[data_key]
     if isinstance(data, bytes):
-        result = converter.convert(DocumentStream(name="doc.pdf", stream=io.BytesIO(data)))
+        filename = row.get("filename") or "doc.pdf"
+        result = converter.convert(DocumentStream(name=filename, stream=io.BytesIO(data)))
     else:
         result = converter.convert(data)
 
@@ -71,6 +68,15 @@ def extract_pdf(row: dict,
 
 def extract_word(data: str or bytes):
     """解析Word文件提取文字内容 生成markdown格式"""
+    global converter_word
+    if converter_word is None:
+        from docling.document_converter import WordFormatOption
+
+        converter_word = DocumentConverter(
+            format_options={
+                InputFormat.DOCX: WordFormatOption(pipeline_cls=SimplePipeline)  # , backend=MsWordDocumentBackend
+            }
+        )
     if isinstance(data, bytes):
         result = converter_word.convert(DocumentStream(name="doc.docx", stream=io.BytesIO(data)))
     else:

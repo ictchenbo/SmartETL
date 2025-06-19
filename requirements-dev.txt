@@ -1,3 +1,4 @@
+chardet
 bs4
 pymongo==3.11.1
 
