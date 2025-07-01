@@ -53,14 +53,15 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - bz2
    - xz
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
-   - MySQL
-   - PostgreSQL
-   - ClickHouse（列存数据库）
+   - MySQL（关系数据库）
+   - PostgresSQL（关系数据库）
+   - ClickHouse（关系数据库、列存数据库）
    - MongoDB（文档数据库）
    - ElasticSearch（全文索引）
    - Qdrant（向量数据库）
    - Kafka（消息队列）
-   - SQLite
+   - SQLite（关系数据库、嵌入式数据库）
+   - MinIO（文件系统、对象存储、KV数据库）
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
@@ -76,6 +77,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.7.1
+1. 完善[统一arXiv下载流程](flows/arxiv/task_download_v4.yaml)
+2. 新增基于自动机的关键词过滤组件 `KeywordFilterV2` 有效处理较大规模关键词的过滤场景（例如构建规则处理引擎/CEP）
+
 - 2025.6.12
 1. 新增[基于大模型的工作周报评审流程](flows/work-eval/v1.yaml)
 2. 集成`docling`进行word抽取
