@@ -1,0 +1,13 @@
+from: local/db_envs.yaml
+name: MongoDB数据库表数据导出/备份
+description: 指定MongoDB数据库的表，导出为json文件
+arguments: 3
+
+nodes:
+  db: util.database.mongodb.MongoDB(**mongo3, database=arg1)
+  select: Select('id', 'url', 'html', 'event_time_date', 'mention_time_date')
+  writer: WriteJson(arg3)
+
+loader: database.Scroll(db, collection=arg2)
+
+processor: Chain(select, writer, Count())

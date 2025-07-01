@@ -3,10 +3,10 @@ import logging
 from typing import Any, Dict
 
 import requests
-import base64
 from lxml.html import fromstring, HtmlElement, etree
 from wikidata_filter.util.http import image as download_image
 from wikidata_filter.gestata.embedding import text_v2, image_v1
+from wikidata_filter.gestata.digest import base64
 from wikidata_filter.iterator import JsonIterator
 from wikidata_filter.iterator.database.elasticsearch import ESWriter
 from wikidata_filter.util.database.qdrant import Qdrant
@@ -86,7 +86,7 @@ def parse_figures(section, base_url: str, image_format: str = None):
             data = download_image(fig_info['url'])
             if data:
                 if image_format == "base64":
-                    fig_info['data'] = base64.b64encode(data).decode('utf-8')
+                    fig_info['data'] = "data:image/jpeg;base64," + base64(data)
                 else:
                     fig_info['data'] = data
         images.append(fig_info)

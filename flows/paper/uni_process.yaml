@@ -6,8 +6,8 @@ arguments: 1
 #limit: 1
 
 consts:
-  bge_vl_large: http://10.208.63.29:8001/embed_image
-  bge_large_en: http://10.208.63.29:6008/v1/embeddings
+  bge_vl_large: http://10.208.62.156:8001/embed_image
+  bge_large_en: http://10.208.62.156:8001/embed
   type_mapping:
     all: .raw
   ex_meta:
@@ -68,7 +68,7 @@ nodes:
   to_chunks2: Map('gestata.paper.chunks_from_markdown')
   if_md: IfElse(to_chunks2, to_chunks1, key='md')
   flat2: Flat()
-  vector2: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base=bge_large_en)
+  vector2: Map('gestata.embedding.text_v1', key='text', target_key='vector', api_base=bge_large_en, lang='en')
   write_qd2: Map('gestata.dbops.upsert', qd2)
   chain_text: Chain(if_md, flat2, vector2, write_qd2, Count(label='chunk'))
 

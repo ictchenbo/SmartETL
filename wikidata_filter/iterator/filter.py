@@ -204,13 +204,31 @@ class KeywordFilter(Filter):
     """根据关键词进行匹配过滤"""
     def __init__(self, key: str = None, keywords: list = None, action: str = "drop", **kwargs):
         super().__init__(key=key, **kwargs)
-        self.keywords = keywords
+        self.keywords = [kw.strip().lower() for kw in keywords]
         self.keep = action == "keep"
 
     def __call__(self, val, *args, **kwargs):
-        for kw in self.kwargs:
-            if kw.lower() in val:
+        for kw in self.keywords:
+            if kw in val:
                 return self.keep
+        return not self.keep
+
+
+class KeywordFilterV2(Filter):
+    """根据自动机的关键词匹配过滤"""
+    def __init__(self, key: str = None, keywords: list = None, action: str = "drop", **kwargs):
+        super().__init__(key=key, **kwargs)
+        self.keep = action == "keep"
+        from ahocorasick import Automaton
+        self.actree = Automaton()
+        for word in keywords:
+            word = word.strip()
+            self.actree.add_word(word, word)
+        self.actree.make_automaton()
+
+    def __call__(self, val, *args, **kwargs):
+        for _ in self.actree.iter_long(val):
+            return self.keep
         return not self.keep
 
 

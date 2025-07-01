@@ -38,3 +38,7 @@ def delete(_id, db: Database, **kwargs):
 
 def exists(_id, db: Database, **kwargs) -> bool:
     return db.exists(_id, **kwargs)
+
+
+def get(_id, db: Database, **kwargs):
+    return db.get(_id, **kwargs)

@@ -1,0 +1,45 @@
+name: arxiv论文下载
+description: 基于提供的arXiv-kaggle数据集，筛选新的论文记录，下载html&pdf，保存到统一数据目录
+# 提供两次arXiv-kaggle数据集 第一个文件需解压后的json 后一个为zip
+arguments: 2
+consts:
+  request_args:
+    ignore_error: yes
+    timeout: 60
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+    verify: false
+# 全局存储路径 按月份存储
+  path_all: data/papers/arxiv/
+
+nodes:
+# 构造前一次数据集合。注意：不能读取zip压缩文件
+  old_set: util.sets.from_json(arg1)
+
+  select: SelectVal('data')
+  filterid: BlackList(old_set, 'id')
+
+# 全局存档路径：path_all/ym/id".pdf"
+  make_name: "Map(lambda s: s[:4] + '/' + s, key='id', target_key='filename')"
+
+# 首先判断是否存在pdf文件
+  pdf_file_all: ConcatFields('pdf_file_all', 'filename', prefix=path_all, suffix='.pdf')
+  pdf_not_exists: Not('util.files.exists', key='pdf_file')
+
+# HTML下载
+  html_file_all: ConcatFields('html_file_all', 'filename', prefix=path_all, suffix='.html')
+  html_not_exists: Not('util.files.exists', key='html_file')
+  make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
+  download_html: Map('util.http.content', key='url_html', target_key='html', **request_args)
+  save_html: WriteFiles(path_all, name_key='filename', content_key='html', suffix='.html')
+  chain_html: Chain(html_file_all, html_not_exists, make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+
+# PDF下载
+  make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
+  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf', **request_args)
+  save_pdf: WriteFiles(path_all, name_key='filename', content_key='pdf', suffix='.pdf')
+  chain_pdf: Chain(make_pdf_url, download_pdf, FieldsNonEmpty('pdf'), Count(label='pdf'), save_pdf)
+
+# 直接加载zip文件
+loader: ar.Zip(arg2)
+processor: Chain(select, filterid, make_name, pdf_file_all, pdf_not_exists, Fork(chain_html, chain_pdf), Wait(7))

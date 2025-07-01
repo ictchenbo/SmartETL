@@ -29,6 +29,8 @@ def json_lines(filename: str, encoding="utf8", **kwargs):
 
 def get_lines(filename: str, encoding="utf8", **kwargs):
     """读取每行并作为文本返回"""
+    # for line in open_file(filename, **kwargs):
+    #     yield line.decode(encoding)
     with open(filename, "r", encoding=encoding, **kwargs) as fin:
         for line in fin:
             yield line.strip()

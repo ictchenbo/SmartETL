@@ -3,9 +3,10 @@ import requests
 
 def text_v1(text: str,
             api_base: str = 'http://10.208.63.29:8001/embed',
+            lang: str = "zh",
             **kwargs):
     """简单文本embedding接口"""
-    payload = {"text": text}
+    payload = {"text": text, "lang": lang}
     try:
         response = requests.post(api_base, json=payload)
         if response.status_code == 200:

@@ -1,14 +1,13 @@
+from: local/db_envs.yaml
 name: export clickhouse to json
 description: 导出ClickHouse表数据为JSON文件
 arguments: 1
 consts:
   click1:
-    host: 10.208.57.5
-    tcp_port: 59000
     database: gdelt
 
 nodes:
-  db1: util.database.clickhouse.CK(**click1, table=arg1)
+  db1: util.database.clickhouse.CK(**click1, table=arg1, paging=False)
 
   print: Print
   counter: Count

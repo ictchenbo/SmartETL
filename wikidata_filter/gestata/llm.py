@@ -157,3 +157,47 @@ def print_result(data):
         print()
     else:
         print(data)
+
+
+def invoke_v3(messages: list,
+              api_base: str = None,
+              local_api: bool = False,
+              model: str = "Qwen2.5-32B-Instruct",
+              api_key: str = None,
+              stream: bool = False,
+              remove_think: bool = False, **kwargs):
+    """兼容OpenAI接口的大模型服务调用 直接提供消息内容
+    :param messages 给大模型的消息
+    :param api_base 服务地址，必须
+    :param local_api 是否为本地API
+    :param model 模型名称
+    :param api_key
+    :param stream
+    :param remove_think
+    :param kwargs 其他参数 请参考具体模型平台文档
+    """
+    data = {
+        "model": model,
+        "stream": stream,
+        "messages": messages
+    }
+    # other parameters
+    data.update(kwargs)
+    headers = {
+        'content-type': 'application/json'
+    }
+
+    if api_key:
+        headers['Authorization'] = 'Bearer ' + api_key
+    res = requests.post(f'{api_base}/chat/completions', headers=headers, json=data, stream=stream)
+    if res.status_code != 200:
+        return None
+
+    if local_api:
+        llm_result = parse_result_local(res, stream=stream, remove_think=remove_think)
+    else:
+        llm_result = parse_result(res, stream=stream, remove_think=remove_think)
+
+    if isinstance(llm_result, GeneratorType) and not stream:
+        return list(llm_result)[-1]
+    return llm_result

@@ -19,16 +19,16 @@ nodes:
   html_not_exists: Not('util.files.exists', key='html_file')
 
   make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
-  download_html: Map('util.http.content', key='url_html', target_key='html', most_times=1, ignore_error=True, timeout=60, headers=headers)
+  download_html: Map('util.http.content', key='url_html', target_key='html', **request_args)
 
   has_html: FieldsNonEmpty('html')
 
-  save_html: WriteFiles('data/arxiv/task', name_key='id', content_key='html', suffix='.html')
+  save_html: WriteFiles(path, name_key='id', content_key='html', suffix='.html')
 #  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
 
   make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
-  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf', )
-  save_pdf: WriteFiles('data/arxiv/task', name_key='id', content_key='pdf', suffix='.pdf')
+  download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf', **request_args)
+  save_pdf: WriteFiles(path, name_key='id', content_key='pdf', suffix='.pdf')
   chain_pdf: Chain(make_pdf_url, download_pdf, FieldsNonEmpty('pdf'), Count(label='pdf'), save_pdf)
 
   ifelse: IfElse(save_html, chain_pdf, matcher=has_html)

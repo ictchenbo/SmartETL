@@ -1,0 +1,14 @@
+name: arXiv meta filter
+arguments: 2
+
+consts:
+  type_mapping:
+    all: .jsonl
+
+nodes:
+  select: SelectVal('data')
+  match_ym: "Filter(lambda s, ym=arg2: s.startswith(ym), key='id')"
+  writer: WriteJson(f'data/arxiv/arxiv_{arg2}.json', buffer_size=100)
+
+loader: ar.Zip(arg1, 'all', type_mapping=type_mapping)
+processor: Chain(select, match_ym, writer)
