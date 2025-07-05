@@ -4,19 +4,17 @@ name: arXiv数据采集
 description: 从指定时间开始，持续采集arXiv论文
 
 consts:
-  click1:
-    database: goinv3_2410
-    table: gdelt_event
-
-loader: web.ArXivTaskEmit
+  path: data/arxiv/
 
 nodes:
+  task: gestata.arxiv.Task
+
   as_dict: ToDict
   make_id: Map('util.urls.path_from_url', key='d', target_key='id', result='last')
-  make_filename: ConcatFields('filename', 'id', prefix='data/arxiv/', suffix='.pdf')
+  make_filename: ConcatFields('filename', 'id', prefix=path, suffix='.pdf')
   file_not_exists: Not('util.files.exists', key='filename')
   download: Map('util.http.content', key='d', target_key='content', most_times=3, ignore_error=True)
-  save_file: WriteFiles('data/arxiv', suffix='.pdf')
+  save_file: WriteFiles(path, suffix='.pdf')
 
-
+loader: Function(task)
 processor: Chain(as_dict, make_id, make_filename, file_not_exists, Print(), download, save_file)

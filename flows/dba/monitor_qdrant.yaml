@@ -1,7 +1,7 @@
 name: 监测qdrant数量
 
 nodes:
-  loader1: web.api.Get('http://10.60.1.145:6333/collections/chunk_news_v2')
+  loader1: Function('util.http.json', 'http://10.60.1.145:6333/collections/chunk_news_v2')
   select: Select('result.points_count', short_key=True)
 
 loader: TimedLoader(loader1, interval=5)

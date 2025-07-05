@@ -1,10 +1,13 @@
 """arXiv相关算子"""
 import logging
 from typing import Any, Dict
-
+import time
+import os
+import json
 import requests
 from lxml.html import fromstring, HtmlElement, etree
 from wikidata_filter.util.http import image as download_image
+from wikidata_filter.util.dates import current_date
 from wikidata_filter.gestata.embedding import text_v2, image_v1
 from wikidata_filter.gestata.digest import base64
 from wikidata_filter.iterator import JsonIterator
@@ -16,6 +19,8 @@ from wikidata_filter.util.split import simple
 
 ARXIV_API_BASE = "http://export.arxiv.org/api/query"
 ARXIV_BASE = "http://arxiv.org"
+ARXIV_PDF = f'{ARXIV_BASE}/pdf'
+ts_file = ".arxiv.ts"
 
 
 def make_id(filename: str, keep_version: bool = True):
@@ -393,3 +398,37 @@ class ArxivProcess(JsonIterator):
         self.qdrant_writer.collection = "figure_arxiv_2504_2"
         write_qdrant_msg = self.qdrant_writer.upsert(emb_data)
         self.logger.info(f"图片向量化写入qdrant库  {write_qdrant_msg}")
+
+
+class Task:
+    def __init__(self, start_month: int = None, end_month: int = None):
+        self.month = start_month or 2501
+        self.seq = 1
+        if os.path.exists(ts_file):
+            with open(ts_file, encoding="utf8") as fin:
+                nums = json.load(fin)
+                self.month = nums[0]
+                self.seq = nums[1]
+        self.end_month = end_month or int(current_date('%y%m'))
+        print(f"from {self.month}.{self.seq} to {self.end_month}")
+
+    def write_ts(self):
+        row = [self.month, self.seq]
+        with open(ts_file, "w", encoding="utf8") as out:
+            json.dump(row, out)
+
+    def __call__(self, *args, **kwargs):
+        while self.month <= self.end_month:
+            while self.seq < 30000:
+                url = f'{ARXIV_PDF}/{self.month}.{self.seq:05d}'
+                print("processing:", url)
+                yield url
+                self.seq += 1
+                # 记录更新后的TS（即下次任务TS），如果被kill，下次启动不会重复处理
+                self.write_ts()
+                time.sleep(1)
+            self.month += 1
+            if self.month % 100 > 12:
+                self.month += int(self.month/100)*100 + 101
+            self.seq = 1
+            self.write_ts()

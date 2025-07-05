@@ -27,6 +27,7 @@ nodes:
   prompt4: util.prompt.Config(p4, **prompt_config)
 
   llm1: modelv2.Siliconflow(siliconflow['api_key'], model='Pro/deepseek-ai/DeepSeek-V3')
+  qd: util.database.qdrant.Qdrant(**qdrant)
 
   as_dict: ToDict('original_query')
   add_fields: AddFields(gap_queries=[], all_chunks=[], all_sub_queries=[])
@@ -36,7 +37,7 @@ nodes:
   merge1: ConcatArray('sub_queries', 'gap_queries', target_key='sub_queries')
   flat_query: Flat(key='sub_queries', target_key='sub_query', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, key='sub_query', target_key='sub_query_vector')
-  search: search.qdrant.Qdrant(**qdrant, fetch_size=5, key='sub_query_vector', target_key='chunks')
+  search: Map('gestata.dbops.search', qd, key='sub_query_vector', target_key='chunks', limit=5)
   remove_vector: RemoveFields('sub_query_vector')
   flat_chunk: Flat(key='chunks', target_key='chunk', inherit_props=True)
   judge_chunk: modelv2.Processor(llm1, prompt=p2, target_key='selected')

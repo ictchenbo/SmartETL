@@ -4,25 +4,14 @@ name: GDELT数据采集
 description: 从指定时间开始，持续采集GDELT数据，写入clickhouse库
 arguments: 0
 
-consts:
-  click1:
-    database: goinv3_2410
-    table: gdelt_event
-
-loader: web.gdelt.GdeltTaskEmit(2025, 1, 1)
-
 nodes:
-  ck1: util.database.clickhouse.CK(**click1)
+  ck1: util.database.clickhouse.CK(**click1, database='goinv3_2410', table='gdelt_event')
+# 函数式对象
+  gdelt_task: gestata.gdelt.Task(2025, 1, 1)
 
-#  filter1: "Filter(lambda row: 'export.CSV' in row['url'])"
-#  filter2: "Filter(lambda row: 'mentions.CSV' in row['url'])"
-  row: web.gdelt.Export
+  download: Function('wikidata_filter.gestata.gdelt.process_task')
   select: Select('GlobalEventID','Day','EventCode','NumMentions','NumSources','NumArticles','AvgTone','Actor1Code','Actor1Name','Actor1CountryCode','Actor2Code','Actor2Name','Actor2CountryCode','ActionGeo_Type','ActionGeo_Type_Fullname','ActionGeo_CountryCode','ActionGeo_Lat','ActionGeo_Long','SOURCEURL')
-#  writer: WriteJson('test_data/gdelt.export.json', append=True)
-#  writer2: WriteJson('test_data/gdelt.mention.json', append=True)
   writer: Function('wikidata_filter.gestata.dbops.upsert', ck1, retry_times=0, ignore_error=True)
-#  chain1: Chain(filter1, row, print)
-#  chain2: Chain(filter2, row, print)
-#  fork: Fork(chain1, chain2)
 
-processor: Chain(row, select, Buffer(buffer_size=100), writer)
+loader: Function(gdelt_task)
+processor: Chain(download, select, Buffer(buffer_size=100), writer)

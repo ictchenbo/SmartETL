@@ -8,8 +8,7 @@ consts:
 
 nodes:
   db_es: util.database.elasticsearch.ES(**es1)
-
-  loader: web.api.Get('http://10.60.1.145:8080/goinv3/api/v1/dashboard/message?topic=%E6%9C%80%E6%96%B0&limit=100')
+  loader: Function('util.http.json', 'http://10.60.1.145:8080/goinv3/api/v1/dashboard/message?topic=%E6%9C%80%E6%96%B0&limit=100')
   abnormal_time: "=lambda t: t >= '2025-02-18'"
   select: SelectVal('data')
   flat: Flat

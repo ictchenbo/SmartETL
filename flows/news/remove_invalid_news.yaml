@@ -16,6 +16,6 @@ nodes:
   as_int: Map(int, key='_id')
   delete_qd: Map('gestata.dbops.delete', key='_id', target_key='_delete_qd', db=db_qdrant)
 
-loader: web.api.Get('http://10.208.61.117:9200/goinv3_document_news/_search?sort=publish_time:desc&size=1000&_source=publish_time,title')
+loader: Function('util.http.json', 'http://10.208.61.117:9200/goinv3_document_news/_search?sort=publish_time:desc&size=1000&_source=publish_time,title')
 
 processor: Chain(flat, flat2, select, filter, format_time, Print(), delete_es, as_int, delete_qd, Count())
