@@ -2,25 +2,18 @@ name: arxiv论文HTML和PDF下载
 description: 下载数据集中arxiv论文html,pdf格式，并保存在data/arxiv_html,arxiv_pdf下
 
 consts:
-  kafka_config:
-    kafka_ip: 10.60.1.148:9092
-    kafka_topic: arxiv_gather
-    group_id: arxiv_group1
-  kafka_config_parse:
-    kafka_ip: 10.60.1.148:9092
-    kafka_topic: arxiv_parse2
-    group_id: arxiv_parse_group
+  kafka_host: 10.60.1.148:9092
 
-
-loader: database.kafka_v2.KafkaConsumer(**kafka_config)
+loader: Function('wikidata_filter.gestata.dbops.scroll', kafka1)
 nodes:
-
+  kafka1: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_gather')
+  kafka2: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_parse2')
   #拼接html下载url
   search: Map('gestata.arxiv.url4html',key='id', target_key='url_html')
   #下载html内容
   download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
   #元数据集写入kafka
-  write_kafka: database.kafka.KafkaWriter(**kafka_config_parse,buffer_size=1)
+  write_kafka: Function('wikidata_filter.gestata.dbops.upsert', kafka2)
   #保存html文件
   save_file: WriteFiles('data/arxiv_html', name_key='id', suffix='.html')
   #拼接pdf下载url

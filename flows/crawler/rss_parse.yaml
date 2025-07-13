@@ -1,0 +1,10 @@
+name: RSS解析
+
+nodes:
+  writer: WriteFiles('data/rss/xlab.app/html', name_key='_id', content_key='content_html', suffix='.html')
+  extract: Map('gestata.news.extract', key='content_html', target_key='page', is_snippet=True)
+  select: Select('title', 'url', 'summary', 'date_published', 'date_modified', 'page.text', short_key=True)
+
+loader: JsonLine('data/rss/xlab.app/items.json')
+#processor: Chain(UUID(), writer)
+processor: Chain(extract, select, Print())

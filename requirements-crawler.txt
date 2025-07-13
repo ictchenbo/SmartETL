@@ -1,0 +1,10 @@
+chardet
+bs4
+
+# Wiki XML文件处理
+lxml
+xmltodict==0.13.0
+wikitextparser==0.55.13
+py-wikimarkup==2.3.0
+
+arxiv

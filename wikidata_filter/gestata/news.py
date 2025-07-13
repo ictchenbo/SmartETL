@@ -1,15 +1,15 @@
 """
-提供新闻网页的基本处理，包括文章解析和图片解析
+新闻网页的解析处理算子
 """
 import os
 import re
+import traceback
 from urllib.parse import urljoin, urlsplit, parse_qs
+import requests
 
-try:
-    from bs4 import BeautifulSoup
-except:
-    raise ImportError("bs4 not installed")
-
+from wikidata_filter.util.dates import normalize_time
+from wikidata_filter.integrations.gne import GeneralNewsExtractor
+from .html import BeautifulSoup, HtmlExtractor
 
 article_classes = ['article-body', 'content', 'news-content', 'post-content', 'entry', "post-image", "imgboxa",
                   "pageImg main", "article-image-in-body", "relative", "pt-4 md:pt-10"]
@@ -145,3 +145,74 @@ def images(article: dict,
             "desc": img_desc if img_desc else "无描述",
             "context": img_context.strip() if img_context else "无上下文"
         }
+
+
+def wrap_snippet(html: str):
+    return f'<html><body>{html}</body></html>'
+
+
+def extract(html: str, doc: dict = None, is_snippet: bool = False):
+    """从HTML中提取元数据 并与doc进行合并后返回。注意：时间提取的顺序"""
+    if is_snippet:
+        html = wrap_snippet(html)
+    doc = doc or {}
+    my_extractor = HtmlExtractor(html)
+    my_extractor.parse_meta()
+
+    news = {}
+    news['meta'] = my_extractor.meta
+    news['keywords'] = my_extractor.find_value_from_meta("keywords")
+    news['desc'] = my_extractor.find_value_from_meta("description")
+    news['source'] = my_extractor.find_value_from_meta('site_name') or my_extractor.find_value_from_meta('source')
+    news['author'] = my_extractor.find_value_from_meta('author')
+
+    for key in ["source", "author", "keywords"]:
+        if not news.get(key) and key in doc:
+            news[key] = doc[key]
+
+    title = my_extractor.find_value_from_meta("title") or doc.get("title") or my_extractor.get_title()
+    if '|' in title:
+        title = title[:title.find('|')].strip()
+    news["title"] = title
+    news["content"] = doc.get("content")
+
+    pt = doc.get("publish_time") or doc.get("time")
+    if pt:
+        # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
+        news['origin_publish_time'] = pt
+        news['publish_time'] = normalize_time(pt)
+
+    return news
+
+
+gne_extractor = GeneralNewsExtractor()
+
+
+def gne_extract(html: str, is_snippet: bool = False, **kwargs):
+    """基于扩展的JNE组件进行新闻信息抽取"""
+    if is_snippet:
+        html = wrap_snippet(html)
+    try:
+        result = gne_extractor.extract(html)
+    except:
+        traceback.print_exc()
+        result = {}
+    return extract(html, result)
+
+
+def constor_extract(html: str, api_base: str, request_timeout: int = 120, is_snippet: bool = False, **kwargs):
+    """调用Constor组件服务进行新闻信息抽取"""
+    if is_snippet:
+        html = wrap_snippet(html)
+    result = {}
+    for i in range(3):
+        try:
+            r = requests.post(api_base, json=[html], timeout=request_timeout)
+            if r.status_code == 200:
+                result = r.json()[0]
+            else:
+                print(f'error response from gdelt parser. {r.status_code}:{r.text}')
+        except:
+            traceback.print_exc()
+            print("Constor服务异常")
+    return extract(html, result)

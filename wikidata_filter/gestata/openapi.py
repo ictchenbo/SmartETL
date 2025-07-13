@@ -320,13 +320,3 @@ def write(model_list: list) -> dict:
         "paths": paths,
         "tags": [{"name": tag} for tag in main_model.get("tags", [])]
     }
-
-
-class FromOpenAPI(Flat):
-    def transform(self, data: Any, *args) -> list:
-        return read(data)
-
-
-class ToOpenAPI(ReduceBase):
-    def on_data(self, data, *args):
-        return write(data.get("values") or [])

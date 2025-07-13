@@ -10,6 +10,7 @@ consts:
 loader: Json('data/news/news_' + arg1 + '.json')
 
 nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, auto_create=True, size=1024)
   count: Count(ticks=1)
   print: Print
   select: SelectVal('nodes')
@@ -17,6 +18,6 @@ nodes:
   add_ts: AddTS('imported_time')
   flat: Flat
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
 
 processor: Chain(select, flat, select, flat, adds, add_ts, vector, write_qd, count)

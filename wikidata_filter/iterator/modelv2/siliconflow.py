@@ -10,6 +10,7 @@ class Siliconflow(LLMModel):
     def __init__(self,
                  api_key: str,
                  model: str,
+                 api_base="https://api.siliconflow.cn/v1",
                  **kwargs):
         """Siliconflow平台大模型封装算子
 
@@ -17,4 +18,4 @@ class Siliconflow(LLMModel):
         :param key 输入的字段名，如果为None，表示整个输入作为大模型请求参数，否则，提取该字段的值
         :param model 模型名称 必须
         """
-        super().__init__("https://api.siliconflow.cn/v1", api_key=api_key, model=model, **kwargs)
+        super().__init__(api_base=api_base, api_key=api_key, model=model, **kwargs)

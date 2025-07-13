@@ -9,15 +9,14 @@ consts:
     host: '10.208.61.117'
     port: 9200
     index: arxiv_html_index
-    buffer_size: 3
-  kafka_config:
-    kafka_ip: 10.60.1.148:9092
-    kafka_topic: arxiv_gather
-    group_id: arxiv_group
+  kafka_host: 10.60.1.148:9092
 
-loader: database.kafka_v2.KafkaConsumer(**kafka_config)
+loader: Function('wikidata_filter.gestata.dbops.scroll', kafka1)
 nodes:
-  writer_es: database.ESWriter(**es_config)
+  db_es: util.database.elasticsearch.ES(**es_config)
+  kafka1: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_gather')
+
+  writer_es: Function('wikidata_filter.gestata.dbops.upsert', db_es)
   search: Map('gestata.arxiv.url4html',key='id', target_key='url_html')
   write_count: gestata.arxiv.WriteCount('data/arxiv_kafka_pro.txt')
   download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)

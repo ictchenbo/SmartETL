@@ -1,1 +1,0 @@
-from .jsonp import Jsonp

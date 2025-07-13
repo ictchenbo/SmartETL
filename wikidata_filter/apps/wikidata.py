@@ -1,5 +1,5 @@
 from wikidata_filter.iterator.base import JsonIterator
-from wikidata_filter.loader.wikidata import WikidataJsonDump
+from wikidata_filter.gestata.wikidata import read_dump
 
 
 def run(infile: str, iterator: JsonIterator, parallels: int = 1, parallel_runner: str = "multi_thread"):
@@ -9,7 +9,7 @@ def run(infile: str, iterator: JsonIterator, parallels: int = 1, parallel_runner
     :param parallels 并发数
     :param parallel_runner 并发方法  multi_thread/multi_process
     """
-    dump_loader = WikidataJsonDump(infile)
+    dump_loader = read_dump(infile)
 
     def process_item(val):
         iterator.on_data(val)
@@ -19,16 +19,16 @@ def run(infile: str, iterator: JsonIterator, parallels: int = 1, parallel_runner
         if parallel_runner == "multi_thread":
             from concurrent.futures import ThreadPoolExecutor
             pool = ThreadPoolExecutor(max_workers=parallels)
-            for item in dump_loader.iter():
+            for item in dump_loader:
                 pool.submit(process_item, (item,))
             pool.shutdown()
         else:
             import multiprocessing
-            for item in dump_loader.iter():
+            for item in dump_loader:
                 sub_process = multiprocessing.Process(target=process_item, args=(item,))
                 sub_process.start()
     else:
-        for item in dump_loader.iter():
+        for item in dump_loader:
             process_item(item)
 
     iterator.on_complete()

@@ -9,9 +9,9 @@ nodes:
   loader11: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.gz')
   loader12: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wat.gz')
   loader13: Text('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wet.gz')
-  loader_warc: web.CCWARC('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.gz')
-  loader_wat: web.CCWAT('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wat.gz')
-  loader_wet: web.CCWET('data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wet.gz')
+  loader_warc: Function('wikidata_filter.gestata.cc.warc', 'data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.gz')
+  loader_wat: Function('wikidata_filter.gestata.cc.wat', 'data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wat.gz')
+  loader_wet: Function('wikidata_filter.gestata.cc.wet', 'data/cc/CC-MAIN-20250206114225-20250206144225-00000.warc.wet.gz')
   strip: "Map(lambda s: s.decode('utf8').strip())"
   display: Chain(strip, Print())
   print: Print

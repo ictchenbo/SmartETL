@@ -1,18 +1,15 @@
 import json
 
-from wikidata_filter.loader.text import TextBase, Text
+from wikidata_filter.util.files import open_file
 
 
-class WikidataJsonDump(Text):
+def read_dump(input_file: str):
     """
-    Wikidata全量数据，Json格式，是一个非常大的Json Array，第一行为[，最后一行为]，中间每行为一个Json，行末带逗号
-    尽管理论上可以直接用json.load，但并不推荐！
+        Wikidata全量数据，Json格式，是一个非常大的Json Array，第一行为[，最后一行为]，中间每行为一个Json，行末带逗号
+        尽管理论上可以直接用json.load，但并不推荐！
     """
-    def __init__(self, input_file: str):
-        super().__init__(input_file)
-
-    def iter(self):
-        for line in super().iter():
+    with open_file(input_file, mode="r") as instream:
+        for line in instream:
             if len(line) > 4:
                 yield json.loads(line[:-2])
 
@@ -39,16 +36,13 @@ def to_dict(elem, target: dict):
             target[etag] = e.text
 
 
-class WikidataXmlIncr(TextBase):
+def read_incr_xml(input_file: str):
     """
     Wikidata增量数据，仅提供XML格式，<page></page>表示一个最近修改的实体，page/revision/text为对应的Json
     """
-    def __init__(self, input_file: str):
-        super().__init__(input_file)
-
-    def iter(self):
-        import lxml.etree as ET
-        for event, elem in ET.iterparse(self.instream, tag=f'{tag_prefix}page'):
+    import lxml.etree as ET
+    with open_file(input_file, mode="r") as instream:
+        for event, elem in ET.iterparse(instream, tag=f'{tag_prefix}page'):
             res = {}
             to_dict(elem, res)
             text = res['revision']['text']

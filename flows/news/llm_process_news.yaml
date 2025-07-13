@@ -24,8 +24,11 @@ consts:
     event_time_date: publish_time
 
 nodes:
+  db1: util.database.mongodb.MongoDB(**mongo2)
+  db2: util.database.qdrant.Qdrant(**qdrant)
+  db_es: util.database.elasticsearch.ES(**es1)
   print: Print
-  loader: database.Mongo(**mongo2, sortby="_id", limit=1)
+  loader: Function('wikidata_filter.gestata.dbops.scroll', db1, sortby="_id", limit=1)
 
   prompt1: util.files.text('config/prompt/news_classify.txt')
   prompt2: util.files.text('config/prompt/news_country_rec.txt')
@@ -49,14 +52,13 @@ nodes:
   tag2: Map('util.parser.tag_split', key='tag2')
   remove2: RemoveFields('short_content')
   add_ts: AddTS('inserted_time')
-  write_es: database.ESWriter(**es1)
+  write_es: Function('wikidata_filter.gestata.dbops.upsert', db_es)
   counter: Count(ticks=10)
   write1: Chain(llm1, llm2, remove2, tag1, tag2, add_ts, write_es, counter)
 
   chunk: Map('util.split.simple', key='content',target_key='chunks')
   flat: Flat(key='chunks', inherit_props=True)
   vector: model.embed.Local(api_base=bge_large_zh, field='chunks', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant)
   write2: Chain(chunk, print, flat, print, vector)
 
   group: Fork(write1, write2, copy_data=True)

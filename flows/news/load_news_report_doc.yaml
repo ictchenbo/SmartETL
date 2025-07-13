@@ -11,10 +11,11 @@ consts:
 loader: doc_news.News('test_data/news/每日开源20241109第222期总第454期.docx')
 
 nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, auto_create=True, size=1024)
   count: Count(ticks=1)
   print: Print
   add_ts: AddTS('imported_time')
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
 
 processor: Chain(add_ts, vector, write_qd, count)

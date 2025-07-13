@@ -7,20 +7,20 @@ consts:
   es1:
     index: goinv3_document_news
 
-#loader: database.kafka.WebConsumer(**kafka, topics=['gdelt'])
-loader: database.kafka.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=15)
+loader: Function('wikidata_filter.gestata.dbops.scroll', db_kafka)
 #loader: JsonLine('data/news2.jsonl')
 
 nodes:
   db_es: util.database.elasticsearch.ES(**es1)
+# util.database.kafka_rest.WebConsumer(**kafka, topics=['gdelt'])
+  db_kafka: util.database.kafka_rest.TimedConsumer(**kafka, topics=['gdelt'], max_wait_times=15)
   dedup: DistinctByDatabase(db_es, key='id')
 
   count: Count(ticks=10)
   print: Print('id', 'url')
   select: Select('id', 'url', 'html', 'event_time_date', 'mention_time_date')
   backup: WriteJsonScroll('data/news/news')
-  extract: nlp.news.Constor('http://10.60.1.145:7100/constor/process', key='html', target_key='info')
-#  extract: nlp.news.Extract(key='html', target_key='content')
+  extract: Map('gestata.news.constor_extract', key='html', target_key='info', api_base='http://10.60.1.145:7100/constor/process')
   flat: FlatProperty('info', inherit_props=True)
 #  valid_time: "=lambda r: r['publish_time'] < r['event_time_date'] + 86400000 if r.get('publish_time') else False"
   valid_time: "=lambda r:  True if r.get('publish_time') else False"

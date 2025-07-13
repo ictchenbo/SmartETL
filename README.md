@@ -77,6 +77,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.7.13
+1. 数据库组件全部移动到`util.database`模块下 `Kafka`包括两个：`kafka`和`kafka_rest`
+2. 部分原有`loader`组件、`iterator`组件移动到`gestata`模块下
+
 - 2025.7.1
 1. 完善[统一arXiv下载流程](flows/arxiv/task_download_v4.yaml)
 2. 新增基于自动机的关键词过滤组件 `KeywordFilterV2` 有效处理较大规模关键词的过滤场景（例如构建规则处理引擎/CEP）
@@ -168,7 +172,7 @@ run(loader, processor)
 ## CLI流程示例
 1. 加载`EarthCam`jsonp数据
 ```shell
-python .\main_flow.py --loader "web.jsonp.Jsonp('https://www.earthcam.com/cams/common/gethofi
+python .\main_flow.py --loader "Function('wikidata_filter.gestata.jsonp.E', 'https://www.earthcam.com/cams/common/gethofi
 tems.php?hofsource=com&tm=ecn&camera=all&start=0&length=21&ec_favorite=0&cdn=0&date_start=undefined&date_end=undefined&id=&callback=onjsonpload')" --processor "Chain(SelectVal('hofdata'), Flat(), Print())" list1
 ```
 

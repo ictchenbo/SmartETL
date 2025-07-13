@@ -1,5 +1,5 @@
 import sys
-from wikidata_filter.wikipedia import *
+from wikidata_filter.apps.wikipedia import *
 from wikidata_filter.iterator import Chain, WriteJson, Count
 
 

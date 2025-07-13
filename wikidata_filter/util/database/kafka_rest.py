@@ -4,7 +4,7 @@ import time
 from typing import Iterable, Any
 import requests
 
-from wikidata_filter.loader.base import DataProvider
+from .base import Database
 
 
 def get_logger(name: str):
@@ -19,7 +19,7 @@ def get_logger(name: str):
     return lgr
 
 
-class WebConsumer(DataProvider):
+class WebConsumer(Database):
     """
     基于HTTP接口的Kafka简单消费者，持续拉取指定话题数据
     """
@@ -106,7 +106,7 @@ class WebConsumer(DataProvider):
             self.logger.error("请求Kafka发生错误，请检查")
             return None
 
-    def iter(self) -> Iterable[Any]:
+    def scroll(self) -> Iterable[Any]:
         if self.auto_init:
             assert len(self.topics) > 0, "topics should not be empty"
             self.create()
@@ -135,7 +135,7 @@ class WebConsumer(DataProvider):
 wait_time = [0, 5, 10, 15, 20, 30]
 
 
-class TimedConsumer(DataProvider):
+class TimedConsumer(Database):
     """自动重试的Kafka消费者，超时重新创建和订阅"""
     logger = get_logger("TimedConsumer")
 
@@ -155,7 +155,7 @@ class TimedConsumer(DataProvider):
         self.consumer.create()
         self.consumer.subscribe(self.topics)
 
-    def iter(self) -> Iterable[Any]:
+    def scroll(self) -> Iterable[Any]:
         no_data_count = 0
         do_init = True
 

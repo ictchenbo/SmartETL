@@ -1,0 +1,21 @@
+name: RSS feed获取
+description: 基于https://wechat2rss.xlab.app/提供的微信公众号RSS订阅服务
+consts:
+  headers:
+    User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  proxy:
+    http: http://localhost:8001
+    https: http://localhost:8001
+
+nodes:
+  as_dict: ToDict(key='url')
+  mk_name: Map('util.urls.path_from_url', key='url', target_key='filename', result='last')
+  get_xml: Map('util.http.json', key='url', target_key='content', headers=headers)
+  save_file: WriteFiles('data/rss/xlab.app', name_key='filename', content_key='content')
+  select: SelectVal('content.items')
+  flat: Flat
+  writer: WriteJson('data/rss/xlab.app/items.json')
+
+#loader: Text('test_data/rss_feed.txt')
+loader: String('https://wechat2rss.xlab.app/feed/b3da5de3b7697f10c0e22ce8909063ea84c44bbd.json')
+processor: Chain(as_dict, mk_name, get_xml, save_file, select, flat, writer, Count())

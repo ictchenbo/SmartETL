@@ -36,7 +36,7 @@ class SelectVal(DictProcessorBase):
         self.inherit_props = inherit_props
 
     def on_data(self, data: dict, *args):
-        keyval = data.get(self.key)
+        keyval = extract(data, self.key)
         if self.inherit_props:
             if isinstance(keyval, dict):
                 for k, v in data.items():

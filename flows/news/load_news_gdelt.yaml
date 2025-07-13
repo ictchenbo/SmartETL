@@ -15,7 +15,10 @@ consts:
 
 
 nodes:
-  loader: database.Mongo(**mongo2, sortby="_id", limit=10000)
+  db1: util.database.mongodb.MongoDB(**mongo2)
+  es: util.database.elasticsearch.ES(**es1)
+  qd: util.database.qdrant.Qdrant(**qdrant, auto_create=True, size=1024)
+  loader: Function('wikidata_filter.gestata.dbops.scroll', db1, sortby="_id", limit=10000)
 
   count: Count(ticks=10)
   print: Print
@@ -28,9 +31,9 @@ nodes:
   rename: RenameFields(time='date', title='title_origin', content='content_origin', event_time_date='publish_time')
   trans_title: model.GoGPT(api_base=chatglm4, key='title_origin', prompt=prompt, target_key='title')
   translate: model.GoGPT(api_base=chatglm4, key='content_origin', prompt=prompt1, target_key='content')
-  write_es: database.ESWriter(**es1, buffer_size=10)
+  write_es: Function('wikidata_filter.gestata.dbops.upsert', es)
   vector: model.embed.Local(api_base=bge_large_zh, key='content', target_key='vector')
-  write_qd: database.qdrant.Qdrant(**qdrant, buffer_size=10)
+  write_qd: Function('wikidata_filter.gestata.dbops.upsert', qd)
 
 loader: TimedLoader(loader, interval=600)
 processor: Chain(select,map, add_ts, rename, trans_title, translate, write_es, vector, write_qd, count)

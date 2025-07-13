@@ -1,22 +1,23 @@
 from: local/db_envs.yaml
 
 name: 加载经济学人的民调趋势数据（CSV）文件进行处理 生成JSON格式
-arguments: 1
 
 consts:
   mongo2:
     database: goinv3_2409
     collection: election_prediction
 
-loader: CSV('test_data/economist_' + arg1 + '_polltracker-polls.csv')
+loader: CSV('test_data/economist_1024_polltracker-polls.csv')
 
 nodes:
+#  db_mongo: util.database.mongo.MongoDB(**mongo2)
   print: Print
   counter: Count
   select: Select('poll_id', 'start_date', 'end_date', 'pollster', 'sample_size', 'sponsors', 'candidate_name', 'pct', 'date')
   group: Group(by='poll_id')
-  polls: web.polls.PollData('economist')
+  polls: Map('gestata.polls.T')
 #  writer: WriteJson('test_data/polls.jsonl')
-  writer: database.MongoWriter(**mongo2)
+#  writer: Function('wikidata_filter.gestata.dbops.upsert', db_mongo)
+  writer: Print
 
 processor: Chain(group, polls, writer, counter)

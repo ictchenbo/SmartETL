@@ -9,25 +9,20 @@ import json
 import chardet
 
 from wikidata_filter.util.files import open_file
-from wikidata_filter.loader.file import File
 
 
-class CCBase(File):
-    def __init__(self, input_file: str, **kwargs):
-        self.input_file = input_file
-        self.instream = open_file(input_file, **kwargs)
-
-    def iter(self) -> Iterable[Any]:
-        content = []
-        for line in self.instream:
+def ccbase(input_file: str):
+    content = []
+    with open_file(input_file) as instream:
+        for line in instream:
             if line == b'WARC/1.0\r\n':
                 if content:
                     yield content
                     content.clear()
             else:
                 content.append(line)
-        if content:
-            yield content
+    if content:
+        yield content
 
 
 def parse_header_line(header: bytes):
@@ -110,37 +105,33 @@ def get_basic(warc_header: dict):
     }
 
 
-class CCWARC(CCBase):
+def warc(input_file: str) -> Iterable[Any]:
     """解析CC的WARC文件格式"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
-    def iter(self) -> Iterable[Any]:
-        for content in super().iter():
-            warc = []
-            http_header = []
-            http_body = []
-            empty_line = 0
-            for line in content:
-                if empty_line >= 2:
-                    http_body.append(line)
-                elif line == b'\r\n':
-                    empty_line += 1
-                    continue
-                else:
-                    if empty_line == 0:
-                        warc.append(line)
-                    else:
-                        http_header.append(line)
-            header = parse_header(http_header)
-            body = parse_body(header, http_body)
-            if not body:
+    for content in ccbase(input_file):
+        warc = []
+        http_header = []
+        http_body = []
+        empty_line = 0
+        for line in content:
+            if empty_line >= 2:
+                http_body.append(line)
+            elif line == b'\r\n':
+                empty_line += 1
                 continue
-            warc_header = parse_header(warc)
-            row = get_basic(warc_header)
-            row['header'] = header
-            row['body'] = body.strip()
-            yield row
+            else:
+                if empty_line == 0:
+                    warc.append(line)
+                else:
+                    http_header.append(line)
+        header = parse_header(http_header)
+        body = parse_body(header, http_body)
+        if not body:
+            continue
+        warc_header = parse_header(warc)
+        row = get_basic(warc_header)
+        row['header'] = header
+        row['body'] = body.strip()
+        yield row
 
 
 CC_HEADERS = {
@@ -150,40 +141,32 @@ CC_HEADERS = {
 }
 
 
-class CCWET(CCBase):
+def wet(input_file: str) -> Iterable[Any]:
     """解析CC的WET文件格式"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
-    def iter(self) -> Iterable[Any]:
-        for content in super().iter():
-            row = {}
-            http_body = []
-            empty_line = False
-            for line in content:
-                if empty_line:
-                    http_body.append(line.decode('utf8', errors='ignore'))
-                elif line == b'\r\n':
-                    empty_line = True
-                else:
-                    k, v = parse_header_line(line)
-                    if k and k in CC_HEADERS:
-                        row[CC_HEADERS[k]] = v
-            if '_id' in row:
-                row['_id'] = parse_id(row['_id'])
-            if http_body:
-                row['title'] = http_body[0].strip()
-            row['text'] = ''.join(http_body[1:]).strip()
-            yield row
+    for content in ccbase(input_file):
+        row = {}
+        http_body = []
+        empty_line = False
+        for line in content:
+            if empty_line:
+                http_body.append(line.decode('utf8', errors='ignore'))
+            elif line == b'\r\n':
+                empty_line = True
+            else:
+                k, v = parse_header_line(line)
+                if k and k in CC_HEADERS:
+                    row[CC_HEADERS[k]] = v
+        if '_id' in row:
+            row['_id'] = parse_id(row['_id'])
+        if http_body:
+            row['title'] = http_body[0].strip()
+        row['text'] = ''.join(http_body[1:]).strip()
+        yield row
 
 
-class CCWAT(CCBase):
+def wat(input_file: str) -> Iterable[Any]:
     """解析CC的WAT文件格式"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, **kwargs)
-
-    def iter(self) -> Iterable[Any]:
-        for content in super().iter():
-            for line in content:
-                if line.startswith(b'{') and line.endswith(b'}\r\n'):
-                    yield json.loads(line)
+    for content in ccbase(input_file):
+        for line in content:
+            if line.startswith(b'{') and line.endswith(b'}\r\n'):
+                yield json.loads(line)

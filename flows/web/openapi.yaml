@@ -1,0 +1,15 @@
+name: 加载OpenAPI文件，生成对应的GoIN API描述格式
+arguments: 0
+loader: Json('test_data/opensanctions-openapi.json')
+
+nodes:
+  to_goin: Map('gestata.openapi.read')
+  group: Group(by='owner', emit_fast=False)
+  to_openapi: Map('gestata.openapi.write', key='values', target_key=None)
+  count: Count(label='generated openapi')
+  buffer: Buffer(buffer_size=3, mode='batch')
+#  chain1: Chain(to_goin, writer, count)
+#  chain2: Chain(to_goin, group, to_openapi, writer2, count)
+  flat: Flat
+
+processor:  Chain(to_goin, flat, Print('_id', 'name'), Count())

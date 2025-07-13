@@ -7,7 +7,7 @@ import random
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait
 
-from wikidata_filter.util.dicts import reverse_dict
+from wikidata_filter.util.dicts import reverse
 
 
 def map_self(v):
@@ -36,7 +36,7 @@ corenlu_task_map = {
     "opinion": "_nlu_opinion"
 }
 
-corenlu_task_map_reverse = reverse_dict(corenlu_task_map)
+corenlu_task_map_reverse = reverse(corenlu_task_map)
 
 ner_type_mapping = {
     "per": "human",

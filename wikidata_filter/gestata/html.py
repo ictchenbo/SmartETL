@@ -1,5 +1,4 @@
 import re
-from wikidata_filter.util.dates import normalize_time
 
 try:
     from bs4 import BeautifulSoup
@@ -77,11 +76,13 @@ class HtmlExtractor:
         return None
 
 
-def simple(html: str):
+def simple(html: str, is_snippet: bool = False):
     """从HTML中提取标题和正文（简单方法）"""
+    if is_snippet:
+        html = f'<html><body>{html}</body></html>'
     soup = BeautifulSoup(html, 'html.parser')
 
-    title = soup.title.string
+    title = soup.title.string if soup.title else None
     content = soup.body.text.strip()
     # content = soup.get_text(separator=' ', strip=True)
 
@@ -89,35 +90,3 @@ def simple(html: str):
         "title": title,
         "text": content
     }
-
-
-def news_merge(html: str, doc: dict = None):
-    """从HTML中提取元数据 并与doc进行合并后返回。注意：时间提取的顺序"""
-    doc = doc or {}
-    my_extractor = HtmlExtractor(html)
-    my_extractor.parse_meta()
-
-    news = {}
-    news['meta'] = my_extractor.meta
-    news['keywords'] = my_extractor.find_value_from_meta("keywords")
-    news['desc'] = my_extractor.find_value_from_meta("description")
-    news['source'] = my_extractor.find_value_from_meta('site_name') or my_extractor.find_value_from_meta('source')
-    news['author'] = my_extractor.find_value_from_meta('author')
-
-    for key in ["source", "author", "keywords"]:
-        if not news.get(key) and key in doc:
-            news[key] = doc[key]
-
-    title = my_extractor.find_value_from_meta("title") or doc.get("title") or my_extractor.get_title()
-    if '|' in title:
-        title = title[:title.find('|')].strip()
-    news["title"] = title
-    news["content"] = doc.get("content")
-
-    pt = doc.get("publish_time") or doc.get("time")
-    if pt:
-        # TODO 对于非ISO格式的时间 如何判断时区？这里假设为UTC
-        news['origin_publish_time'] = pt
-        news['publish_time'] = normalize_time(pt)
-
-    return news
