@@ -8,7 +8,6 @@ from wikidata_filter.util.mod_util import load_cls
 from .base import DataProvider
 from .file import BinaryFile
 from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
-from .markdown import Markdown
 from .file_entry import ALL_LOADERS
 
 
@@ -24,7 +23,7 @@ LOADERS = {
     '.jsonf': JsonFree,
     '.html': TextPlain,
     '.plain': TextPlain,
-    '.md': Markdown
+    '.md': TextPlain
 }
 
 

@@ -8,7 +8,7 @@ consts:
     collection: chunk_news_v2
   bge_large_zh: http://10.208.63.29:8001/embed
 
-loader: doc_news.News('test_data/news/每日开源20241109第222期总第454期.docx')
+loader: Function('wikidata_filter.gestata.report_news1.E', 'test_data/news/每日开源20241109第222期总第454期.docx')
 
 nodes:
   qd: util.database.qdrant.Qdrant(**qdrant, auto_create=True, size=1024)

@@ -1,10 +1,13 @@
+"""
+针对一种特定格式的word文件 解析其中的新闻标题与正文
+格式参考：test_data/news/每日开源20241109第222期总第454期.docx'
+"""
 import re
 from typing import Iterable, Any
+from datetime import datetime
 
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from datetime import datetime
-from wikidata_filter.loader.file import BinaryFile
 
 
 def is_empty_paragraph(paragraph):
@@ -96,29 +99,25 @@ def group_by_headings(chunks):
     return grouped_data
 
 
-class News(BinaryFile):
+def E(input_file: str) -> Iterable[Any]:
     """按照一种特定格式提取word文件中的新闻内容"""
-    def __init__(self, input_file: str, **kwargs):
-        super().__init__(input_file, auto_open=False, **kwargs)
+    doc = Document(input_file)
+    paragraphs = doc.paragraphs
+    chunks = chunk_paragraphs(paragraphs)
+    grouped_data = group_by_headings(chunks)
 
-    def iter(self) -> Iterable[Any]:
-        doc = Document(self.input_file)
-        paragraphs = doc.paragraphs
-        chunks = chunk_paragraphs(paragraphs)
-        grouped_data = group_by_headings(chunks)
+    # 获取文件名
+    file_name = input_file.split('/')[-1]
+    # 获取文章的发表时间
+    created_time = parse_created_time(file_name)
 
-        # 获取文件名
-        file_name = self.input_file.split('/')[-1]
-        # 获取文章的发表时间
-        created_time = parse_created_time(file_name)
-
-        for group in grouped_data:
-            topic = group['title']
-            for item in group.get('nodes'):
-                yield {
-                    "filename": file_name,
-                    "date": created_time,
-                    "topic": topic,
-                    "title": item["title"],
-                    "content": item["content"]
-                }
+    for group in grouped_data:
+        topic = group['title']
+        for item in group.get('nodes'):
+            yield {
+                "filename": file_name,
+                "date": created_time,
+                "topic": topic,
+                "title": item["title"],
+                "content": item["content"]
+            }
