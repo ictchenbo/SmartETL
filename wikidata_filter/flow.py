@@ -56,9 +56,12 @@ class Flow:
             return [self.__const__(vi) for vi in val]
         if isinstance(val, dict):
             return {k: self.__const__(vi) for k, vi in val.items()}
-        if isinstance(val, str) and val.startswith("$"):
-            # consts的字符串变量如果以$开头 则获取环境变量
-            return os.environ.get(val[1:])
+        if isinstance(val, str):
+            if val.startswith("$"):
+                # consts的字符串变量如果以$开头 则获取环境变量
+                return os.environ.get(val[1:])
+            elif val.startswith('eval(') and val.endswith(')'):
+                return self.comp_mgr.eval(val[5:-1])
         return val
 
     def init_consts(self, consts_def: dict):

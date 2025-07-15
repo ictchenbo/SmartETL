@@ -1,0 +1,12 @@
+name: const expr
+description: 常量区表达式示例
+consts:
+  path: $PATH
+  path1: eval(path + ';test1;test2')
+
+loader: String(path1, sep=';')
+
+nodes:
+  upper: util.strings.f('upper')
+
+processor: Chain(Function(upper), Print())

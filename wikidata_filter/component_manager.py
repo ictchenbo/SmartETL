@@ -15,6 +15,9 @@ class ComponentManager:
         # 管理实例
         self.variables = {}
 
+    def eval(self, expr: str):
+        return eval(expr, self.components, self.variables)
+
     @staticmethod
     def fullname(cls_name: str, label: str = None):
         """
@@ -101,6 +104,6 @@ class ComponentManager:
         # 不同构造器如果短名相同 则会替换已有的构造器 一般不会有问题
         self.components[class_name] = cls
 
-        new_node = eval(f'{class_name}{call_part}', self.components, self.variables)
+        new_node = self.eval(f'{class_name}{call_part}')
 
         return new_node

@@ -77,6 +77,9 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.7.15
+1. YAML文件`consts`支持表达式定义，语法：`var: eval(<expr>)`
+
 - 2025.7.13
 1. 数据库组件全部移动到`util.database`模块下 `Kafka`包括两个：`kafka`和`kafka_rest`
 2. 部分原有`loader`组件、`iterator`组件移动到`gestata`模块下
