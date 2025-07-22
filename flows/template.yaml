@@ -1,0 +1,11 @@
+from: local/db_envs.yaml
+
+name: Flow Name
+description: Flow Description
+arguments: 0
+
+nodes:
+  count: Count
+
+loader: Function(gdelt_task)
+processor: Chain(download, select, Buffer(buffer_size=100), writer)

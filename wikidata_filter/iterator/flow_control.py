@@ -207,9 +207,9 @@ class While(If):
 
         ith = 0
         queue = [data]
-        while queue:
+        while queue and (self.max_iterations < 0 or ith < self.max_iterations):
             new_queue = []
-            unfinished = False
+            unfinished = False  # 标记当前条件是否满足
             for one in queue:
                 if one and self.matcher(one):
                     unfinished = True
@@ -222,11 +222,9 @@ class While(If):
                         new_queue.append(res)
             if not unfinished:
                 break
-            else:
-                queue = new_queue
-                ith += 1
-                if 0 < self.max_iterations <= ith:
-                    break
+            queue = new_queue
+            ith += 1
 
+        # 子流程结束后 不终止流程 而是向后面传递数据
         for one in queue:
             yield one

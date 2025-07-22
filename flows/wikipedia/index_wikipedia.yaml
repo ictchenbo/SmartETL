@@ -2,29 +2,24 @@ from: local/db_envs.yaml
 
 name: Wikipedia入ES
 description: 对预处理后的维基百科页面建立ES索引
-arguments: 2
+arguments: 1
 consts:
   es1:
-    index: goinv3_document_zhwiki
+    index: zhwiki-2406-hgs
 #    index: goinv3_document_enwiki
-  remove_fields:
-    - site
-    - categories
-    - sections
-    - pageID
-    - isDisambiguation
-    - isRedirect
-    - isStub
-    - redirectTo
+  keywords:
+    - 航天
+    - 卫星
+    - 火箭
 
 loader: JsonLine(arg1)
 
 nodes:
-#  n1: RemoveFields(*remove_fields)
-  n1: Select('pageID', 'title', 'plaintext')
-  n2: RenameFields(pageID='id', plaintext='content')
-  n3: database.ESWriter(**es1)
+  db_es: util.database.elasticsearch.ES(**es1)
+  filter: FieldsNonEmpty('plaintext')
+  filter2: KeywordFilter(key='plaintext', keywords=keywords, action='keep')
+  select: Select('pageID', 'title', 'plaintext', 'abstract', 'categories')
+  rename: RenameFields(pageID='id', plaintext='content')
+  writer: Function('wikidata_filter.gestata.dbops.upsert', db_es)
 
-  count: Count
-
-processor: Chain(n1, n2, n3, count)
+processor: Chain(Count(label='total'), filter, filter2, Count(label='filter'), select, rename, Buffer(buffer_size=1000), writer)

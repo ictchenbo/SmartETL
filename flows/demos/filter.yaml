@@ -1,0 +1,12 @@
+name: filter test
+consts:
+  keywords:
+    - 航天
+    - 卫星
+    - 火箭
+
+nodes:
+  filter: KeywordFilter(key='name', keywords=keywords, action='keep')
+
+loader: "Array([{'name': '航天工程'}, {'name': '火箭军'}])"
+processor: Chain(filter, Print(), Count(label='filter'))

@@ -1,0 +1,18 @@
+from: local/db_envs.yaml
+
+name: read neo4j
+description: neo4j is the most well-known graph database
+arguments: 0
+consts:
+  query1:
+    label: EntityType
+  query2:
+    cypher: MATCH (n:EventType)-[r:subClassOf]->(n2:EventType) return n, r, n2
+
+nodes:
+  db: util.database.neo4j.Neo4j(**neo4j)
+  count: Count
+
+loader: Function('wikidata_filter.gestata.dbops.scroll', db, **query1)
+#loader: Function('wikidata_filter.gestata.dbops.scroll', db, **query2)
+processor: Chain(SelectVal('n'), Print())

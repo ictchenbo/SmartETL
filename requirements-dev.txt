@@ -1,6 +1,7 @@
 pymongo==3.11.1
 clickhouse-driver==0.2.8
 minio
+neo4j==5.28.1
 
 # archive files
 rarfile

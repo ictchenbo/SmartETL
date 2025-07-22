@@ -62,6 +62,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - Kafka（消息队列）
    - SQLite（关系数据库、嵌入式数据库）
    - MinIO（文件系统、对象存储、KV数据库）
+   - Neo4J（图数据库）
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
@@ -77,6 +78,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.7.22
+1. 新增`neo4j`数据库组件以及[neo4j读取示例](flows/kg/read_neo4j.yaml)
+
+- 2025.7.21
+1. 新增组合Collect算子
+2. 完善[`deepsearch`流程](flows/agent/deepsearch-v2.yaml)
+
 - 2025.7.15
 1. YAML文件`consts`支持表达式定义，语法：`var: eval(<expr>)`
 
@@ -88,35 +96,13 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 1. 完善[统一arXiv下载流程](flows/arxiv/task_download_v4.yaml)
 2. 新增基于自动机的关键词过滤组件 `KeywordFilterV2` 有效处理较大规模关键词的过滤场景（例如构建规则处理引擎/CEP）
 
-- 2025.6.12
-1. 新增[基于大模型的工作周报评审流程](flows/work-eval/v1.yaml)
-2. 集成`docling`进行word抽取
-
-- 2025.6.11
-1. 集成`docling`进行进行PDF抽取
-2. 按照论文数据统一存储与处理设计，实现新的[论文处理流程](flows/paper/uni_process.yaml)
-3. `Directory`增加`filename_only`参数，可以先获取文件名，在后续处理时通过`util.files`模块读取文件
-
-
-- 2025.6.5
-1. 支持打包压缩文件：zip/tar/tar.gz/tar.bz2/tar.xz/rar/7z 注意，rar 7z需要安装相关依赖
-2. `util.files.open`支持gz/bz2/xz文件以及`IO[bytes]`文件流
-3. YAML文件新增`limit`配置，控制处理数据条数（可能抛出`GeneratorExit`异常）
-4. 数据库`util.database.clickhouse.CK`写入增加重试
-
-
-- 2025.6.4
-1. 新增支持`zip`文件压缩包
-2. `Directory`支持`all` `other`类型映射，支持复杂文件加载器模块的动态加载
-3. 完善`WriteFiles`，支持文件名带路径
-4. 移动`base64`方法到`gestata.digest`模块中
-5. `util.database.clickhouse`数据库`upsert`方法增加错误重试机制
-
 ## 核心概念
 - Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
 - Provider/Loader：数据加载节点（对应flume的`source`） 
 - Processor/Iterator：数据处理节点，用于表示各种各样的处理逻辑，包括数据输出与写入数据库（对应flume的`sink`）
 - Engine：按照Flow的定义进行执行。简单Engine只支持单线程执行。高级Engine支持并发执行，并发机制通用有多线程、多进程等
+- gestata：数据处理的函数式组件
+- database：数据库组件（基于数据库SDK/API的统一接口封装）
 
 ## 快速使用
 1. 安装基本依赖
@@ -276,6 +262,29 @@ YAML Flow [Flow 格式说明](docs/yaml-flow.md)
 Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 
 ## 开发日志
+- 2025.6.12
+1. 新增[基于大模型的工作周报评审流程](flows/work-eval/v1.yaml)
+2. 集成`docling`进行word抽取
+
+- 2025.6.11
+1. 集成`docling`进行进行PDF抽取
+2. 按照论文数据统一存储与处理设计，实现新的[论文处理流程](flows/paper/uni_process.yaml)
+3. `Directory`增加`filename_only`参数，可以先获取文件名，在后续处理时通过`util.files`模块读取文件
+
+- 2025.6.5
+1. 支持打包压缩文件：zip/tar/tar.gz/tar.bz2/tar.xz/rar/7z 注意，rar 7z需要安装相关依赖
+2. `util.files.open`支持gz/bz2/xz文件以及`IO[bytes]`文件流
+3. YAML文件新增`limit`配置，控制处理数据条数（可能抛出`GeneratorExit`异常）
+4. 数据库`util.database.clickhouse.CK`写入增加重试
+
+
+- 2025.6.4
+1. 新增支持`zip`文件压缩包
+2. `Directory`支持`all` `other`类型映射，支持复杂文件加载器模块的动态加载
+3. 完善`WriteFiles`，支持文件名带路径
+4. 移动`base64`方法到`gestata.digest`模块中
+5. `util.database.clickhouse`数据库`upsert`方法增加错误重试机制
+
 - 2025.5.26
 1. 实现图片扫描、生成特征ID、建立索引流程 [本地图片处理](flows/news/index_image.yaml) 
 2. 实现对本地arxiv论文html/PDF解析流程 [论文下载](flows/arxiv/task_download.yaml) [arXiv论文解析](flows/arxiv/task_process.yaml)

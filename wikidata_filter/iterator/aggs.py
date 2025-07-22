@@ -53,7 +53,7 @@ class Group(ReduceBase):
 
 class Reduce(ReduceBase):
     """规约，根据提供的函数进行数据规约。注意，此类算子在Group(或其子类）处理之后"""
-    def __init__(self, func=None, source_key: str = 'values', target_key: str = None):
+    def __init__(self, func=None, source_key: str = 'values', target_key: str = None, **kwargs):
         """
         :param func (rows) -> res 规约函数
         :param source_key 指定输入字段名 默认为values（Group默认的结果数据）
@@ -174,18 +174,12 @@ class Std(Reduce):
 
 class First(Reduce):
     """group分组取前第一项"""
-    def __init__(self):
-        super().__init__(self)
-
     def __call__(self, items: list):
         return items[0]
 
 
 class Last(Reduce):
     """group分组取前最后一项"""
-    def __init__(self):
-        super().__init__(self)
-
     def __call__(self, items: list):
         return items[-1]
 
@@ -256,3 +250,20 @@ class Distinct(Reduce):
         for item in items:
             s.add(extract(item, self.field))
         return list(s)
+
+
+class Collect(Reduce):
+    """group分组根据指定字段进行收集，返回该字段值的数组，等价SQL：SELECT ARRAY_AGG(field) FROM group"""
+    def __init__(self, field: str, keep_null: bool = False, **kwargs):
+        super().__init__(self, **kwargs)
+        assert field is not None, "field 不能为空"
+        self.field = field
+        self.keep_null = keep_null
+
+    def __call__(self, items: list):
+        res = []
+        for item in items:
+            v = extract(item, self.field)
+            if v or self.keep_null:
+                res.append(v)
+        return res
