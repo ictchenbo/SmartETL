@@ -6,7 +6,6 @@ neo4j==5.28.1
 # archive files
 rarfile
 unrar
-docling
 
 # KeywordFilterV2
 pyahocorasick

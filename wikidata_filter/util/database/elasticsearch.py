@@ -131,6 +131,19 @@ class ES(Database):
             return res.json().get("found") is True
         return False
 
+    def get(self, _id, index: str = None, **kwargs):
+        index = index or self.index
+        if isinstance(_id, dict):
+            _id = _id.get("_id") or _id.get("id")
+        url = f'{self.url}/{index}/_doc/{_id}'
+        res = requests.get(url, auth=self.auth)
+        if res.status_code == 200:
+            _doc = res.json()
+            _source = _doc.get('_source')
+            _source['_id'] = _doc.get('_id')
+            return _source
+        return None
+
     def delete(self, _id, index: str = None, **kwargs):
         index = index or self.index
         if isinstance(_id, dict):

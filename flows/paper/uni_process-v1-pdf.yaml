@@ -1,0 +1,78 @@
+from: local/db_envs.yaml
+
+name: paper process flow
+description: 扫描文件夹读取论文，生成哈希id，提取论文结构，转存到minio指定桶（包括pdf/html md json以及图片文件），简单结构写入ES，文本与图片向量化写入qdrant
+arguments: 1
+#limit: 1
+
+consts:
+  bge_vl_large: http://10.208.63.29:8001/embed_image
+  bge_large_en: http://10.208.63.29:6008/v1/embeddings
+  type_mapping:
+    all: .raw
+  ex_meta:
+    source:
+      name: arXiv
+
+nodes:
+  minio: util.database.minio.MinIO(**minio, bucket='paper-2506', auto_create=True)
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+  qd1: util.database.qdrant.Qdrant(**qdrant, collection='image-paper-2506', auto_create=True, size=768)
+  qd2: util.database.qdrant.Qdrant(**qdrant, collection='paper-2506', auto_create=True, size=1024)
+
+# 论文ID：`arxiv:<arxiv-id>`
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+  add_meta: Map('gestata.paper.add_meta')
+
+# 如果主结构json文件存在，则不处理
+  filter_exist: DistinctByDatabase(minio, key='store_path')
+
+# 读取文件内容
+  read_file: Map('util.files.content', key='filepath', target_key='data')
+
+# HTML解析 TODO 图片下载&统一格式
+  save_html: Map('gestata.dbops.upsert', minio, key_key='path_html', value_key='data')
+#  add_url: ConcatFields('url_html', 'filename', prefix='http://arxiv.org/html/')
+  extract_html: Map('gestata.arxiv.extract', target_key='paper', content_key='data')
+  html_chain: Chain(Print('sid', 'path_html'), save_html, extract_html, Print('paper_json_tree', pretty=True))
+
+#PDF解析
+  save_pdf: Map('gestata.dbops.upsert', minio, key_key='path_pdf', value_key='data')
+  extract_pdf: Map('gestata.docling.extract_pdf')
+  save_md: Map('gestata.dbops.upsert', minio, key_key='path_md', value_key='md')
+  md2json: Map('gestata.markdown.extract', key='md', target_key='paper_json_tree', tables='json')
+  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+  pdf_chain: Chain(Print('sid', 'path_pdf', 'path_md'), save_pdf, extract_pdf, save_md, md2json, json2paper)
+
+  is_html: "=lambda r: r['filename'].endswith('.html')"
+  ifelse: IfElse(html_chain, pdf_chain, matcher=is_html)
+
+# 简化paper结构&保存完整JSON结构
+  fill_meta: Map('gestata.paper.fill_paper', data=ex_meta)
+  save_paper: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='paper')
+#  remove1: RemoveFields('path_html', 'path_pdf', 'path_md', 'data', 'md', 'paper_json_tree')
+
+# 建立ES全文索引
+  write_es: Map('gestata.dbops.upsert', es, key='paper')
+
+# 保存图片&建立图片向量索引 | 也可以把图片字节作为向量的payload
+  to_images: Map('gestata.paper.image_list')
+  flat1: Flat()
+  save_image: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='data')
+  vector1: Map('gestata.embedding.image_v1', key='data', target_key='vector', api_base=bge_vl_large)
+  write_qd1: Map('gestata.dbops.upsert', qd1)
+  chain_image: Chain(to_images, flat1, save_image, vector1, RemoveFields('data'), write_qd1, Count(label='image'))
+
+# 建立文本向量索引
+  to_chunks1: Map('gestata.paper.chunks_from_paper')
+  to_chunks2: Map('gestata.paper.chunks_from_markdown')
+  if_md: IfElse(to_chunks2, to_chunks1, key='md')
+  flat2: Flat()
+  vector2: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base=bge_large_en)
+  write_qd2: Map('gestata.dbops.upsert', qd2)
+  chain_text: Chain(if_md, flat2, vector2, write_qd2, Count(label='chunk'))
+
+  fork: Fork(chain_image, chain_text, copy_data=True)
+
+loader: directory.Directory(arg1, '.pdf', type_mapping=type_mapping, filename_only=True)
+processor: Chain(add_id, add_meta, filter_exist, read_file, ifelse, fill_meta, save_paper, write_es, Count(label='es'), fork)

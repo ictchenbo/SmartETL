@@ -11,7 +11,7 @@ from wikidata_filter.util.dates import current_date
 from wikidata_filter.gestata.embedding import text_v2, image_v1
 from wikidata_filter.gestata.digest import base64
 from wikidata_filter.iterator import JsonIterator
-from wikidata_filter.iterator.database.elasticsearch import ESWriter
+from wikidata_filter.util.database.elasticsearch import ES
 from wikidata_filter.util.database.qdrant import Qdrant
 from wikidata_filter.util.logger import ProductionLogger
 from wikidata_filter.util.split import simple
@@ -331,7 +331,7 @@ class ArxivProcess(JsonIterator):
         self.image_embedding_api = image_embedding_api
         self.headers = {}
         self.qdrant_writer = Qdrant(**qd_config)
-        self.ESWriter = ESWriter(**es_config)
+        self.ESWriter = ES(**es_config)
         self.es_index = 'arxiv_extract_html_v2'
         self.logger = ProductionLogger(name="arxiv_pro", log_level=logging.DEBUG,
                                        log_file="logs/arxiv_pro.log",

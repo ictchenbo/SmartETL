@@ -34,6 +34,7 @@ class Directory(DataProvider):
                  recursive: bool = False,
                  type_mapping: dict = None,
                  filename_only: bool = False,
+                 data_format: str = None,
                  **kwargs):
         """
         :param path 指定文件夹路径（单个或数组）
@@ -52,6 +53,7 @@ class Directory(DataProvider):
         if filename_only and type_mapping is not None:
             print("Warning, when filename_only=True, type_mapping would not take effect")
         self.type_mapping = type_mapping or {}
+        self.data_format = data_format
         self.extra_args = kwargs
 
     def match_file(self, filename: str):

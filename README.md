@@ -78,6 +78,12 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.8.12
+1. `Map`支持多个位置参数 #37
+2. **GDELT**流程拆分为[下载](flows/gdelt_download.yaml)和[解析](flows/gdelt_parse.yaml)
+3. 论文重建向量索引[流程](flows/paper/reindex_vector.yaml)
+4. 实现大文件下载 `util.http.download` #36
+
 - 2025.7.22
 1. 新增`neo4j`数据库组件以及[neo4j读取示例](flows/kg/read_neo4j.yaml)
 

@@ -2,3 +2,6 @@
 zhconv
 PyYAML==6.0.1
 requests
+lxml
+bs4
+chardet

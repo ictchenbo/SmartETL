@@ -1,0 +1,34 @@
+from: local/db_envs.yaml
+
+name: paper process flow
+description: 读取论文元数据，从ES获取论文结构，重建向量索引
+
+consts:
+  bge_large_en: http://10.208.62.156:6008/v1/embeddings
+  type_mapping:
+    all: .jsonl
+
+nodes:
+  es: util.database.elasticsearch.ES(**es1, index='arxiv-meta')
+  qd2: util.database.qdrant.Qdrant(**qdrant, collection='paper-simple-2508', auto_create=True, size=1536)
+
+  select1: SelectVal('data')
+
+# 论文ID：`arxiv:<arxiv-id>`
+  rename1: RenameFields(id='_id')
+  change_id: "Map(lambda s: s.replace('/', ':'), key='_id')"
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+
+# 读取文件内容
+  read_json: Map('gestata.dbops.get', es, key='_id', target_key=None)
+
+# 重建文本向量索引
+  chunk: Map('gestata.paper.simple_chunk_from_paper', target_key='text')
+  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base=bge_large_en)
+  select: Select('_id', 'id', 'text', 'vector')
+  rename: RenameFields(_id='paper_id')
+  write_qd: Map('gestata.dbops.upsert', qd2)
+  chain_text: Chain(chunk, vector, select, rename, write_qd, Count(label='chunk'))
+
+loader: ar.Zip(arg1, 'all', type_mapping=type_mapping)
+processor: Chain(add_id, read_json, chain_text)

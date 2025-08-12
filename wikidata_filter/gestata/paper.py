@@ -163,6 +163,16 @@ def process_section(node: dict):
     return content, tables
 
 
+def simple_chunk_from_paper(paper: dict, fields: list = ('title', 'abstract')):
+    """基于论文结构的简单chunk"""
+    lines = []
+    for key in fields:
+        tag = key.upper()
+        lines.append(f'<{tag}>{paper.get(key)}</{tag}>')
+
+    return '\n'.join(lines)
+
+
 if __name__ == '__main__':
     import json
     json_tree = open('../../data/arxiv/mineru.resultv3.json', encoding="utf8").read()

@@ -88,5 +88,5 @@ def simple(html: str, is_snippet: bool = False):
 
     return {
         "title": title,
-        "text": content
+        "content": content
     }

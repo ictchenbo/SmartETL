@@ -7,6 +7,7 @@ import datetime
 import time
 import json
 from zipfile import ZipFile
+from urllib.parse import urljoin
 
 from wikidata_filter.base import relative_path
 from wikidata_filter.util.http import content as get_content, text
@@ -105,11 +106,11 @@ def process_task(row: dict or str, save_path: str = None, **kwargs):
     url = row
     if isinstance(url, dict):
         url = row.get("url")
-    if 'export.CSV' in url:
-        for row in join_schema(url, event_builder, save_path=save_path):
-            yield row
-    elif 'mentions.CSV' in url:
+    if 'mentions.CSV' in url:
         for row in join_schema(url, mention_builder, save_path=save_path):
+            yield row
+    else:
+        for row in join_schema(url, event_builder, save_path=save_path):
             yield row
 
 
@@ -198,3 +199,25 @@ def latest_task(times_of_requests: int = 1):
             yield row
         run_times += 1
         print(f"request for {run_times} times")
+
+
+def all_zip(url: str = 'http://data.gdeltproject.org/events/index.html', is_url: bool = True):
+    from bs4 import BeautifulSoup
+    if is_url:
+        html = text(url)
+    else:
+        html = url
+    soup = BeautifulSoup(html, 'html.parser')
+    # 查找所有 ul 下的 li 中的 a 标签
+    links = soup.select('ul li a')
+
+    # 打印所有 a 标签的 href 属性
+    for link in links:
+        href = link.get('href')
+        if '.zip' in href:
+            yield urljoin(url, href)
+
+
+if __name__ == '__main__':
+    for link in all_zip():
+        print(link)

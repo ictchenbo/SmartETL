@@ -1,0 +1,19 @@
+name: GDELT文件下载
+arguments: 0
+
+consts:
+  save_path: data/gdelt-all
+
+nodes:
+# 迭代器对象（yield函数返回值）
+  all_zip: gestata.gdelt.all_zip
+
+  as_dict: ToDict(key='url')
+  ex_name: "Map(lambda s: s[s.rfind('/')+1:], key='url', target_key='name')"
+  make_filename: ConcatFields('filename', 'name', prefix=save_path + '/')
+  file_not_exists: Not('util.files.exists', key='filename')
+  download_zip: Map('util.http.download', key=('url', 'filename'), target_key='status', timeout=3600)
+  chain2: Chain(Print(), as_dict, ex_name, make_filename, file_not_exists, download_zip)
+
+loader: Array(all_zip)
+processor: chain2

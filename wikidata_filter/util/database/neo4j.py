@@ -74,18 +74,23 @@ class Neo4j(Database):
         to_insert = [item for item in items if 'id' in item]
         to_update = [item for item in items if 'id' not in item]
         if to_insert:
+            cypher = """
+                    UNWIND $nodes AS node
+                    CREATE (n)
+                    SET n = node.properties
+                    FOREACH (label IN node.labels | SET n:label)
+            """
             with self.client.session() as session:
-                for node in to_insert:
-                    props = node.get('properties', {})
-                    if props:
-                        cypher = f'''CREATE (n:{' '.join(node['labels'])} $props)'''
-                        session.run(cypher, parameters={'props': props})
-                    else:
-                        cypher = f'''CREATE (n:{' '.join(node['labels'])})'''
-                        session.run(cypher)
+                with self.client.session() as session:
+                    session.run(cypher, nodes=to_insert)
         if to_update:
+            cypher = """
+                    UNWIND $nodes AS node
+                    MATCH (n) WHERE id(n) = node.id
+                    SET n += node.properties
+            """
             with self.client.session() as session:
-                for node in to_update:
-                    cypher = f'''MATCH (n) where id(n)={node['id']} set n=$props'''
-                    session.run(cypher, parameters={'props': node.get('properties', {})})
+                with self.client.session() as session:
+                    session.run(cypher, nodes=to_update)
+
         return {'updated_count': len(to_update), 'inserted_count': len(to_insert)}

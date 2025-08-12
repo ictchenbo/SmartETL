@@ -1,7 +1,7 @@
+import os
+from io import BytesIO
 import requests
 import time
-from PIL import Image
-from io import BytesIO
 
 
 def req(url,
@@ -71,6 +71,12 @@ def image(url: str, *args,
           **kwargs):
     """下载图片 并判断图片大小是否符合要求"""
     try:
+        from PIL import Image
+    except ImportError as e:
+        print("PIL not installed")
+        raise e
+
+    try:
         c = content(url, **kwargs)
     except:
         print("Failed to download image:", url)
@@ -95,3 +101,34 @@ def image(url: str, *args,
         print("height/width ratio too low:", url)
         return None
     return c
+
+
+def download(url: str, filename: str, save_path: str = None, **kwargs):
+    """下载大文件并保存到本地"""
+    if save_path:
+        filename = os.path.join(save_path, filename)
+    try:
+        # 发起请求，设置 stream=True 以启用流式下载
+        with requests.get(url, stream=True, **kwargs) as response:
+            response.raise_for_status()  # 检查请求是否成功
+
+            total_size = int(response.headers.get('content-length', 0))  # 获取文件总大小
+            downloaded_size = 0
+
+            with open(filename, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=8192):  # 每次读取 8KB
+                    if chunk:  # 过滤掉空的 chunk
+                        file.write(chunk)
+                        downloaded_size += len(chunk)
+
+                        # 可选：显示下载进度
+                        if total_size > 0:
+                            percent = (downloaded_size / total_size) * 100
+                            print(f"\r下载进度: {downloaded_size}/{total_size} bytes ({percent:.2f}%)", end='')
+
+            print(f"\n文件已下载完成: {filename}")
+            return True
+
+    except requests.exceptions.RequestException as e:
+        print(f"下载失败: {e}")
+        return False

@@ -10,7 +10,7 @@ from wikidata_filter.iterator.base import JsonIterator
 class Filter(JsonIterator):
     """
     过滤节点（1->?)
-    根据提供的匹配函数判断是否继续往后面传递数据
+    根据提供的匹配函数判断是否继续往后面传递数据 函数返回True表示保留数据 False表示丢弃数据
     """
     def __init__(self, matcher=None, key: str = None, **kwargs):
         super().__init__()
@@ -207,9 +207,9 @@ class KeywordFilter(Filter):
         self.keywords = [kw.strip().lower() for kw in keywords]
         self.keep = action == "keep"
 
-    def __call__(self, val, *args, **kwargs):
+    def __call__(self, val: str, *args, **kwargs):
         for kw in self.keywords:
-            if kw in val:
+            if kw in val.lower():
                 return self.keep
         return not self.keep
 

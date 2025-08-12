@@ -74,6 +74,38 @@ def display_file_content(filename: str, encoding="utf8", limit=1000):
                 break
 
 
+def write_json(filename: str, data, encoding="utf8"):
+    """输出JSON文件"""
+    with open(filename, "w", encoding=encoding) as fout:
+        JSON.dump(data, fout, ensure_ascii=False)
+
+
+def write_json_lines(filename: str, data, encoding="utf8"):
+    """输出JSON行文件"""
+    with open(filename, "w", encoding=encoding) as fout:
+        for record in data:
+            fout.write(JSON.dumps(record, ensure_ascii=False))
+            fout.write('\n')
+
+
 def exists(filename: str) -> bool:
     """判断文件是否存在"""
     return os.path.exists(filename)
+
+
+def basename(filename: str):
+    """获取文件路径的文件名"""
+    return os.path.basename(filename)
+
+
+def dirname(filename: str):
+    """获取文件路径的文件夹名"""
+    return os.path.dirname(filename)
+
+
+def filesize(filename: str):
+    return os.stat(filename).st_size
+
+
+if __name__ == '__main__':
+    print(filesize('files.py'))

@@ -23,10 +23,12 @@ def text_v1(text: str,
 def text_v2(text: str,
             api_base: str = 'http://10.208.63.29:6008/v1/embeddings',
             model_name: str = 'bge-large-en-v1.5',
+            api_key: str = 'sk-aaabbbcccdddeeefffggghhhiiijjjkkk',
             **kwargs):
     """基于闫强封装的embedding接口，支持选择不同模型"""
+
     headers = {
-        "Authorization": "Bearer sk-aaabbbcccdddeeefffggghhhiiijjjkkk",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     payload = {

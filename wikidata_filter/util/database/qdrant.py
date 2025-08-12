@@ -111,7 +111,7 @@ class Qdrant(Database):
         data = {
             "points": rows
         }
-        res = requests.put(f'{self.api_base}/collections/{collection}/points', json=data, headers=self.headers)
+        res = requests.put(f'{self.api_base}/collections/{collection}/points?wait=true', json=data, headers=self.headers)
         if res.status_code == 200:
             data = res.json()
             if data['status'] == 'ok':

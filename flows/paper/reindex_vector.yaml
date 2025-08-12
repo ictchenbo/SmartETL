@@ -1,0 +1,37 @@
+from: local/db_envs.yaml
+
+name: paper process flow
+description: 扫描文件夹读取论文列表，生成哈希id，从ES获取论文结构，重建向量索引
+
+consts:
+  bge_large_en: http://10.208.62.156:6008/v1/embeddings
+  paths:
+    - /data/datax/papers/arxiv/2501
+    - /data/datax/papers/arxiv/2502
+    - /data/datax/papers/arxiv/2503
+    - /data/datax/papers/arxiv/2504
+    - /data/datax/papers/arxiv/2505
+    - /data/datax/papers/arxiv/2506
+
+nodes:
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+  qd2: util.database.qdrant.Qdrant(**qdrant, collection='paper-simple-2508', auto_create=True, size=1536)
+
+# 论文ID：`arxiv:<arxiv-id>`
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+
+# 读取文件内容
+  read_json: Map('gestata.dbops.get', es, key='_id', target_key=None)
+
+# 重建文本向量索引
+  chunk: Map('gestata.paper.simple_chunk_from_paper', target_key='text')
+  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base=bge_large_en)
+  select: Select('_id', 'id', 'text', 'vector')
+  rename: RenameFields(_id='paper_id')
+  write_qd: Map('gestata.dbops.upsert', qd2)
+  chain_text: Chain(chunk, vector, select, rename, write_qd, Count(label='chunk'))
+
+# 扫描文件夹 获取全部html/pdf文件列表 作为任务来源
+loader: Directory(paths, '.html', '.pdf', filename_only=True)
+
+processor: Chain(add_id, read_json, chain_text)

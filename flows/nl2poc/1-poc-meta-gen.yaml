@@ -1,0 +1,15 @@
+name: 对http模板进行统计
+arguments: 1
+
+loader: directory.Directory(arg1, '.yaml', '.yml', recursive=True)
+
+nodes:
+  select1: SelectVal('data')
+  filter1: FieldsExist('info')
+  rename1: RenameFields(id='_id')
+  filter: FieldsExist('http')
+  select_tags: Select('_id', 'info.name', 'info.tags', short_key=True)
+  split_tags: "Map(lambda s: s.split(',') if s else [], key='tags')"
+  writer1: WriteJson('data/vul/nuclei-poc-http-info.jsonl')
+
+processor: Chain(select1, filter1, rename1, filter, select_tags, split_tags, writer1, Count())

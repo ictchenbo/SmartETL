@@ -3,23 +3,27 @@ import traceback
 
 
 def extract(row: dict,
-            api_base: str = "http://10.60.1.148:6200/api/file/_extract",
+            api_base: str = "http://10.208.62.156:6200/api/file/_extract",
             name_key: str = "name",
-            content_key: str = "content",
+            data_key: str = "data",
+            md_key: str = 'md',
+            image_key: str = 'images',
             method: str = "auto",
-            response_content: str = "md",
+            response_content: str = "markdown",
             **kwargs):
     """
     基于MinerU服务（封装）抽取文件（支持pdf/word等），按指定格式返回（默认markdown）
     :param row 待处理的dict记录
     :param api_base 自封装的MinerU服务地址
     :param name_key 待抽取的文件的名称字段，默认为`name`
-    :param content_key 待抽取的文件内容（bytes）或文件名
+    :param data_key 待抽取的文件内容（bytes）或文件名
+    :param md_key 输出的markdown字段名 默认`md`
+    :param image_key 输出的图片字段名 默认`images`
     :param method 抽取的方法，支持text/ocr/auto，默认为auto，表示自动识别
-    :param response_content 返回内容类型，支持md/json，默认为md
+    :param response_content 返回内容类型，支持markdown/json，默认为markdown
     """
-    content = row[content_key]
-    assert isinstance(content, bytes) or isinstance(content, str), f"content field `{content_key}`must be bytes or str"
+    content = row[data_key]
+    assert isinstance(content, bytes) or isinstance(content, str), f"content field `{data_key}`must be bytes or str"
 
     filename = row.get(name_key, 'auto_file')
 
@@ -36,13 +40,14 @@ def extract(row: dict,
     try:
         response = requests.post(api_base, files=files, data=data)
         response_data = response.json()
-        return response_data['data']['extract_data']
+        row[md_key] = response_data['data']['extract_data']
     except:
         traceback.print_exc()
-        return None
+
+    return row
 
 
 if __name__ == '__main__':
-    content = extract({"content": "../../test_data/files/test.pdf"})
+    content = extract({"data": "../../test_data/files/test.pdf"})
     with open("result.md", "w", encoding="utf8") as fout:
         fout.write(content)

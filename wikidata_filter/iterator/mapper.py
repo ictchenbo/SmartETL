@@ -40,6 +40,7 @@ class Map(JsonIterator):
             self.target_key = kwargs.pop('target_key')
         else:
             self.target_key = key
+            # TODO key is list or tuple
         # 保存其他位置参数和命名参数
         self.args = args
         self.kwargs = kwargs
@@ -50,15 +51,26 @@ class Map(JsonIterator):
                 print("Warning, data is not dict:", data)
                 return data
 
-        val = data
+        val = [data]
         if self.key is not None:
-            if self.key not in data:
-                print(f"Warning, the key'{self.key}' not in data:", data)
-                return data
-            val = data[self.key]
+            val = []
+            if isinstance(self.key, list) or isinstance(self.key, tuple):
+                for ki in self.key:
+                    if ki not in data:
+                        print(f"Warning, the key'{ki}' not in data:", data)
+                        return data
+                    val.append(data[ki])
+            else:
+                # assume key to be str
+                if self.key not in data:
+                    print(f"Warning, the key'{self.key}' not in data:", data)
+                    return data
+                val.append(data[self.key])
+        # 附加固定位置参数
+        val.extend(self.args)
         try:
-            # 直接传递构造器中的其他位置参数和命名参数
-            res_val = self.mapper(val, *self.args, **self.kwargs)
+            # 调用转换函数
+            res_val = self.mapper(*val, **self.kwargs)
         except:
             traceback.print_exc()
             res_val = None

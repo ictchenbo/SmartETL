@@ -1,0 +1,11 @@
+name: 对http模板进行统计
+
+loader: JsonLine('data/vul/nuclei-poc-http-info.jsonl')
+
+nodes:
+  flat: Flat(key='tags', inherit_props=True)
+  group: Group(by='tags', emit_fast=False)
+  count: aggs.Count(target_key='num')
+
+processor: Chain(flat, group, count, WriteJson('data/vul/nuclei-poc-http-stat.jsonl'))
+#processor: Chain(flat, group, count, WriteJson('data/vul/nuclei-poc-http-stat.jsonl'), Count())
