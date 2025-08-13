@@ -37,6 +37,7 @@ Actor1Geo_Type:int_Geo_Type
 Actor1Geo_Fullname
 Actor1Geo_CountryCode
 Actor1Geo_ADM1Code
+Actor1Geo_ADM2Code
 Actor1Geo_Lat:float
 Actor1Geo_Long:float
 Actor1Geo_FeatureID
@@ -44,6 +45,7 @@ Actor2Geo_Type:int_Geo_Type
 Actor2Geo_Fullname
 Actor2Geo_CountryCode
 Actor2Geo_ADM1Code
+Actor2Geo_ADM2Code
 Actor2Geo_Lat:float
 Actor2Geo_Long:float
 Actor2Geo_FeatureID
@@ -51,6 +53,7 @@ ActionGeo_Type:int_Geo_Type
 ActionGeo_Fullname
 ActionGeo_CountryCode
 ActionGeo_ADM1Code
+ActionGeo_ADM2Code
 ActionGeo_Lat:float
 ActionGeo_Long:float
 ActionGeo_FeatureID

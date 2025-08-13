@@ -1,14 +1,14 @@
 from: local/db_envs.yaml
 
-name: GDELT文件解析入口
-description: 写入clickhouse库
+name: GDELT文件解析并写入clickhouse库
 arguments: 1
 
 nodes:
   ck1: util.database.clickhouse.CK(**click1, database='goinv3_2410', table='gdelt_event_raw')
 
-  parse: Map('gestata.gdelt.process_task', key='filepath', target_key=None)
+  parse: Function('wikidata_filter.gestata.gdelt.process_task', url_key='filepath')
   writer: Map('gestata.dbops.upsert', ck1, retry_times=0, ignore_error=True)
 
 loader: Directory(arg1, '.zip', filename_only=True)
-processor: Chain(download, select, Buffer(buffer_size=100), writer)
+#processor: Chain(parse, Print())
+processor: Chain(parse, Count(), Buffer(buffer_size=1000), writer)

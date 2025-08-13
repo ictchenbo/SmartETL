@@ -25,7 +25,7 @@ def text_v2(text: str,
             model_name: str = 'bge-large-en-v1.5',
             api_key: str = 'sk-aaabbbcccdddeeefffggghhhiiijjjkkk',
             **kwargs):
-    """基于闫强封装的embedding接口，支持选择不同模型"""
+    """兼容OpenAI的embedding接口，支持选择不同模型"""
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -46,6 +46,38 @@ def text_v2(text: str,
         print("Error when access", api_base)
 
     return []
+
+
+def text_v2_batch(rows: list,
+                  source_key: str = 'text',
+                  target_key: str = 'embed',
+                  api_base: str = 'http://10.208.63.29:6008/v1/embeddings',
+                  model_name: str = 'bge-large-en-v1.5',
+                  api_key: str = 'sk-aaabbbcccdddeeefffggghhhiiijjjkkk',
+                  **kwargs):
+    """基于兼容OpenAI的embedding接口，进行批量向量化"""
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "input": [row.get(source_key) for row in rows],
+        "model": model_name
+    }
+    try:
+        response = requests.post(api_base, headers=headers, json=payload)
+        if response.status_code == 200:
+            data = response.json()['data']
+            assert len(data) == len(rows), "elements number not match"
+            for i in range(len(rows)):
+                rows[i][target_key] = data[i]['embedding']
+        else:
+            print(f"Error: {response.status_code}", response.text)
+    except:
+        print("Error when access", api_base)
+
+    return rows
 
 
 def image_v1(data: str or bytes,

@@ -39,19 +39,34 @@ def parse_csv(url: str, save_path: str = None):
             return
         if save_path:
             write_file(url, content, save_path)
-        bytes_io = io.BytesIO(content)
-        with ZipFile(bytes_io) as zipObj:
-            filename = zipObj.filelist[0].filename
-            with zipObj.open(filename) as f:
+        if url.endswith('.zip'):
+            with ZipFile(io.BytesIO(content)) as zipObj:
+                filename = zipObj.filelist[0].filename
+                with zipObj.open(filename) as f:
+                    for line in f:
+                        line_s = line.decode("utf8").strip()
+                        if line_s:
+                            yield line_s.split('\t')
+        else:
+            with open(content, encoding="utf8") as f:
                 for line in f:
-                    line_s = line.decode("utf8").strip()
-                    if line_s:
-                        yield line_s.split('\t')
+                    if line:
+                        yield line.split('\t')
     else:
         # 作为本地文件处理
-        with open(url, encoding="utf8") as fin:
-            for line in fin:
-                yield line.split('\t')
+        if url.endswith('.zip'):
+            with ZipFile(url) as zipObj:
+                filename = zipObj.filelist[0].filename
+                with zipObj.open(filename) as f:
+                    for line in f:
+                        line_s = line.decode("utf8").strip()
+                        if line_s:
+                            yield line_s.split('\t')
+        else:
+            with open(url, encoding="utf8") as f:
+                for line in f:
+                    if line:
+                        yield line.split('\t')
 
 
 class SchemaBuilder:
@@ -96,16 +111,16 @@ def join_schema(url: str, builder: SchemaBuilder, save_path: str = None) -> dict
     for row in parse_csv(url, save_path=save_path):
         try:
             yield builder.as_dict(row)
-        except:
+        except Exception as e:
             print('Error', row)
-            pass
+            raise e
 
 
-def process_task(row: dict or str, save_path: str = None, **kwargs):
+def process_task(row: dict or str, url_key: str = 'url', save_path: str = None, **kwargs):
     """根据GDELT的Export和Mention结构定义 根据输入的URL或文件地址 自动下载（URL）或读取（本地文件）CSV.zip文件，处理成JSON格式"""
     url = row
     if isinstance(url, dict):
-        url = row.get("url")
+        url = row.get(url_key)
     if 'mentions.CSV' in url:
         for row in join_schema(url, mention_builder, save_path=save_path):
             yield row
@@ -185,7 +200,6 @@ def all_task():
     获取GDELT全部更新列表 解析相关文件URL
     """
     return get_page_parse(url_all_file)
-
 
 
 def latest_task(times_of_requests: int = 1):

@@ -78,6 +78,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.8.13
+1. 更新[**GDELT**解析入库流程](flows/gdelt_parse.yaml)
+2. 实现日志机制，通过YAML中配置`logging`，全局注入`debug` `info` `warning` `error`函数，方便组件使用；也支持替换`print`。查看[示例](flows/demos/logging.yaml)
+
 - 2025.8.12
 1. `Map`支持多个位置参数 #37
 2. **GDELT**流程拆分为[下载](flows/gdelt_download.yaml)和[解析](flows/gdelt_parse.yaml)

@@ -75,7 +75,7 @@ class RemoveFields(DictProcessorBase):
 
 def is_empty_or_null(v):
     if isinstance(v, int) or isinstance(v, float):
-        return v
+        return False
     return not v
 
 

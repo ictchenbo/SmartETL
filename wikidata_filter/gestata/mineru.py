@@ -49,5 +49,4 @@ def extract(row: dict,
 
 if __name__ == '__main__':
     content = extract({"data": "../../test_data/files/test.pdf"})
-    with open("result.md", "w", encoding="utf8") as fout:
-        fout.write(content)
+    print(content)

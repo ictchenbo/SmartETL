@@ -80,11 +80,11 @@ def search_entity(name: str, graph_id: str = 'default', cache: dict = None):
     url = f'{api_base}/{graph_id}/graph/entity/_search'
     res = requests.post(url, json={'name': name})
 
-    print(res.text)
+    # print(res.text)
     if res.status_code == 200:
         data = res.json()['result']['data']
         if data:
-            _id = data[0]['id']
+            _id = data[0]['_id']
             if cache:
                 cache[name] = _id
             return _id
@@ -117,5 +117,5 @@ def insert_relations(relations: dict or list, graph_id: str = 'default'):
     return False
 
 
-if __name__ == '__name__':
-    print(search_entity('Vostok 5', graph_id='123'))
+if __name__ == '__main__':
+    print(search_entity('卫星星座', graph_id='123'))

@@ -1,7 +1,50 @@
 import os
+
 from wikidata_filter.component_manager import ComponentManager, LOADER_MODULE, PROCESSOR_MODULE
 from wikidata_filter.loader.base import DataProvider
 from wikidata_filter.iterator.base import JsonIterator
+
+
+def setup_logging(print_mode: str = 'keep', **kwargs):
+    """"""
+    import builtins
+    import logging
+    from wikidata_filter.util.logger import ProductionLogger
+
+    default_config = dict(name="smartetl", log_level=logging.DEBUG, log_file='smartetl.log')
+    default_config.update(kwargs)
+
+    system_logger = ProductionLogger(**default_config)
+
+    def my_info(*args, **kwargs):
+        system_logger.info('\t'.join([str(v) for v in args]))
+
+    def my_debug(*args, **kwargs):
+        system_logger.debug('\t'.join([str(v) for v in args]))
+
+    def my_warning(*args, **kwargs):
+        system_logger.warning('\t'.join([str(v) for v in args]))
+
+    def my_error(*args, **kwargs):
+        system_logger.error('\t'.join([str(v) for v in args]))
+
+    def my_print(*args, **kwargs):
+        builtins.original_print(*args, **kwargs)
+        my_info(*args, **kwargs)
+
+    builtins.debug = my_debug
+    builtins.info = my_info
+    builtins.warning = my_warning
+    builtins.error = my_error
+
+    # 备份原始 print
+    builtins.original_print = builtins.print
+
+    # 替换全局 print
+    if print_mode == 'replace':
+        builtins.print = my_info
+    elif print_mode == 'merge':
+        builtins.print = my_print
 
 
 class Flow:
@@ -20,6 +63,10 @@ class Flow:
         self.init_base_envs(args, kwargs)
         # init consts
         self.init_consts(flow.get('consts') or {})
+
+        # 启动格式化日志
+        if flow.get('logging'):
+            setup_logging(**flow['logging'])
 
         # init nodes
         self.init_nodes(flow.get('nodes') or {})

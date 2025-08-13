@@ -25,18 +25,10 @@ nodes:
   html_not_exists: Not('util.files.exists', key='html_file')
 
   make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
-  download_html: Map('util.http.content', key='url_html', target_key='html', **request_args)
-
-  has_html: FieldsNonEmpty('html')
-
-  save_html: WriteFiles(path, name_key='id', content_key='html', suffix='.html')
-#  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+  download_html: Map('util.http.download', key=('url_html', 'html_file'), target_key='status', **request_args)
 
   make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
   download_pdf: Map('util.http.download', key=('url_pdf', 'pdf_file'), target_key='status', **request_args)
-#  save_pdf: WriteFiles(path, name_key='id', content_key='pdf', suffix='.pdf')
-  chain_pdf: Chain(make_pdf_url, download_pdf)
+  chain_pdf: Chain(html_not_exists, make_pdf_url, download_pdf)
 
-  ifelse: IfElse(save_html, chain_pdf, matcher=has_html)
-
-processor: Chain(SkipN(2350000), Count(ticks=10000), select, filterid, Print('id'), pdf_file, html_file, pdf_not_exists, html_not_exists, make_html_url, download_html, ifelse, Wait(7))
+processor: Chain(SkipN(2350000), Count(ticks=10000), select, filterid, Print('id'), pdf_file, html_file, pdf_not_exists, html_not_exists, make_html_url, download_html, chain_pdf, Wait(7))

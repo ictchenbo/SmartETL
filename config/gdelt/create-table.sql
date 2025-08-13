@@ -73,7 +73,7 @@ CREATE TABLE gdelt_events (
     ActionGeo_FeatureID String COMMENT '动作发生位置的GNS/GNIS特征ID',
 
     -- DATA MANAGEMENT FIELDS (数据管理字段)
-    DATEADDED DateTime COMMENT '事件被添加到主数据库的日期和时间 (YYYYMMDDHHMMSS格式)',
+    DATEADDED Int64 COMMENT '事件被添加到主数据库的日期和时间 (YYYYMMDDHHMMSS格式)',
     SOURCEURL String COMMENT '首次发现该事件的新闻报告的URL或引用'
 )
 ENGINE = MergeTree()

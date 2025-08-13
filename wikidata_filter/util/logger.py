@@ -3,11 +3,6 @@ import logging.handlers
 import os
 from typing import Optional, Dict, Any
 
-try:
-    from pythonjsonlogger import jsonlogger
-except ImportError:
-    jsonlogger = None
-
 
 class ProductionLogger:
     """日志记录器"""
@@ -19,7 +14,6 @@ class ProductionLogger:
             log_file: Optional[str] = None,
             max_bytes: int = 10 * 1024 * 1024,  # 10MB
             backup_count: int = 5,
-            json_format: bool = False,
             extra_fields: Optional[Dict[str, Any]] = None
     ):
         """
@@ -35,7 +29,6 @@ class ProductionLogger:
             extra_fields: 要包含在每条日志中的额外字段
         """
         self._logger = logging.getLogger(name)
-        self._json_format = json_format
         self._extra_fields = extra_fields or {}
 
         # 避免重复添加handler
@@ -77,7 +70,9 @@ class ProductionLogger:
     ) -> logging.Handler:
         """创建文件处理器"""
         # 确保日志目录存在
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        dirname = os.path.dirname(log_file)
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
 
         handler = logging.handlers.RotatingFileHandler(
             filename=log_file,
@@ -90,8 +85,6 @@ class ProductionLogger:
 
     def _create_formatter(self) -> logging.Formatter:
         """创建日志格式化器"""
-        if self._json_format and jsonlogger:
-            return self._create_json_formatter()
         return self._create_text_formatter()
 
     def _create_text_formatter(self) -> logging.Formatter:
@@ -99,19 +92,6 @@ class ProductionLogger:
         return logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s '
             '[%(filename)s:%(lineno)d]'
-        )
-
-    def _create_json_formatter(self) -> logging.Formatter:
-        """创建JSON格式的日志格式化器"""
-        return jsonlogger.JsonFormatter(
-            '%(asctime)s %(name)s %(levelname)s %(message)s %(filename)s %(lineno)d',
-            rename_fields={
-                'asctime': 'timestamp',
-                'levelname': 'level',
-                'filename': 'file',
-                'lineno': 'line'
-            },
-            datefmt='%Y-%m-%dT%H:%M:%S%z'
         )
 
     def _add_extra_fields(self, extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
