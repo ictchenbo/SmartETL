@@ -1,4 +1,4 @@
-from smartetl.iterator.base import DictProcessorBase
+from smartetl.processor.base import DictProcessorBase
 
 try:
     from wikimarkup.parser import Parser

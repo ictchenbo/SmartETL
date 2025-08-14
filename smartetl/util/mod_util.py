@@ -1,5 +1,5 @@
 from importlib import import_module
-from smartetl.base import ROOT
+from smartetl.base import ROOT, TOP_MODULES
 
 
 def load_module(pkg: str):
@@ -43,7 +43,14 @@ def parse_args(expr: str):
 def load_util(mod: str):
     """加载工具类对象"""
     if mod is not None and isinstance(mod, str):
-        if mod.startswith('util.') or mod.startswith('gestata.'):
-            mod = f'{ROOT}.{mod}'
+        # 兼容V2中database模块位置
+        if mod.startswith('util.database.'):
+            mod = mod[5:]
+        for top in TOP_MODULES:
+            if mod.startswith(f'{top}.'):
+                mod = f'{ROOT}.{mod}'
+                break
+
         return load_cls(mod)[0]
+
     return mod

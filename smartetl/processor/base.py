@@ -19,7 +19,7 @@ class Message:
         return Message(msg_type="normal", data=data)
 
 
-class JsonIterator:
+class Processor:
     """流程处理算子（不包括数据加载）的基础接口"""
     def _set(self, **kwargs):
         """设置组件参数，提供对象属性链式设置"""
@@ -63,7 +63,7 @@ class JsonIterator:
         return f"{self.name}"
 
 
-class ToDict(JsonIterator):
+class ToDict(Processor):
     """数据转换为字典"""
     def __init__(self, key: str = 'd'):
         self.key = key
@@ -72,13 +72,13 @@ class ToDict(JsonIterator):
         return {self.key: data}
 
 
-class ToArray(JsonIterator):
+class ToArray(Processor):
     """数据转换为数组"""
     def on_data(self, data: Any, *args):
         return [data]
 
 
-class DictProcessorBase(JsonIterator):
+class DictProcessorBase(Processor):
     """针对dict类型数据处理的基类 如果传入的非字典将不做任何处理"""
     def __process__(self, data: Any, *args):
         if data is not None:
@@ -88,7 +88,7 @@ class DictProcessorBase(JsonIterator):
             return data
 
 
-class Repeat(JsonIterator):
+class Repeat(Processor):
     """重复发送某个数据多次（简单循环）"""
     def __init__(self, num_of_repeats: int):
         super().__init__()
@@ -102,7 +102,7 @@ class Repeat(JsonIterator):
         return f'{self.name}[num_of_repeats={self.num_of_repeats}]'
 
 
-class Prompt(JsonIterator):
+class Prompt(Processor):
     """打印提示信息"""
     def __init__(self, msg: str):
         self.msg = msg
@@ -112,7 +112,7 @@ class Prompt(JsonIterator):
         return data
 
 
-class Print(JsonIterator):
+class Print(Processor):
     """
     打印数据，方便查看中间结果
     """
@@ -137,7 +137,7 @@ class Print(JsonIterator):
         return data
 
 
-class Count(JsonIterator):
+class Count(Processor):
     """
     计数节点 对流经的数据进行计数 并按照一定间隔进行打印输出
     """
@@ -216,11 +216,11 @@ class MaxValue(DictProcessorBase):
         return data
 
 
-class ReduceBase(JsonIterator):
+class ReduceBase(Processor):
     """对数据进行规约(many->1/0) 向后传递规约结果"""
 
 
-class Wait(JsonIterator):
+class Wait(Processor):
     """延时处理"""
     def __init__(self, seconds: int = 1):
         self.seconds = seconds
@@ -231,7 +231,7 @@ class Wait(JsonIterator):
         return data
 
 
-class WriteQueue(JsonIterator):
+class WriteQueue(Processor):
     """写入队列"""
     def __init__(self, queue):
         self.queue = queue

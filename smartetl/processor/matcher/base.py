@@ -1,4 +1,4 @@
-from smartetl.iterator.filter import Filter
+from smartetl.processor.filter import Filter
 from smartetl.util.jsons import extract
 
 

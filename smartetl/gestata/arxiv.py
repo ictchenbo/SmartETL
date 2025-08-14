@@ -10,7 +10,7 @@ from smartetl.util.http import image as download_image
 from smartetl.util.dates import current_date
 from smartetl.gestata.embedding import text_v2, image_v1
 from smartetl.gestata.digest import base64
-from smartetl.iterator import JsonIterator
+from smartetl.processor import Processor
 from smartetl.util.database.elasticsearch import ES
 from smartetl.util.database.qdrant import Qdrant
 from smartetl.util.logger import ProductionLogger
@@ -258,7 +258,7 @@ def url4pdf(_id: str):
     return f"{ARXIV_BASE}/pdf/{_id}"
 
 
-class WriteCount(JsonIterator):
+class WriteCount(Processor):
     """
     当前处理的数量写入文件，防止程序中断从中断位置继续处理
     """
@@ -279,7 +279,7 @@ class WriteCount(JsonIterator):
         return data
 
 
-class ArxivPro(JsonIterator):
+class ArxivPro(Processor):
     """
     arxiv html页面数据处理类
     """
@@ -297,7 +297,7 @@ class ArxivPro(JsonIterator):
         return data
 
 
-class ArxivImage(JsonIterator):
+class ArxivImage(Processor):
     """
     arxiv html页面数据处理类
     """
@@ -317,7 +317,7 @@ class ArxivImage(JsonIterator):
         return data
 
 
-class ArxivProcess(JsonIterator):
+class ArxivProcess(Processor):
     """
     arxiv html页面数据处理类
     """

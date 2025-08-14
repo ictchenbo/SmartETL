@@ -76,6 +76,15 @@ processor: Chain(Print(), rename, Print())
 2. 数据计算节点：提供函数调用表达式，将函数执行结果作为当前节点的值。常用于配置文件读取、字典加载等。
 3. 表达式计算节点：形如`=expr`，`expr`表达式执行结果作为当前节点的值。常用于数据结构动态定义、Lambda函数定义。
 
+### logging
+功能：支持日志功能
+- print_mode 针对`print`的处理
+- name 日志名称
+- log_level 级别 默认info
+- log_file 输出文件 默认 `smartetl.log`
+
+### limit
+功能：限定处理的次数 可方便流程开发调试
 
 ### loader
 功能：定义流程的数据源节点（目前仅支持单个数据源节点）。节点定义可引用nodes节点。

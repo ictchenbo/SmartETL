@@ -1,7 +1,7 @@
 import uuid
 import requests
 
-from smartetl.util.database.base import Database
+from .base import Database
 
 
 class Qdrant(Database):

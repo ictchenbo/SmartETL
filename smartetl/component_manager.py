@@ -4,7 +4,7 @@ from smartetl.base import relative_path, ROOT, PROCESSOR_MODULE, LOADER_MODULE, 
 from smartetl.components import components
 from smartetl.util.mod_util import load_cls
 from smartetl.loader import *
-from smartetl.iterator import *
+from smartetl.processor import *
 
 
 class ComponentManager:

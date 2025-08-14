@@ -1,4 +1,4 @@
-from smartetl.iterator.base import JsonIterator, DictProcessorBase
+from smartetl.processor.base import Processor, DictProcessorBase
 from smartetl.util.jsons import extract, fill
 
 
@@ -79,7 +79,7 @@ def is_empty_or_null(v):
     return not v
 
 
-class RemoveEmptyOrNullFields(JsonIterator):
+class RemoveEmptyOrNullFields(Processor):
     """移除空的字段或元素 对于dict/list/tuple数据有效 其他类型原样返回"""
     def on_data(self, data, *args):
         if isinstance(data, dict):

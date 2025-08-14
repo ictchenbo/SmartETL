@@ -3,7 +3,7 @@ import signal
 from typing import Any
 from types import GeneratorType
 from smartetl.loader import DataProvider
-from smartetl.iterator.base import Message, JsonIterator
+from smartetl.processor.base import Message, Processor
 
 from smartetl.flow import Flow
 
@@ -21,7 +21,7 @@ def handle_sigint(signum, frame):
         sys.exit(0)
 
 
-def run(data_provider: DataProvider, processor: JsonIterator, limit: int = None):
+def run(data_provider: DataProvider, processor: Processor, limit: int = None):
     # 注册信号处理程序
     signal.signal(signal.SIGINT, handle_sigint)
 

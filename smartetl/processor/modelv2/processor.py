@@ -1,5 +1,5 @@
-from smartetl.iterator.mapper import Map
-from smartetl.iterator.modelv2.base import LLMModel
+from smartetl.processor.mapper import Map
+from smartetl.processor.modelv2.base import LLMModel
 from smartetl.util.prompt import template
 
 

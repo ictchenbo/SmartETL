@@ -1,6 +1,6 @@
 from typing import Any
 
-from smartetl.iterator.buffer import ReduceBase
+from smartetl.processor.buffer import ReduceBase
 
 
 class Collect(ReduceBase):

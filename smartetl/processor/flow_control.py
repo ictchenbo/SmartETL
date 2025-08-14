@@ -2,12 +2,12 @@ import traceback
 from types import GeneratorType
 from typing import Any
 
-from smartetl.iterator.base import JsonIterator, Message
+from smartetl.processor.base import Processor, Message
 from smartetl.util.dicts import copy_val
 from smartetl.util.mod_util import load_cls
 
 
-class Multiple(JsonIterator):
+class Multiple(Processor):
     """多个节点组合"""
     def __init__(self, *nodes):
         """
@@ -15,7 +15,7 @@ class Multiple(JsonIterator):
         """
         self.nodes = list(nodes)
 
-    def add(self, iterator: JsonIterator):
+    def add(self, iterator: Processor):
         """添加节点"""
         self.nodes.append(iterator)
         return self
@@ -125,10 +125,10 @@ class Chain(Multiple):
                 yield one
 
 
-class If(JsonIterator):
+class If(Processor):
     """流程选择节点，指定条件满足时执行"""
 
-    def __init__(self, node: JsonIterator, matcher=None, key: str = None):
+    def __init__(self, node: Processor, matcher=None, key: str = None):
         assert node, "node is None"
         assert matcher or key, "matcher and key both None"
         if matcher is None:
@@ -152,10 +152,10 @@ class If(JsonIterator):
         return self.node.__process__(data)
 
 
-class IfElse(JsonIterator):
+class IfElse(Processor):
     """流程选择节点，指定条件满足时执行node_a，否则执行node_b"""
 
-    def __init__(self, node_a: JsonIterator, node_b: JsonIterator, matcher=None, key: str = None):
+    def __init__(self, node_a: Processor, node_b: Processor, matcher=None, key: str = None):
         assert node_a and node_b, "node_a or node_b is None"
         assert matcher or key, "matcher and key both None"
         if matcher is None:
@@ -186,7 +186,7 @@ class IfElse(JsonIterator):
 class While(If):
     """循环节点，重复执行某个节点，直到条件不满足"""
 
-    def __init__(self, node: JsonIterator, matcher=None, key: str = None, max_iterations: int = -1):
+    def __init__(self, node: Processor, matcher=None, key: str = None, max_iterations: int = -1):
         super().__init__(node, matcher=matcher, key=key)
         self.max_iterations = max_iterations
 

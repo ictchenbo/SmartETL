@@ -3,8 +3,8 @@ import os
 import gzip
 from typing import Any
 
-from smartetl.iterator.base import DictProcessorBase
-from smartetl.iterator.buffer import BufferedWriter
+from smartetl.processor.base import DictProcessorBase
+from smartetl.processor.buffer import BufferedWriter
 from smartetl.util.dates import current_ts
 from smartetl.util.jsons import dumps, dump
 

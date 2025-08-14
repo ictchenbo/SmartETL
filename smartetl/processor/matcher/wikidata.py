@@ -15,7 +15,7 @@
 6. 将满足条件的行输出到指定文件中
 """
 
-from smartetl.iterator.matcher.base import MatchBase
+from smartetl.processor.matcher.base import MatchBase
 from smartetl.util.jsons import extract
 
 

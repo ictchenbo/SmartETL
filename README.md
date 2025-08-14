@@ -147,7 +147,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 ```python
 from smartetl.flow_engine import run
 from smartetl.loader import JsonLine
-from smartetl.iterator import Print, Count, Chain, Fork, Select, AddFields
+from smartetl.processor import Print, Count, Chain, Fork, Select, AddFields
 
 # 定义节点
 

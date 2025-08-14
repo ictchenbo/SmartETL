@@ -4,10 +4,10 @@ import traceback
 
 from smartetl.util.mod_util import load_cls, load_util
 from smartetl.util.jsons import parse_rules, parse_field
-from smartetl.iterator.base import JsonIterator, DictProcessorBase
+from smartetl.processor.base import Processor, DictProcessorBase
 
 
-class Function(JsonIterator):
+class Function(Processor):
     """函数调用处理 输出调用函数的结果 与Map(function, **kwargs)等价"""
     def __init__(self, function, *args, **kwargs):
         assert function is not None, "function is None!"
@@ -21,7 +21,7 @@ class Function(JsonIterator):
         return self.function(data, *self.args, **self.kwargs)
 
 
-class Map(JsonIterator):
+class Map(Processor):
     """
     Map转换操作(1->1)
     - key确定转换的输入：如果提供了key，则针对输入dict的该字段值作为转换输入，否则将整个输入作为转换输入。如果与数据有冲突，则直接返回输入数据。
@@ -156,7 +156,7 @@ class MapRules(DictProcessorBase):
         return ret
 
 
-class Flat(JsonIterator):
+class Flat(Processor):
     """
     扁平化操作（1-*）
     如果未提供key，对整个输入进行扁平化：

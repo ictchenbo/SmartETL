@@ -1,10 +1,10 @@
 import re
 
 from smartetl.util.files import open_file
-from smartetl.iterator import JsonIterator
+from smartetl.processor import Processor
 
 
-def xml_dump_to_json(input_file: str, iterator: JsonIterator, item_parser, item_depth=2):
+def xml_dump_to_json(input_file: str, iterator: Processor, item_parser, item_depth=2):
     import xmltodict
     filename = input_file[input_file.rfind('/')+1:]
     filename = filename[filename.rfind('\\')+1:]
@@ -23,7 +23,7 @@ def xml_dump_to_json(input_file: str, iterator: JsonIterator, item_parser, item_
 title_strip = ['Wikipedia：', '}}', '{{', ': ']
 
 
-def abstract_xml_dump(input_file: str, iterator: JsonIterator):
+def abstract_xml_dump(input_file: str, iterator: Processor):
     """
     将wikipedia的摘要dump数据导出为JSON
     source:
@@ -47,7 +47,7 @@ def abstract_xml_dump(input_file: str, iterator: JsonIterator):
     xml_dump_to_json(input_file, iterator, doc_abstract)
 
 
-def page_xml_dump(input_file: str, iterator: JsonIterator):
+def page_xml_dump(input_file: str, iterator: Processor):
     """
     将wikipedia的摘要dump数据导出为JSON
     source:

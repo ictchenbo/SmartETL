@@ -6,8 +6,8 @@ import os
 import re
 from typing import Any
 
-from smartetl.iterator import Flat
-from smartetl.iterator.aggs import ReduceBase
+from smartetl.processor import Flat
+from smartetl.processor.aggs import ReduceBase
 from smartetl.util.dates import current_ts
 
 

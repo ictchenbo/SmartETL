@@ -1,10 +1,10 @@
 import sys
 from smartetl.apps.wikipedia import *
-from smartetl.iterator import Chain, WriteJson, Count
+from smartetl.processor import Chain, WriteJson, Count
 
 
 def process_page(input_file: str, output_file: str):
-    from smartetl.iterator.wikipedia import Abstract
+    from smartetl.processor.wikipedia import Abstract
 
     processor = Chain(Count(ticks=1000), Abstract(), WriteJson(output_file))
     # WikipediaHTML('data/zhwiki-html')

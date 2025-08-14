@@ -4,10 +4,10 @@ from random import random
 from smartetl.util.mod_util import load_util
 from smartetl.util.database.base import Database
 from smartetl.util.dates import current_ts
-from smartetl.iterator.base import JsonIterator
+from smartetl.processor.base import Processor
 
 
-class Filter(JsonIterator):
+class Filter(Processor):
     """
     过滤节点（1->?)
     根据提供的匹配函数判断是否继续往后面传递数据 函数返回True表示保留数据 False表示丢弃数据

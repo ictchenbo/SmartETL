@@ -2,7 +2,7 @@ import os
 
 from smartetl.component_manager import ComponentManager, LOADER_MODULE, PROCESSOR_MODULE
 from smartetl.loader.base import DataProvider
-from smartetl.iterator.base import JsonIterator
+from smartetl.processor.base import Processor
 
 
 def setup_logging(print_mode: str = 'keep', **kwargs):
@@ -85,7 +85,7 @@ class Flow:
             if isinstance(processor, str):
                 self.processor = self.comp_mgr.init_node(processor, label=PROCESSOR_MODULE)
             else:
-                assert isinstance(processor, JsonIterator), "processor must be instance of JsonIterator"
+                assert isinstance(processor, Processor), "processor must be instance of JsonIterator"
                 self.processor = processor
         else:
             self.processor = self.comp_mgr.init_node(flow.get('processor'), label=PROCESSOR_MODULE)

@@ -1,14 +1,14 @@
 ## 处理节点（Iterator）
 
-模块：`wikidata_filter.iterator`
+模块：`smartetl.iterator`
 
 组件构造：`Comp(*args, **kwargs)` `<module>.<Comp>(*args, **kwargs)`
 
 
 ### 基类设计
-1. 抽象基类 `JsonIterator` 定义了数据处理的接口
+1. 抽象基类 `Processor` 定义了数据处理的接口
 ```python
-class JsonIterator:
+class Processor:
     def on_start(self):
         pass
 
@@ -89,7 +89,7 @@ class JsonIterator:
 3. MongoDB `database.MongoWriter(host='localhost',port=27017,username=None,password=None,database='default',auth_db='admin',collection=None,buffer_size=1000)`
 
 ### Wikidata处理
-模块：`wikidata_filter.iterator.wikidata`
+模块：`processor.wikidata`
 
 1. 生成ID-名称映射结构 `IDNameMap`
 2. item字段简化，对labels/description/alias仅保留中文或英文 `Simplify`
@@ -112,7 +112,7 @@ class JsonIterator:
 
 
 ### Wikidata知识图谱处理
-模块：`wikidata_filter.iterator.wikidata`
+模块：`processor.wikidata`
 
 1. 生成Item和Property摘要 `wikidata.Entity`
 2. 生成实体Item：`wikidata.Entity` -> `Filter(lambda p: p['_type']=='item')`
@@ -121,7 +121,7 @@ class JsonIterator:
 5. 生成实体关系：`wikidata.Relation`
 
 ### GDELT数据处理
-模块：`wikidata_filter.iterator.web.gdelt`
+模块：`gestata.gdelt`
 1. 基于gdelt的更新文件（CSV.zip）及对应的schema文件生成json记录 `web.gdelt.Export(save_path=None)` save_path保存下载文件的路径
 
 **说明** GDELT文件包括：
@@ -131,7 +131,7 @@ class JsonIterator:
 
 
 ### 大模型处理
-模块：`wikidata_filter.iterator.model`
+模块：`gestata.llm`
 
 提供了月之暗面（Kimi）、Siliconflow、天玑等模型/模型平台服务调用，作为数据处理算子
 1. Siliconflow平台 `model.Siliconflow(api_key,field,proxy,model,prompt,ignore_errors=True)`
@@ -145,6 +145,6 @@ class JsonIterator:
 
 
 ### OpenAPI格式转换
-模块：`wikidata_filter.iterator.web.openapi`
+模块：`gestata.openapi`
 1. 解析OpenAPI `web.openapi.FromOpenAPI`
 2. 生成OpenAPI `web.openapi.ToOpenAPI`

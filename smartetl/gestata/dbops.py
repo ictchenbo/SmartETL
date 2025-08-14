@@ -1,4 +1,4 @@
-from smartetl.util.database.base import Database
+from smartetl.database.base import Database
 
 
 def tables(db: Database, *database_list, columns: bool = False):

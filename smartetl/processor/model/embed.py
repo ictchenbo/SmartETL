@@ -1,5 +1,5 @@
 import requests
-from smartetl.iterator.base import DictProcessorBase, Any
+from smartetl.processor.base import DictProcessorBase, Any
 
 
 class Local(DictProcessorBase):

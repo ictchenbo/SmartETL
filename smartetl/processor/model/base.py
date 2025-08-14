@@ -4,10 +4,10 @@ import requests
 import json
 import traceback
 
-from smartetl.iterator.base import JsonIterator
+from smartetl.processor.base import Processor
 
 
-class LLM(JsonIterator):
+class LLM(Processor):
     """
     开放大模型（兼容OpenAI接口）的处理算子 输入必须为dict或str
     """

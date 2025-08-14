@@ -1,5 +1,5 @@
-from smartetl.iterator.base import DictProcessorBase
-from smartetl.iterator.field_based import DictEditBase
+from smartetl.processor.base import DictProcessorBase
+from smartetl.processor.field_based import DictEditBase
 from smartetl.util.langs import zh_simple
 
 name_keys = ["zh-cn", "zh-hans", "zh-sg", "zh-hk", "zh-tw", "zh-mo", "en"]

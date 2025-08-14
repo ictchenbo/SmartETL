@@ -1,8 +1,8 @@
-from smartetl.iterator.base import JsonIterator
+from smartetl.processor.base import Processor
 from smartetl.gestata.wikidata import read_dump
 
 
-def run(infile: str, iterator: JsonIterator, parallels: int = 1, parallel_runner: str = "multi_thread"):
+def run(infile: str, iterator: Processor, parallels: int = 1, parallel_runner: str = "multi_thread"):
     """ 主函数
     :param infile: 输入文件
     :param iterator 迭代器

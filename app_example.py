@@ -3,9 +3,9 @@ if __name__ == '__main__':
 
     from smartetl.flow_engine import run
     from smartetl.loader import JsonLine
-    from smartetl.iterator import *
-    from smartetl.iterator.wikidata import *
-    from smartetl.iterator.matcher.wikidata import WikidataMatchNew
+    from smartetl.processor import *
+    from smartetl.processor.wikidata import *
+    from smartetl.processor.matcher.wikidata import WikidataMatchNew
     from smartetl.util.dicts import from_json
 
     input_file = sys.argv[1]
