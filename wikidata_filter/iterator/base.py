@@ -1,5 +1,4 @@
 import json
-from copy import deepcopy
 from typing import Any
 from wikidata_filter.util.dates import current_ts
 import uuid
@@ -45,11 +44,10 @@ class JsonIterator:
         # print(f'{self.name}.__process__', data)
         if data is not None:
             if isinstance(data, Message):
-                if data.msg_type == 'end':
-                    # print(f'{self.name} end')
-                    pass
-                else:
-                    self.on_data(data.data)
+                if data.msg_type != 'end':
+                    result = self.on_data(data.data)
+                    # 继续传递Message
+                    return Message(data.msg_type, result)
             else:
                 return self.on_data(data)
 
