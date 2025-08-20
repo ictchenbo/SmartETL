@@ -1,7 +1,7 @@
 import os
 
 from smartetl.component_manager import ComponentManager, LOADER_MODULE, PROCESSOR_MODULE
-from smartetl.loader.base import DataProvider
+from smartetl.loader.base import Loader
 from smartetl.processor.base import Processor
 
 
@@ -76,7 +76,7 @@ class Flow:
             if isinstance(loader, str):
                 self.loader = self.comp_mgr.init_node(loader, label=LOADER_MODULE)
             else:
-                assert isinstance(loader, DataProvider), "loader must be instance of DataProvider"
+                assert isinstance(loader, Loader), "loader must be instance of DataProvider"
                 self.loader = loader
         else:
             self.loader = self.comp_mgr.init_node(flow.get('loader'), label=LOADER_MODULE)
@@ -92,6 +92,8 @@ class Flow:
 
     def init_base_envs(self, args: tuple or list, kwargs: dict):
         """初始化基础变量 包括命令行参数"""
+        self.comp_mgr.register_var('argc', len(args))
+        self.comp_mgr.register_var('args', list(args))
         for i in range(len(args)):
             self.comp_mgr.register_var(f'arg{i + 1}', args[i])
         for k, v in kwargs.items():

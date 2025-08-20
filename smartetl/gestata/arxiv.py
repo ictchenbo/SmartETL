@@ -11,8 +11,8 @@ from smartetl.util.dates import current_date
 from smartetl.gestata.embedding import text_v2, image_v1
 from smartetl.gestata.digest import base64
 from smartetl.processor import Processor
-from smartetl.util.database.elasticsearch import ES
-from smartetl.util.database.qdrant import Qdrant
+from smartetl.database.elasticsearch import ES
+from smartetl.database.qdrant import Qdrant
 from smartetl.util.logger import ProductionLogger
 from smartetl.util.split import simple
 

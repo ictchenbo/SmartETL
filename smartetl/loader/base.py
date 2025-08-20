@@ -5,7 +5,7 @@ from random import random
 from smartetl.util.dates import current_time
 
 
-class DataProvider:
+class Loader:
     """数据提供器接口 为流程供给数据"""
     def iter(self) -> Iterable[Any]:
         pass
@@ -24,7 +24,7 @@ class DataProvider:
         return f'{self.name}'
 
 
-class Array(DataProvider):
+class Array(Loader):
     """基于数组提供数据"""
     def __init__(self, data: list):
         self.data = data
@@ -34,7 +34,7 @@ class Array(DataProvider):
             yield item
 
 
-class String(DataProvider):
+class String(Loader):
     """基于文本提供数据 按照指定分隔符进行分割"""
     def __init__(self, text: str, sep: str = '\n'):
         self.data = text
@@ -45,7 +45,7 @@ class String(DataProvider):
             yield item
 
 
-class Input(DataProvider):
+class Input(Loader):
     """通过用户输入提供数据"""
     def __init__(self, msg: str = None):
         self.msg = msg or "请输入（`exit`退出）: "
@@ -59,7 +59,7 @@ class Input(DataProvider):
                 yield line
 
 
-class Random(DataProvider):
+class Random(Loader):
     """随机生成器"""
     def __init__(self, num_of_times: int = 0):
         self.num_of_times = num_of_times
@@ -73,9 +73,9 @@ class Random(DataProvider):
                 yield random()
 
 
-class TimedLoader(DataProvider):
+class TimedLoader(Loader):
     """定时轮询器 定时无限（或指定次数）调用提供的Loader 比如定时进行数据库轮询或接口轮询"""
-    def __init__(self, that: DataProvider, interval: int = 15, num_of_times: int = 0):
+    def __init__(self, that: Loader, interval: int = 15, num_of_times: int = 0):
         self.that = that
         self.interval = interval
         self.num_of_times = num_of_times
@@ -97,7 +97,7 @@ class TimedLoader(DataProvider):
         return f"TimedPull[{self.that.name}, interval={self.interval}]"
 
 
-class Function(DataProvider):
+class Function(Loader):
     """函数调用包装器 提供调用函数的结果"""
     def __init__(self, function, *args, **kwargs):
         """
@@ -120,7 +120,7 @@ class Function(DataProvider):
             yield res
 
 
-class QueueLoader(DataProvider):
+class QueueLoader(Loader):
     """基于本地队列的加载器"""
     def __init__(self, timeout: int = 60):
         self.queue = []
@@ -132,9 +132,9 @@ class QueueLoader(DataProvider):
             yield item
 
 
-class MultiLoader(DataProvider):
+class MultiLoader(Loader):
     """组合多个loader"""
-    def __init__(self, *loaders: DataProvider):
+    def __init__(self, *loaders: Loader):
         self.loaders = loaders
 
     def iter(self):

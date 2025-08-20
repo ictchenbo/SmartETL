@@ -1,10 +1,10 @@
 import os
 from typing import Iterable, Any
 
-from smartetl.loader.base import DataProvider
+from smartetl.loader.base import Loader
 
 
-class File(DataProvider):
+class File(Loader):
     """
     文件加载器
     """

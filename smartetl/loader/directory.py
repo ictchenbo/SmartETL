@@ -5,7 +5,7 @@ from typing import Iterable, Any
 from smartetl.base import ROOT, LOADER_MODULE
 from smartetl.util.mod_util import load_cls
 
-from .base import DataProvider
+from .base import Loader
 from .file import BinaryFile
 from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
 from .file_entry import ALL_LOADERS
@@ -27,7 +27,7 @@ LOADERS = {
 }
 
 
-class Directory(DataProvider):
+class Directory(Loader):
     """扫描文件夹 对指定后缀的文件按照默认参数进行读取 返回 (filename, data_row)"""
     def __init__(self, path: str or list,
                  *suffix,

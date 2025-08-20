@@ -1,5 +1,6 @@
 import requests
 import traceback
+from random import randrange
 
 
 def extract(row: dict,
@@ -22,6 +23,9 @@ def extract(row: dict,
     :param method 抽取的方法，支持text/ocr/auto，默认为auto，表示自动识别
     :param response_content 返回内容类型，支持markdown/json，默认为markdown
     """
+    if isinstance(api_base, list):
+        api_base = api_base[randrange(len(api_base))]
+
     content = row[data_key]
     assert isinstance(content, bytes) or isinstance(content, str), f"content field `{data_key}`must be bytes or str"
 
@@ -48,5 +52,6 @@ def extract(row: dict,
 
 
 if __name__ == '__main__':
-    content = extract({"data": "../../test_data/files/test.pdf"})
+    content = extract({"data": "../../data/paper/2501.14249v7-HLE.pdf", "name": "2501.14249v7-HLE.pdf"},
+                      api_base="http://10.208.62.156:6304/api/file/_extract")
     print(content)

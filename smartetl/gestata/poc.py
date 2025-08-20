@@ -17,3 +17,7 @@ def simple_chunk(poc: dict):
     http = {'http': poc.get('code')}
     code = yaml.dump(http, allow_unicode=True, sort_keys=False, indent=2)
     return chunk_temp.format(name=name, desc=desc, code=code)
+
+
+def select(items: list):
+    return [[item['cve_id'], item['_score']] for item in items]

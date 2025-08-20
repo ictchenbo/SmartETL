@@ -3,7 +3,7 @@ from smartetl.processor.modelv2.base import LLMModel
 from smartetl.util.prompt import template
 
 
-class Processor(Map):
+class LLMProcessor(Map):
     """大模型调用处理节点"""
     def __init__(self,
                  model: LLMModel,

@@ -1,7 +1,4 @@
-
-
 # Wiki XML文件处理
-
 xmltodict==0.13.0
 wikitextparser==0.55.13
 py-wikimarkup==2.3.0

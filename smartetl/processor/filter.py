@@ -2,8 +2,8 @@
 from random import random
 
 from smartetl.util.mod_util import load_util
-from smartetl.util.database.base import Database
 from smartetl.util.dates import current_ts
+from smartetl.database.base import Database
 from smartetl.processor.base import Processor
 
 
@@ -33,7 +33,7 @@ class Filter(Processor):
 
 class WhiteList(Filter):
     """白名单过滤 匹配白名单的才保留"""
-    def __init__(self, cache: dict or set, key: str):
+    def __init__(self, cache: dict or set, key: str = None):
         super().__init__(self, key)
         self.cache = cache
         print('WhiteList init: total', len(cache), 'items')
@@ -45,7 +45,7 @@ class WhiteList(Filter):
 
 class BlackList(Filter):
     """黑名单过滤 匹配黑名单的被过滤掉"""
-    def __init__(self, cache: dict or set, key: str):
+    def __init__(self, cache: dict or set, key: str = None):
         super().__init__(self, key)
         self.cache = cache
 

@@ -1,0 +1,35 @@
+name: arxiv指定论文下载
+description: 对指定论文优先下载html，否则下载pdf
+consts:
+  request_args:
+#    most_times: 1
+#    ignore_error: yes
+    verify: no
+    timeout: 60
+    headers:
+      User-Agent: chenbo01@ict.ac.cn
+  path: eval(f'/data/datax/papers/arxiv/{arg1}/')
+
+loader: JsonLine(arg1)
+
+nodes:
+  pdf_file: ConcatFields('pdf_file', 'id', prefix=path, suffix='.pdf')
+  html_file: ConcatFields('html_file', 'id', prefix=path, suffix='.html')
+  pdf_not_exists: Not('util.files.exists', key='pdf_file')
+  html_not_exists: Not('util.files.exists', key='html_file')
+
+  make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
+  download_html: Map('util.http.content', key='url_html', target_key='html', ignore_error=True, **request_args)
+
+  has_html: FieldsNonEmpty('html')
+
+  save_html: WriteFiles(path, name_key='id', content_key='html', suffix='.html')
+#  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+
+  make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
+  download_pdf: Map('util.http.download', key=('url_pdf', 'pdf_file'), target_key='status', **request_args)
+  chain_pdf: Chain(make_pdf_url, download_pdf)
+
+  ifelse: IfElse(save_html, chain_pdf, matcher=has_html)
+
+processor: Chain(Print('id'), pdf_file, html_file, pdf_not_exists, html_not_exists, make_html_url, download_html, ifelse, Wait(7))

@@ -39,9 +39,12 @@ class ComponentManager:
                 return f'{ROOT}.{cls_name}'
             return f'{ROOT}.{label}.{cls_name}'
         if '.' in cls_name:
-            # wikidata_filter下面的其他模块 如util
+            # 其他顶级模块 如util
             path = relative_path(f'{ROOT}/{cls_name.split(".")[0]}')
             if os.path.exists(path):
+                # 兼容V2版本中的util.database写法
+                if cls_name.startswith('util.database.'):
+                    cls_name = cls_name[5:]
                 return f'{ROOT}.{cls_name}'
         # 默认模块下 -> wikidata_filter/iterator/__init__
         return f'{ROOT}.{PROCESSOR_MODULE}.{cls_name}'

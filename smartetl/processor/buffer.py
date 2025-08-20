@@ -1,6 +1,6 @@
 """本模块为聚合分析相关算子 提供分组、缓存"""
 from smartetl.processor.base import Message, ReduceBase
-from smartetl.util.database.base import Database
+from smartetl.database.base import Database
 
 
 class Buffer(ReduceBase):

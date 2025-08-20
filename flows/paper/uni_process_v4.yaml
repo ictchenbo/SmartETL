@@ -1,0 +1,64 @@
+from: local/db_envs.yaml
+
+name: paper process flow
+description: 扫描文件夹读取论文，生成哈希id，提取论文结构，转存到minio指定桶（包括pdf/html md json以及图片文件），简单结构写入ES和MINIO
+#limit: 1
+
+consts:
+  type_mapping:
+    all: .raw
+  ex_meta:
+    source:
+      name: arXiv
+  paths:
+    - /data/datax/papers/arxiv/2507
+  mineru_services:
+    - http://10.208.62.156:6301/api/file/_extract
+    - http://10.208.62.156:6302/api/file/_extract
+    - http://10.208.62.156:6303/api/file/_extract
+    - http://10.208.62.156:6304/api/file/_extract
+  selected_service:
+    eval(mineru_services[int(arg2)-1])
+
+nodes:
+  minio: util.database.minio.MinIO(**minio, bucket='paper-2506', auto_create=True)
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+
+# 论文ID：`arxiv:<arxiv-id>`
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+  add_meta: Map('gestata.paper.add_meta')
+
+# 如果主结构json文件存在，则不处理
+  filter_exist: DistinctByDatabase(minio, key='store_path')
+
+# 读取文件内容
+  read_file: Map('util.files.content', key='filepath', target_key='data')
+
+# HTML解析 TODO 图片下载&统一格式
+  save_html: Map('gestata.dbops.upsert', minio, key_key='path_html', value_key='data')
+#  add_url: ConcatFields('url_html', 'filename', prefix='http://arxiv.org/html/')
+  extract_html: Map('gestata.arxiv.extract', target_key='paper', content_key='data')
+  html_chain: Chain(Print('sid', 'path_html'), save_html, extract_html)
+
+#PDF解析 TODO 可以从mineru下载解析的论文图片
+  save_pdf: Map('gestata.dbops.upsert', minio, key_key='path_pdf', value_key='data')
+  extract_pdf: Map('gestata.mineru.extract', api_base=selected_service, name_key='filename', data_key='data', md_key='md')
+  save_md: Map('gestata.dbops.upsert', minio, key_key='path_md', value_key='md')
+  md2json: Map('gestata.markdown.extract', key='md', target_key='paper_json_tree', tables='json')
+  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+  pdf_chain: Chain(Print('sid', 'path_pdf', 'path_md'), save_pdf, extract_pdf, FieldsNonEmpty('md'), save_md, md2json, json2paper)
+
+  is_html: "=lambda r: r['filename'].endswith('.html')"
+  ifelse: IfElse(html_chain, pdf_chain, matcher=is_html)
+
+# 简化paper结构&保存完整JSON结构
+  fill_meta: Map('gestata.paper.fill_paper', data=ex_meta)
+  save_paper: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='paper')
+
+# 建立ES全文索引
+  write_es: Map('gestata.dbops.upsert', es, key='paper')
+
+# 扫描文件夹 获取全部html/pdf文件 输出文件名
+loader: Directory(arg1, '.html', '.pdf', filename_only=True)
+# 暂不处理图片 仅存储在MinIO和ES
+processor: Chain(add_id, add_meta, filter_exist, read_file, ifelse, FieldsNonEmpty('paper'), fill_meta, save_paper, write_es, Count(label='es'))

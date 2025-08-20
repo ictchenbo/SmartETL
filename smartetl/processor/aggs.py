@@ -1,6 +1,7 @@
 """本模块为统计分析 提供基于聚合数据的基本统计算子"""
 from typing import Any
 from random import random
+import numpy
 from smartetl.util.jsons import extract, get_valid as V
 from .buffer import ReduceBase
 
@@ -156,7 +157,6 @@ class Var(Reduce):
         self.field = field
 
     def __call__(self, items: list):
-        import numpy
         return numpy.std(V(items, self.field))
 
 
@@ -168,7 +168,6 @@ class Std(Reduce):
         self.field = field
 
     def __call__(self, items: list):
-        import numpy
         return numpy.std(V(items, self.field))
 
 

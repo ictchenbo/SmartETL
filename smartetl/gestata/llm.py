@@ -89,6 +89,7 @@ def parse_result(res, stream: bool = False, remove_think: bool = False):
         for chunk in res.iter_lines():
             if not chunk:
                 continue
+            # print(chunk)
             line = chunk.decode('utf8')
             if not line.startswith("data: {"):
                 continue

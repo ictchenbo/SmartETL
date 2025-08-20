@@ -14,11 +14,11 @@ class Database:
         """以upsert模式写入数据"""
         pass
 
-    def search(self, **kwargs):
+    def search(self, *args, **kwargs):
         """搜索数据"""
         pass
 
-    def scroll(self, **kwargs):
+    def scroll(self, *args, **kwargs):
         """扫描数据库"""
         pass
 

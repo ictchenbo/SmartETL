@@ -25,7 +25,7 @@ nodes:
   html_not_exists: Not('util.files.exists', key='html_file')
 
   make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url_html')
-  download_html: Map('util.http.download', key=('url_html', 'html_file'), target_key='status', **request_args)
+  download_html: Map('util.http.download', key=('url_html', 'html_file'), target_key='status', ignore_error=True, **request_args)
 
   make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url_pdf')
   download_pdf: Map('util.http.download', key=('url_pdf', 'pdf_file'), target_key='status', **request_args)

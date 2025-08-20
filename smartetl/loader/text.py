@@ -56,7 +56,13 @@ class JsonLine(Text):
     """Json行文件加载器"""
     def iter(self):
         for line in super().iter():
-            yield json.loads(line)
+            # print(line)
+            try:
+                row = json.loads(line)
+            except:
+                print("invalid json:", line)
+                continue
+            yield row
 
 
 class JsonFree(Text):

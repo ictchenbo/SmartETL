@@ -1,1 +1,1 @@
-from smartetl.gestata.dbops import tables, search, scroll, upsert, delete, exists, get
+from .dbops import tables, search, search_by, scroll, upsert, delete, exists, get
