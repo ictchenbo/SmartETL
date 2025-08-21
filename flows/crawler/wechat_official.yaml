@@ -1,0 +1,16 @@
+name: Wechat Official Account News
+
+consts:
+  api_key:
+
+nodes:
+# 通过 https://www.dajiala.com/main/interface?actnav=1 充值查看api_key
+  api_key: util.files.text('local/wechat_key.txt')
+#  get_account: Map(lambda v:v[0])
+  as_dict: ToDict(key='name')
+  crawl: Map('gestata.wechat_official_account.news', api_key=api_key, max_pages=1)
+  writer: WriteJson('data/spider/wechat_news_2.json')
+
+#loader: CSV('data/spider/wechat_channel_names.txt', header=False)
+loader: String('丁爸 情报分析师的工具箱')
+processor: Chain(as_dict, Print(), crawl, Flat(), writer, Count())
