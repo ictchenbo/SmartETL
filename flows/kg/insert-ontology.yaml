@@ -1,0 +1,13 @@
+from: flows/kg/base.yaml
+name: insert ontology objects
+description: insert ONTOLOGY-LEVEL objects `insert-ontology.yaml <graph_id> <object_type> <json-file>` object_type=entity|event|property|relation
+
+arguments: 3
+
+nodes:
+  writer: Map('gestata.kgms_rest.insert_ontology', object_type=arg2, graph_id=arg1, api_base=api_base)
+  chain1: Chain(Buffer(buffer_size=100), writer, Count())
+  chain: Chain(CopyFields(name='_id'), Print(), Count(), Buffer(buffer_size=100), writer)
+
+loader: JsonLine(arg3)
+processor: chain1

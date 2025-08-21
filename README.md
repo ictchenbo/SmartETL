@@ -78,6 +78,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 
 ## New！
+- 2025.8.14 **启动V3版本开发**
+
 - 2025.8.13
 1. 更新[**GDELT**解析入库流程](flows/gdelt_parse.yaml)
 2. 实现日志机制，通过YAML中配置`logging`，全局注入`debug` `info` `warning` `error`函数，方便组件使用；也支持替换`print`。查看[示例](flows/demos/logging.yaml)
@@ -143,10 +145,11 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 
 - 方式三：基于**Python代码**运行：
 以下示例与([test.yaml](flows/test.yaml)等价：
+
 ```python
-from wikidata_filter.flow_engine import run
-from wikidata_filter.loader import JsonLine
-from wikidata_filter.iterator import Print, Count, Chain, Fork, Select, AddFields
+from smartetl.flow_engine import run
+from smartetl.loader import JsonLine
+from smartetl.processor import Print, Count, Chain, Fork, Select, AddFields
 
 # 定义节点
 
@@ -310,14 +313,14 @@ Flow流程配置设计[可配置流程设计](docs/yaml-flow-design.md)
 1. **重要更新** 重构数据库相关组件，统一数据库操作导`util.database`模块中，Loader和Processor组件根据需要与特定数据库组件进行绑定 如`database.Scroll(mongo)`实现MongoDB数据库的数据读取
 2. 新增`SQLite`数据库组件
 3. 数据库操作相关流程全部更新
-4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](wikidata_filter/gestata/arxiv.py)
+4. 基于新的逻辑gestata实现arXiv论文的搜索、抽取、图片下载等，查看[详情](smartetl/gestata/arxiv.py)
 
 - 2025.3.29
 1. 集成并改造王宁的arxiv下载处理流程
 
 - 2025.3.10
 1. 新增`MySQL`数据库全量导出备份流程[查看详情](flows/dba/mysql_export.yaml)
-2. 完善新闻网页时间抽取逻辑 [查看详情](wikidata_filter/util/extractor/html.py)
+2. 完善新闻网页时间抽取逻辑 [查看详情](smartetl/util/extractor/html.py)
 
 - 2025.3.8
 1. 新增`Markdown`格式解析为json层级结构，支持提取表格

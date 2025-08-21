@@ -1,0 +1,14 @@
+from: flows/kg/base.yaml
+name: insert entity or relation
+description: insert INSTANCE-LEVEL entity (aligned) `insert-entity.yaml <graph_id> <json-file>`
+arguments: 2
+
+loader: JsonLine(arg2)
+
+nodes:
+  name_not_empty: FieldsNonEmpty('name', 'types')
+  writer: Map('gestata.kgms_rest.insert_graph', object_type='entity', graph_id=arg1, api_base=api_base)
+  chain1: Chain(name_not_empty, Buffer(buffer_size=100), writer, Count())
+  chain: Chain(name_not_empty, Map('gestata.kgms_rest.wrap_property', key='properties'), Buffer(buffer_size=100), writer, Count())
+
+processor: chain1

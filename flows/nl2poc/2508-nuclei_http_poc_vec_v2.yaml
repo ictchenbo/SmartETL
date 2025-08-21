@@ -1,0 +1,30 @@
+from:
+  - local/db_envs.yaml
+  - local/llm_keys.yaml
+
+name: 基于nuclei的HTTP协议PoC建立文本+代码的新向量化索引
+consts:
+  input_file: data/vul/2505/nuclei_poc_http.jsonl
+  qdrant:
+    host: localhost
+
+nodes:
+  qd: util.database.qdrant.Qdrant(**qdrant, collection='poc-2508-bge', auto_create=True, size=1024)
+#  qd: util.database.qdrant.Qdrant(**qdrant, collection='poc-2508-qwen3', auto_create=True, size=1024)
+#  qd: util.database.qdrant.Qdrant(**qdrant, collection='poc-2508-voyage', auto_create=True, size=1024)
+
+  filter_id: "Filter(matcher=lambda s:s.startswith('CVE-'), key='_id')"
+  filter_no_desc: FieldsNonEmpty('description')
+  rename: RenameFields(_id='cve_id')
+  chunk: Map('gestata.poc.simple_chunk', target_key='text')
+  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.siliconflow.cn/v1/embeddings', api_key=siliconflow['api_key'], model_name='BAAI/bge-large-en-v1.5')
+#  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.siliconflow.cn/v1/embeddings', api_key=siliconflow['api_key'], model_name='Qwen/Qwen3-Embedding-0.6B')
+#  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.voyageai.com/v1/embeddings', api_key=voyage_ai['api_key'], model_name='voyage-code-3')
+  filter_vec: FieldsNonEmpty('vector')
+  select: Select('cve_id', 'text', 'vector')
+  write_qd: Map('gestata.dbops.upsert', qd)
+
+loader: JsonLine(input_file)
+
+#processor: Chain(Count(label='total'), filter_id, Count(label='cve'), filter_no_desc, rename, chunk, Count())
+processor: Chain(Count(label='total'), filter_id, Count(label='cve'), filter_no_desc, rename, chunk, vector, filter_vec, select, write_qd, Count(ticks=10))

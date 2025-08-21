@@ -1,0 +1,11 @@
+from: flows/kg/base.yaml
+name: delete ontology objects
+description: delete ONTOLOGY-LEVEL objects `delete-ontology.yaml <graph_id> <object_type> <json-file>` object_type=entity|event|property|relation
+
+arguments: 3
+
+nodes:
+  action: Map('gestata.kgms_rest.delete_ontology', key='_id', object_type=arg2, graph_id=arg1, api_base=api_base)
+
+loader: JsonLine(arg3)
+processor: Chain(action, Count())

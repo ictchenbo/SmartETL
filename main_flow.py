@@ -1,8 +1,8 @@
 import os.path
 
-from wikidata_filter.loader.base import Array, String
-from wikidata_filter.flow_builder import FlowBuilder
-from wikidata_filter.flow_engine import run_flow
+from smartetl.loader.base import Array, String
+from smartetl.flow_builder import FlowBuilder
+from smartetl.flow_engine import run_flow
 
 
 if __name__ == '__main__':

@@ -5,3 +5,4 @@ requests
 lxml
 bs4
 chardet
+numpy

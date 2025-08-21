@@ -1,12 +1,12 @@
 if __name__ == '__main__':
     import sys
 
-    from wikidata_filter.flow_engine import run
-    from wikidata_filter.loader import JsonLine
-    from wikidata_filter.iterator import *
-    from wikidata_filter.iterator.wikidata import *
-    from wikidata_filter.iterator.matcher.wikidata import WikidataMatchNew
-    from wikidata_filter.util.dicts import from_json
+    from smartetl.flow_engine import run
+    from smartetl.loader import JsonLine
+    from smartetl.processor import *
+    from smartetl.processor.wikidata import *
+    from smartetl.processor.matcher.wikidata import WikidataMatchNew
+    from smartetl.util.dicts import from_json
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]

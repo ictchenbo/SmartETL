@@ -1,0 +1,21 @@
+name: insert-relation
+description: insert INSTANCE-LEVEL relation(simple-format) `insert-relation.yaml <graph_id> <json-file>`
+arguments: 2
+
+consts:
+  graph_id: eval(arg1)
+
+loader: JsonLine(arg2)
+
+nodes:
+  cache: =dict()
+  make_id: ConcatFields('_id', 'h', 'r', 't')
+  distinct: Distinct(key='_id')
+  subject_id: Map('gestata.kgms_rest.search_entity', key='h', target_key='subjectId', graph_id=graph_id, cache=cache)
+  object_id: Map('gestata.kgms_rest.search_entity', key='t', target_key='objectId', graph_id=graph_id, cache=cache)
+  filter1: FieldsNonEmpty('subjectId', 'objectId')
+  rename: RenameFields(r='typeId')
+  select: Select('subjectId', 'objectId', 'typeId')
+  writer: Map('gestata.kgms_rest.insert_graph', object_type='relation', graph_id=graph_id)
+
+processor: Chain(make_id, distinct, subject_id, object_id, filter1, rename, select, Buffer(buffer_size=10), writer, Count())

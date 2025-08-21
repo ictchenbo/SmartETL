@@ -1,14 +1,15 @@
 from: local/db_envs.yaml
 
 name: GDELT文件解析并写入clickhouse库
+description: 输入zip文件路径
 arguments: 1
 
 nodes:
   ck1: util.database.clickhouse.CK(**click1, database='goinv3_2410', table='gdelt_event_raw')
 
-  parse: Function('wikidata_filter.gestata.gdelt.process_task', url_key='filepath')
+  parse: Function('gestata.gdelt.process_task')
   writer: Map('gestata.dbops.upsert', ck1, retry_times=0, ignore_error=True)
 
-loader: Directory(arg1, '.zip', filename_only=True)
-#processor: Chain(parse, Print())
+#loader: Directory(arg1, '.zip', filename_only=True)
+loader: Array([arg1])
 processor: Chain(parse, Count(), Buffer(buffer_size=1000), writer)

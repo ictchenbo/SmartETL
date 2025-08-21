@@ -1,0 +1,37 @@
+from:
+  - local/db_envs.yaml
+  - local/llm_keys.yaml
+
+name: poc检索
+consts:
+  input_file: data/vul/2508/query.txt
+  qdrant:
+    host: localhost
+
+#limit: 1
+
+nodes:
+  qd: database.qdrant.Qdrant(**qdrant, collection='poc-2508-bge', auto_create=True, size=1024)
+  qd1: database.qdrant.Qdrant(**qdrant, collection='poc-2508-qwen3', auto_create=True, size=1024)
+  qd2: database.qdrant.Qdrant(**qdrant, collection='poc-2508-voyage', auto_create=True, size=1024)
+
+  as_dict: ToDict(key='text')
+  vector: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.siliconflow.cn/v1/embeddings', api_key=siliconflow['api_key'], model_name='BAAI/bge-large-en-v1.5')
+  search: Map('database.search_by', qd, key='vector', target_key='results')
+  select: Map('gestata.poc.select', key='results')
+
+  vector1: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.siliconflow.cn/v1/embeddings', api_key=siliconflow['api_key'], model_name='Qwen/Qwen3-Embedding-0.6B')
+  search1: Map('database.search_by', qd1, key='vector', target_key='results1')
+  select1: Map('gestata.poc.select', key='results1')
+
+  vector2: Map('gestata.embedding.text_v2', key='text', target_key='vector', api_base='https://api.voyageai.com/v1/embeddings', api_key=voyage_ai['api_key'], model_name='voyage-code-3')
+  search2: Map('database.search_by', qd2, key='vector', target_key='results2')
+  select2: Map('gestata.poc.select', key='results2')
+
+  remove: RemoveFields('vector')
+
+  writer: WriteJson('data/vul/2508/result.json', append=True)
+
+#loader: Text(input_file)
+loader: Array([arg1])
+processor: Chain(Print(), as_dict, vector, search, select, vector1, search1, select1, vector2, search2, select2, remove, writer)

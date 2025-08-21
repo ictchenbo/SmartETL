@@ -1,6 +1,6 @@
 ## 数据加载器（Loader）
 
-模块：`wikidata_filter.loader`
+模块：`smartetl.loader`
 
 构造器：`<Comp>(*args, **kwargs)` 或 `<module>.<Comp>(*args, **kwargs)`
 

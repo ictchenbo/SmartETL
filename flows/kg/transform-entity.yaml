@@ -1,0 +1,21 @@
+from: flows/kg/base.yaml
+name: transform-entity
+arguments: 3
+
+consts:
+  graph_id: eval(arg1)
+
+nodes:
+  ontology_tree: util.http.json(api_base + '/ontology/entity/hierarchy')
+
+  distinct: Distinct(key='e')
+  search_type: Map('gestata.kgms_rest.search_entity_type', key='label', target_key='label_id', ontology_tree=ontology_tree['result'])
+  filter: FieldsNonEmpty('label_id')
+  remove: RemoveFields('label', 'pageId')
+  remove_empty: RemoveEmptyOrNullFields
+  as_entity: Map('gestata.kgms_rest.dict2entity', name_key='e', types_key='label_id')
+  writer: WriteJson(arg3)
+  chain1: Chain(Count(label='raw'), distinct, Count(label='distinct'), search_type, filter, Count(label='label'), remove, remove_empty, as_entity, Count(), writer)
+
+loader: JsonLine(arg2)
+processor: chain1

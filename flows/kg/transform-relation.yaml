@@ -1,0 +1,21 @@
+from: flows/kg/base.yaml
+name: insert-relation
+arguments: 3
+
+consts:
+  graph_id: eval(arg1)
+
+loader: JsonLine(arg2)
+
+nodes:
+  cache: =dict()
+  make_id: ConcatFields('_id', 'h', 'r', 't')
+  distinct: Distinct(key='_id')
+  subject_id: Map('gestata.kgms_rest.search_entity', key='h', target_key='subjectId', graph_id=graph_id, cache=cache, api_base=api_base)
+  object_id: Map('gestata.kgms_rest.search_entity', key='t', target_key='objectId', graph_id=graph_id, cache=cache, api_base=api_base)
+  filter3: FieldsNonEmpty('subjectId', 'objectId')
+  rename: RenameFields(r='typeId')
+  select: Select('subjectId', 'objectId', 'typeId')
+  writer: WriteJson(arg3)
+
+processor: Chain(make_id, distinct, Count(label='all'), subject_id, object_id, filter3, rename, select, writer, Count(ticks=1))

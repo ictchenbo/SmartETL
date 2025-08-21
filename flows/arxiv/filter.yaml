@@ -1,0 +1,16 @@
+name: skip data
+
+consts:
+  type_mapping:
+    all: .jsonl
+  month: eval(str(arg2))
+
+loader: ar.Zip(arg1, 'all', type_mapping=type_mapping)
+
+
+nodes:
+  filterid: "Filter(lambda s,month=month:s.startswith(month), key='id')"
+  writer: WriteJson(arg3)
+
+processor: Chain(SelectVal('data'), Count(label='d'), filterid, Count(label='f'), writer)
+

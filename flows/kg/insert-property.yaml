@@ -1,0 +1,22 @@
+from: flows/kg/base.yaml
+name: filter property values
+description: 从关系数据中过滤实体属性并插入 `filter-property-values.yaml <graph_id> <relation-type-file> <relation-file>`
+arguments: 3
+
+consts:
+  graph_id: eval(arg1)
+
+loader: JsonLine(arg3)
+
+nodes:
+  relations: util.sets.from_json(arg2, key_key='_id')
+  filter: BlackList(relations, 'r')
+  group: Group(by='h')
+  group2dict: Map('gestata.kgms_rest.group2dict', key='values')
+  flat: FlatProperty('values', inherit_props=True)
+  dict2entity: Map('gestata.kgms_rest.dict2entity', name_key='key', props_format='flat')
+  subject_id: Map('gestata.kgms_rest.search_entity', key='name', target_key='_id', graph_id=graph_id, api_base=api_base)
+  filter_id: FieldsNonEmpty('_id')
+  insert_property: Map('gestata.kgms_rest.insert_property', key=('_id', 'properties'), graph_id=graph_id, api_base=api_base)
+
+processor: Chain(filter, group, group2dict, flat, dict2entity, subject_id, filter_id, insert_property, Count())
