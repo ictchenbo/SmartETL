@@ -1,0 +1,38 @@
+from: local/db_envs.yaml
+
+name: paper(pdf) process flow
+description: 读取Kafka的PDF解析结果，写入MinIO（markdown&json）和ES
+#limit: 1
+
+consts:
+  type_mapping:
+    all: .raw
+  ex_meta:
+    source:
+      name: arXiv
+  kafka_host: 10.60.1.148:9092
+
+nodes:
+  minio: util.database.minio.MinIO(**minio, bucket='paper-2506', auto_create=True)
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+  kafka: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_pdf_md_0911')
+
+# 如果主结构json文件存在，则不处理
+  filter_exist: DistinctByDatabase(minio, key='store_path')
+
+# 【可选】论文markdown写入minio
+  save_md: Map('gestata.dbops.upsert', minio, key_key='path_md', value_key='md')
+  md2json: Map('gestata.markdown.extract', key='md', target_key='paper_json_tree', tables='json')
+  json2paper: Map('gestata.paper.from_json', key='paper_json_tree', target_key='paper')
+
+  # 简化paper结构&保存完整JSON结构
+  fill_meta: Map('gestata.paper.fill_paper', data=ex_meta)
+  # 【可选】论文主结构写入minio
+#  save_paper: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='paper')
+
+# 建立ES全文索引
+  write_es: Map('gestata.dbops.upsert', es, key='paper')
+
+loader: Function('smartetl.gestata.dbops.scroll', kafka, auto_commit=True)
+# 暂不处理图片 仅存储在MinIO和ES
+processor: Chain(filter_exist, save_md, md2json, json2paper, fill_meta, write_es, Count(label='es'))

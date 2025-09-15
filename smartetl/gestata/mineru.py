@@ -41,17 +41,26 @@ def extract(row: dict,
         'method': method,
         'response_content': response_content
     }
+
     try:
         response = requests.post(api_base, files=files, data=data)
         response_data = response.json()
-        row[md_key] = response_data['data']['extract_data']
+        if 'data' in response_data:
+            data = response_data['data']
+            if isinstance(data, dict) and 'extract_data' in data:
+                row[md_key] = data['extract_data']
+                return row
+        error = response.text
+        print('ERROR', filename, error, api_base)
+        row['ERROR'] = error
     except:
+        print('ERROR', filename)
         traceback.print_exc()
 
     return row
 
 
 if __name__ == '__main__':
-    content = extract({"data": "../../data/paper/2501.14249v7-HLE.pdf", "name": "2501.14249v7-HLE.pdf"},
-                      api_base="http://10.208.62.156:6304/api/file/_extract")
+    content = extract({"data": "../../data/paper/2507.03126.pdf", "name": "2507.03126.pdf"},
+                      api_base="http://10.208.62.156:6201/api/file/_extract")
     print(content)

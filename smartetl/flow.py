@@ -55,7 +55,7 @@ class Flow:
         args_num = int(flow.get('arguments', '0'))
         assert len(args) >= args_num, f"no enough arguments! {args_num} needed!"
         self.name = flow.get('name')
-        self.limit = None
+        self.limit = 0
         if 'limit' in flow:
             self.limit = int(flow.get('limit'))
 

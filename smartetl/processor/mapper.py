@@ -72,6 +72,7 @@ class Map(Processor):
             # 调用转换函数
             res_val = self.mapper(*val, **self.kwargs)
         except:
+            print("ERROR map input:", *val)
             traceback.print_exc()
             res_val = None
 

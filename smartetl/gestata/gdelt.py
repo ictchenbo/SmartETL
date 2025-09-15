@@ -232,6 +232,18 @@ def all_zip(url: str = 'http://data.gdeltproject.org/events/index.html', is_url:
             yield urljoin(url, href)
 
 
+def day_zip(offset: int = 2):
+    from datetime import datetime, timedelta
+    # 计算两天前的日期
+    two_days_ago = datetime.now() - timedelta(days=offset)
+
+    # 格式化为 8 位数字字符串（YYYYMMDD）
+    date_str = two_days_ago.strftime('%Y%m%d')
+
+    return f'http://data.gdeltproject.org/events/{date_str}.export.CSV.zip'
+
+
 if __name__ == '__main__':
-    for link in all_zip():
-        print(link)
+    # for link in all_zip():
+    #     print(link)
+    print(day_zip())

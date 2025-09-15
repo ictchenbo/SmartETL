@@ -15,12 +15,26 @@ from smartetl.database.elasticsearch import ES
 from smartetl.database.qdrant import Qdrant
 from smartetl.util.logger import ProductionLogger
 from smartetl.util.split import simple
+from smartetl.util.int_mapper import IncrementalStringMapper
 
 
 ARXIV_API_BASE = "http://export.arxiv.org/api/query"
 ARXIV_BASE = "http://arxiv.org"
 ARXIV_PDF = f'{ARXIV_BASE}/pdf'
 ts_file = ".arxiv.ts"
+
+
+def int_id(original_id: str, int_mapper: IncrementalStringMapper):
+    """arXiv论文ID转化为整数ID"""
+    if '/' in original_id:
+        category, _id = original_id.split('/')
+        cat_int = int_mapper.get_id(category)
+        year = int(_id[:2])
+        int4 = year * 10000 + cat_int
+        return int4 * 10000 + int(_id[2:])
+    else:
+        ym, _id = original_id.split('.')
+        return int(ym) * 100000 + int(_id)
 
 
 def make_id(filename: str, keep_version: bool = True):

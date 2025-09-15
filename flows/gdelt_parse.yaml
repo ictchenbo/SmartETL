@@ -7,7 +7,7 @@ arguments: 1
 nodes:
   ck1: util.database.clickhouse.CK(**click1, database='goinv3_2410', table='gdelt_event_raw')
 
-  parse: Function('gestata.gdelt.process_task')
+  parse: Function('smartetl.gestata.gdelt.process_task')
   writer: Map('gestata.dbops.upsert', ck1, retry_times=0, ignore_error=True)
 
 #loader: Directory(arg1, '.zip', filename_only=True)

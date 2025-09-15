@@ -1,8 +1,9 @@
 import requests
+import traceback
 
 
 def text_v1(text: str,
-            api_base: str = 'http://10.208.63.29:8001/embed',
+            api_base: str = 'http://10.208.62.156:8001/embed',
             lang: str = "zh",
             **kwargs):
     """简单文本embedding接口"""
@@ -21,7 +22,7 @@ def text_v1(text: str,
 
 
 def text_v2(text: str,
-            api_base: str = 'http://10.208.63.29:6008/v1/embeddings',
+            api_base: str = 'http://10.208.62.156:6008/v1/embeddings',
             model_name: str = 'bge-large-en-v1.5',
             api_key: str = 'sk-aaabbbcccdddeeefffggghhhiiijjjkkk',
             **kwargs):
@@ -43,9 +44,38 @@ def text_v2(text: str,
         else:
             print(f"Error: {response.status_code}", response.text)
     except:
+        traceback.print_exc()
         print("Error when access", api_base)
 
     return []
+
+
+def text_ali_opensearch(text: str or list[str],
+                        endpoint: str = None,
+                        api_key: str = None,
+                        model_name: str = "ops-text-embedding-002",
+                        **kwargs):
+    """阿里云OpenSearch的embedding接口，支持选择不同模型"""
+    url = f'https://{endpoint}/v3/openapi/workspaces/default/text-embedding/{model_name}'
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    json_data = {
+        'input': text if isinstance(text, list) else [text],
+        'input_type': 'query'
+    }
+
+    res = requests.post(url, headers=headers, json=json_data)
+
+    if res.status_code == 200:
+        result = res.json()['result']['embeddings']
+        vectors = [e['embedding'] for e in result]
+        return vectors if isinstance(text, list) else vectors[0]
+
+    return None
 
 
 def text_v2_batch(rows: list,
@@ -114,3 +144,7 @@ def image_text_v1(text: str, api_base: str = 'http://10.208.63.29:8001/embed_ima
         print("Error when access", api_base)
 
     return []
+
+
+if __name__ == '__main__':
+    print(text_v2('I love China'))

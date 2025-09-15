@@ -1,0 +1,42 @@
+from: local/db_envs.yaml
+
+name: paper file scan
+description: 扫描文件夹读取论文，生成哈希id，根据HTML/PDF写入不同的Kafka队列
+
+consts:
+  kafka_host: 10.60.1.148:9092
+  paths:
+    - /data/datax/papers/arxiv/2307
+    - /data/datax/papers/arxiv/2306
+    - /data/datax/papers/arxiv/2305
+    - /data/datax/papers/arxiv/2304
+    - /data/datax/papers/arxiv/2303
+    - /data/datax/papers/arxiv/2302
+    - /data/datax/papers/arxiv/2301
+
+nodes:
+#  minio: util.database.minio.MinIO(**minio, bucket='paper-2506', auto_create=True)
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+  kafka: util.database.kafka.Kafka(host=kafka_host)
+
+# 论文ID：`arxiv:<arxiv-id>`
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+  add_meta: Map('gestata.paper.add_meta')
+
+# 如果主结构json文件存在，则不处理
+  filter_exist: DistinctByDatabase(es, key='_id')
+
+# 保存html|pdf文件到MinIO
+#  save_html: Map('gestata.dbops.upsert', minio, key_key='path_html', value_key='data')
+#  save_pdf: Map('gestata.dbops.upsert', minio, key_key='path_pdf', value_key='data')
+
+  kafka_html: Map('gestata.dbops.upsert', kafka, topic='arxiv_html_0911')
+  kafka_pdf: Map('gestata.dbops.upsert', kafka, topic='arxiv_pdf_0911')
+
+  is_html: "=lambda r: r['filename'].endswith('.html')"
+  ifelse: IfElse(kafka_html, kafka_pdf, matcher=is_html)
+
+# 扫描文件夹 获取全部html/pdf文件 输出文件名
+loader: Directory(paths, '.html', '.pdf', filename_only=True)
+
+processor: Chain(add_id, add_meta, filter_exist, ifelse)

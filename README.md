@@ -53,16 +53,16 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - bz2
    - xz
 6. 支持常见数据库读取和写入，覆盖常见OLTP和OLAP场景
-   - MySQL（关系数据库）
+   - MySQL（关系数据库）基于pymysql
    - PostgresSQL（关系数据库）
-   - ClickHouse（关系数据库、列存数据库）
-   - MongoDB（文档数据库）
-   - ElasticSearch（全文索引）
-   - Qdrant（向量数据库）
-   - Kafka（消息队列）
+   - ClickHouse（关系数据库、列存数据库）基于clickhouse_driver
+   - MongoDB（文档数据库）基于pymongo
+   - ElasticSearch（全文索引） 基于RESTFul API
+   - Qdrant（向量数据库）基于RESTFul API
+   - Kafka（消息队列）基于RESTFul API和confluent_kafka
    - SQLite（关系数据库、嵌入式数据库）
    - MinIO（文件系统、对象存储、KV数据库）
-   - Neo4J（图数据库）
+   - Neo4J（图数据库）基于neo4j
 
 ## 应用场景
 本项目具有众多数据处理分析应用场景：
@@ -71,17 +71,23 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 多模态数据处理：调用多模态embedding对图像进行Embedding处理 参考[图像索引](flows/news/index_image.yaml)
 - 机器学习/数据挖掘数据集构建：漏洞PoC数据库构建、基于大模型的知识蒸馏、科技评估预测等。参考[poc构建](flows/nl2poc/nuclei_http_poc_desc.yaml)
 - 开源数据采集：[GDELT全球事件](flows/gdelt.yaml)、Web API数据集成、[网页URL数据采集](flows/crawler/gen1.yaml)，JsonP数据解析，[图片采集](flows/news/p2_image.yaml)等
-- 开源数据处理：wikidata维基数据、维基百科、新闻、图片等数据处理。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml) 
+- 开源数据处理：wikidata维基数据、维基百科、新闻、图片等数据处理。参考[wikidata处理](flows/wikidata/p1_base.yaml) [GDELT数据采集](flows/gdelt.yaml)
 - 知识图谱构建：基于结构化数据和非结构化数据的实体抽取、关系抽取、事件抽取等（部分算子待完善） 。参考[wikidata知识图谱](flows/wikidata/p3_relation_of_human.yaml) 关于wikidata知识图谱的介绍，可以参考作者的一篇博客文章 https://blog.csdn.net/weixin_40338859/article/details/120571090
 - 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等。参考[项目数据统计1](flows/unesco-projects.yaml) [项目数据统计2](flows/unesco-projects-aggs.yaml)
 - 数据库管理/DBA：数据库备份、同步、查询分析等。参考[ClickHouse导出](flows/dba/db_ck_export.yaml) [MongoDB数据迁移](flows/dba/db_mongo_transfer.yaml)
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
+- 科研数据处理：对论文数据（arXiv）进行预处理，建立全文索引/向量索引，形成统一论文库
 
 ## New！
+- 2025.9.14
+1. 完善`gestata.mineru`算子
+2. 新增`apps.pdf_parser_parallel`，搭配mineru的并行化部署，实现大规模PDF解析
+3. **arXiv**相关处理流程优化
+
 - 2025.8.21 
-- 完善论文处理流程
-- 完善新的gdelt处理流程
-- 新增微信公众号文章采集流程
+1. 完善论文处理流程 
+2. 完善新的gdelt处理流程 
+3. 新增微信公众号文章采集流程
 
 - 2025.8.14 **启动V3版本开发**
 
