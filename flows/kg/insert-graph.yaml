@@ -7,7 +7,7 @@ loader: JsonLine(arg3)
 
 nodes:
   writer: Map('gestata.kgms_rest.insert_graph', object_type=arg2, graph_id=arg1, api_base=api_base)
-  chain1: Chain(Buffer(buffer_size=100), writer, Count())
+  chain1: Chain(SkipN(2200),Buffer(buffer_size=100), writer, Count())
   chain: Chain(Map('gestata.kgms_rest.wrap_property', key='properties'), Buffer(buffer_size=100), writer, Count())
 
 processor: chain1

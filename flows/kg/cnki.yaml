@@ -1,0 +1,33 @@
+name: cnki-filter
+
+consts:
+  types:
+    - 中国专利
+  path: data/kg/0827/
+
+loader: Directory('data/kg/cnki', '.txt', type_mapping={'all':'.plain'})
+
+nodes:
+  select: SelectVal('data')
+  parser: Map('gestata.cnki.from_text')
+
+  writer_patent: WriteJson(path + 'patent_entity.json')
+  patent_entity_patent: Chain(Map('gestata.cnki.patent_entity'), writer_patent)
+  patent_entity_author: Chain(Map('gestata.cnki.patent_entity_author'), Flat(), writer_patent)
+  patent_entity_org: Chain(Map('gestata.cnki.patent_entity_org'), Flat(), writer_patent)
+  patent_relation: Chain(Map('gestata.cnki.patent_relation'), Flat(), WriteJson(path + 'patent_relation.json'))
+  patent_kg: Fork(patent_entity_patent, patent_entity_author, patent_entity_org, patent_relation)
+  patent_chain: Chain(WhiteList(types, key='SrcDatabase'), Distinct(key='PubNo'), WriteJson(path + 'patent.json'), Count(label='patent'), patent_kg)
+
+  writer_paper: WriteJson(path + 'paper_entity.json')
+  paper_entity_paper: Chain(Map('gestata.cnki.paper_entity'), writer_paper)
+  paper_entity_author: Chain(Map('gestata.cnki.patent_entity_author'), Flat(), writer_paper)
+  paper_entity_org: Chain(Map('gestata.cnki.patent_entity_org', org_key='Organ'), Flat(), writer_paper)
+  paper_relation: Chain(Map('gestata.cnki.patent_relation', org_key='Organ'), Flat(), WriteJson(path + 'paper_relation.json'))
+  paper_kg: Fork(paper_entity_paper, paper_entity_author, paper_entity_org, paper_relation)
+  paper_chain: Chain(BlackList(types, key='SrcDatabase'), WriteJson(path + 'paper.json'), Count(label='paper'), paper_kg)
+
+  fork: Fork(patent_chain, paper_chain)
+
+#processor: Chain(select, parser, writer, Count())
+processor: Chain(select, parser, fork)

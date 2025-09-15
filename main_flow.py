@@ -19,6 +19,8 @@ if __name__ == '__main__':
     parser.add_argument("--json", default=False, action="store_true", help="将--input参数提供的输入数据作为json加载，默认为纯文本")
     parser.add_argument("--loader", default=None, help="指定Loader表达式")
     parser.add_argument("--processor", default=None, help="指定Processor表达式")
+    parser.add_argument("--limit", type=int, default=0, help="指定需要处理的数据条数")
+    parser.add_argument("--skip", type=int, default=0, help="跳过处理的数据条数")
 
     # 解析参数
     args, unknown = parser.parse_known_args()
@@ -54,4 +56,4 @@ if __name__ == '__main__':
         print("processor is not specified")
         exit(1)
 
-    run_flow(flow)
+    run_flow(flow, skip=args.skip, limit=args.limit)

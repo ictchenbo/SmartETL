@@ -1,0 +1,59 @@
+name: arxiv指定论文下载
+description: 对指定论文优先下载html，否则下载pdf，分别写入不同的kafka队列
+consts:
+  request_args:
+#    most_times: 1
+#    ignore_error: yes
+    verify: no
+    timeout: 60
+    headers:
+      User-Agent: chenbo01@ict.ac.cn
+  kafka_host: 10.60.1.148:9092
+  path: eval(f'data/paper/{arg1}/')
+#  path: eval(f'/data/datax/papers/arxiv/{arg1}/')
+
+loader: JsonLine(arg2)
+
+nodes:
+  kafka: util.database.kafka.Kafka(host=kafka_host)
+  history: util.sets.from_text(arg3)
+
+  name1: ConcatFields('filename', 'id', suffix='.pdf')
+  not_exists: BlackList(history, key='filename')
+
+  pdf_file: ConcatFields('pdf_file', 'id', prefix=path, suffix='.pdf')
+  html_file: ConcatFields('html_file', 'id', prefix=path, suffix='.html')
+  pdf_not_exists: Not('util.files.exists', key='pdf_file')
+  html_not_exists: Not('util.files.exists', key='html_file')
+
+  filter_size: "Filter(lambda x: x > 500, key='filesize')"
+  kafka_html: Map('gestata.dbops.upsert', kafka, topic='arxiv_html_0911')
+  kafka_pdf: Map('gestata.dbops.upsert', kafka, topic='arxiv_pdf_0911')
+
+  make_html_url: Map('gestata.arxiv.url4html', key='id', target_key='url')
+  download_html: Map('util.http.download', key=('url', 'html_file'), target_key='status', **request_args)
+#  Map('util.http.content', key='url_html', target_key='html', ignore_error=True, **request_args)
+
+  download_ok: FieldsNonEmpty('status')
+
+  html_size: Map('util.files.filesize', key='html_file', target_key='filesize')
+
+# 论文ID：`arxiv:<arxiv-id>`
+  html_filename: Map('util.files.basename', key='html_file', target_key='filename')
+
+  add_id: Map('gestata.arxiv.make_id', key='filename', target_key='_id')
+  add_meta: Map('gestata.paper.add_meta')
+
+  chain_html: Chain(html_size, filter_size, html_filename, add_id, add_meta, RenameFields(html_file='filepath'), Print(), kafka_html)
+
+#  chain1: Chain(make_html_url, download_html, FieldsNonEmpty('html'), Count(label='html'), save_html)
+
+  make_pdf_url: Map('gestata.arxiv.url4pdf', key='id', target_key='url')
+  download_pdf: Map('util.http.download', key=('url', 'pdf_file'), target_key='status', **request_args)
+  pdf_size: Map('util.files.filesize', key='pdf_file', target_key='filesize')
+  pdf_filename: Map('util.files.basename', key='pdf_file', target_key='filename')
+  chain_pdf: Chain(make_pdf_url, download_pdf, download_ok, pdf_size, filter_size, pdf_filename, add_id, add_meta, RenameFields(pdf_file='filepath'), Print(), kafka_pdf)
+
+  ifelse: IfElse(chain_html, chain_pdf, matcher=download_ok)
+
+processor: Chain(name1, not_exists, Print('id'), pdf_file, html_file, pdf_not_exists, html_not_exists, make_html_url, download_html, ifelse, Wait(7))

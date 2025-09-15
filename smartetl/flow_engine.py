@@ -21,7 +21,7 @@ def handle_sigint(signum, frame):
         sys.exit(0)
 
 
-def run(data_provider: Loader, processor: Processor, limit: int = None):
+def run(data_provider: Loader, processor: Processor, skip: int = 0, limit: int = 0):
     # 注册信号处理程序
     signal.signal(signal.SIGINT, handle_sigint)
 
@@ -40,11 +40,16 @@ def run(data_provider: Loader, processor: Processor, limit: int = None):
                 pass
     row_count = 0
     for item in data_provider.iter():
-        execute(item)
         row_count += 1
-        if limit and row_count >= limit:
+        if skip > 0 and row_count <= skip:
+            continue
+
+        execute(item)
+
+        if limit > 0 and row_count >= limit :
             print('\n达到limit限制，停止加载数据...')
             break
+
         if process_status["stop"] > 0:
             print("\n接收到 Ctrl+C 信号，正在优雅退出...")
             processor.on_complete()
@@ -58,7 +63,7 @@ def run(data_provider: Loader, processor: Processor, limit: int = None):
     print("------------------------")
 
 
-def run_flow(flow: Flow):
+def run_flow(flow: Flow, skip: int = 0, limit: int = 0):
     print('starting flow:', flow.name)
     assert flow.loader is not None, "loader为空！可通过yaml文件或命令行参数进行配置"
-    run(flow.loader, flow.processor, limit=flow.limit)
+    run(flow.loader, flow.processor, skip=skip, limit=limit if limit > 0 else flow.limit)

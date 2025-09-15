@@ -1,0 +1,33 @@
+from: local/db_envs.yaml
+
+name: paper(pdf) process flow
+description: 读取Kafka采集的HTML，解析HTML，写入ES和MinIO（json）
+#limit: 1
+
+consts:
+  ex_meta:
+    source:
+      name: arXiv
+  kafka_host: 10.60.1.148:9092
+
+nodes:
+  minio: util.database.minio.MinIO(**minio, bucket='paper-2506', auto_create=True)
+  es: util.database.elasticsearch.ES(**es1, index='paper-2506')
+  kafka: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_html_0911')
+
+# 读取文件内容
+  read_file: Map('util.files.content', key='filepath', target_key='data')
+
+  extract_html: Map('gestata.arxiv.extract', target_key='paper', content_key='data')
+
+  # 简化paper结构&保存完整JSON结构
+  fill_meta: Map('gestata.paper.fill_paper', data=ex_meta)
+  # 【可选】论文主结构写入minio
+#  save_paper: Map('gestata.dbops.upsert', minio, key_key='store_path', value_key='paper')
+
+# 建立ES全文索引
+  write_es: Map('gestata.dbops.upsert', es)
+
+loader: Function('smartetl.gestata.dbops.scroll', kafka, auto_commit=True)
+# 暂不处理图片 仅存储在MinIO和ES
+processor: Chain(read_file, extract_html, FieldsNonEmpty('paper'), fill_meta, SelectVal('paper'), Buffer(buffer_size=100), write_es)

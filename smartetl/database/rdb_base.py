@@ -85,13 +85,19 @@ class RDBBase(Database):
 
     def fetchone(self, sql, params=None):
         with self.conn.cursor() as cursor:
-            print("Executing SQL:", cursor.mogrify(sql, params))
+            # print("Executing SQL:", cursor.mogrify(sql, params))
             cursor.execute(sql, params)
             columns = [desc[0] for desc in cursor.description]
             row = cursor.fetchone()
             if row:
                 row = {columns[i]: row[i] for i in range(len(row))}
             return row
+
+    def get(self, _id, database: str = None, table: str = None, **kwargs):
+        database = database or self.database
+        table = table or self.table
+
+        return self.fetchone(f"select * from {database}.{table} where `{self.key_col}`= %s ", (_id, ))
 
     def show_create(self, table: str, database: str = None):
         table = f'`{database}`.`{table}`' if database else f'`{table}`'

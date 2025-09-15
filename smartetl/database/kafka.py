@@ -4,8 +4,8 @@
 import json
 
 try:
-    from confluent_kafka import Consumer, KafkaException, KafkaError
-    from confluent_kafka import Producer
+    from confluent_kafka import Consumer, Producer, KafkaException, KafkaError
+    from confluent_kafka.admin import AdminClient, NewTopic
 except:
     raise ImportError("kafka not installed!")
 
@@ -20,11 +20,22 @@ def delivery_report(err, msg):
         print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
 
+class Commit:
+    def __init__(self, msg, consumer):
+        self.msg = msg
+        self.consumer = consumer
+
+    def __call__(self, *args, **kwargs):
+        self.consumer.commit(self.msg)
+
+
 class Kafka(Database):
     def __init__(self, host: str,
-                 topic: str,
+                 topic: str = None,
                  group_id: str = 'smartetl-consumer',
                  max_bytes: int = 10485760,
+                 auto_create: bool = False,
+                 partitions: int = 3,
                  **kwargs):
         """
         Kafka数据库工具
@@ -32,26 +43,68 @@ class Kafka(Database):
         :param topic 写入或读取的消息队列名称
         :param group_id 消费者组
         :param max_bytes 定义写入消息的最大字节数 默认10M
+        :param auto_create 是否自动创建主题 （主要用于写数据）
+
         """
         self.host = host
         self.topic = topic
         self.group_id = group_id
         self.max_bytes = max_bytes
+        if auto_create and topic is not None and topic not in self.list_topics():
+            self.create_topic(topic, partitions=partitions)
 
-    def scroll(self, **kwargs):
+    def create_topic(self, name: str, partitions: int = 3, replication_factor = 1):
+        new_topic = NewTopic(
+            topic=name,
+            num_partitions=partitions,
+            replication_factor=replication_factor,
+            # 可选：设置 Topic 配置
+            config={
+                'retention.ms': '604800000',  # 7天
+                'cleanup.policy': 'delete',
+                'compression.type': 'producer'
+            }
+        )
+        conf = {
+            'bootstrap.servers': self.host
+        }
+        admin_client = AdminClient(conf)
+        fs = admin_client.create_topics([new_topic])
+        for topic, f in fs.items():
+            try:
+                f.result()  # 触发异常（如果创建失败）
+                print(f"✅ Topic '{topic}' 创建成功")
+            except Exception as e:
+                print(f"❌ 创建 Topic '{topic}' 失败: {e}")
+
+    def list_topics(self):
+        conf = {
+            'bootstrap.servers': self.host,
+            'request.timeout.ms': 10000
+        }
+        admin_client = AdminClient(conf)
+        cluster_metadata = admin_client.list_topics(timeout=10)
+        ret = []
+        for topic_name in cluster_metadata.topics.keys():
+            if not topic_name.startswith('__'):
+                ret.append(topic_name)
+        return ret
+
+    def scroll(self, topic: str = None, auto_commit: bool = False, **kwargs):
         conf = {
             'bootstrap.servers': self.host,
             'group.id': self.group_id,
             'auto.offset.reset': 'earliest',  # 从最早的消息开始读取
-            'enable.auto.commit': False,  # 手动提交偏移量
+            'enable.auto.commit': auto_commit,  # 是否自动提交偏移量
             # 增加最大轮询间隔
             'max.poll.interval.ms': 600000,  # 10分钟
         }
+        topic = topic or self.topic
         # 创建消费者实例
         consumer = Consumer(conf)
         # 订阅主题
-        consumer.subscribe([self.topic])
-        print(f"Starting Kafka consumer, listening to topic {self.topic}...")
+        consumer.subscribe([topic])
+        print(f"Starting Kafka consumer, listening to topic {topic}...")
         while True:
             # 轮询消息，超时时间为1秒
             msg = consumer.poll(1.0)
@@ -64,19 +117,19 @@ class Kafka(Database):
                 else:
                     print(f"Consumer error: {msg.error()}")
                     break
-            # 成功接收到消息
+
             try:
                 value = json.loads(msg.value().decode('utf-8'))
-                print(f"Received message: key={msg.key()}")
-                # 处理消息后手动提交偏移量
-                consumer.commit(msg)
-                yield value
+                if not auto_commit:
+                    yield value, Commit(msg, consumer)
+                else:
+                    yield value
 
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
 
-    def upsert(self, items: dict or list, **kwargs):
+    def upsert(self, items: dict or list, topic: str = None, **kwargs):
         if isinstance(items, dict):
             items = [items]
         conf = {
@@ -86,6 +139,7 @@ class Kafka(Database):
             'api.version.request': 'true',
             'message.max.bytes': self.max_bytes
         }
+        topic = topic or self.topic
         producer = Producer(conf)
         try:
             for row in items:
@@ -98,7 +152,7 @@ class Kafka(Database):
                         processed_row[key] = value
                 id = row['id']
                 producer.produce(
-                    self.topic,
+                    topic,
                     key=str(id),
                     value=json.dumps(processed_row),
                     callback=delivery_report
