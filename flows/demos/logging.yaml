@@ -8,11 +8,11 @@ consts:
 logging:
 #支持三种模式：keep保留print；replace是替换print为info；merge会将print替换成print+info
   print_mode: keep
-  name: mylog
+  name: filter-log
 
 nodes:
   filter: KeywordFilter(key='name', keywords=keywords, action='keep')
   log: Map('gestata.log.test', key='name')
 
 loader: "Array([{'name': '航天工程'}, {'name': '火箭军'}])"
-processor: Chain(filter, log, Print(), Count(label='filter'))
+processor: Chain(filter, log, Count(label='filter'))

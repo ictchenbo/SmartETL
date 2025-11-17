@@ -86,10 +86,11 @@ class JsonFree(Text):
 
 class CSV(Text):
     """读取CSV文件 每行作为一个对象传输"""
-    def __init__(self, input_file: str, sep: str = ',', header: bool = True, **kwargs):
+    def __init__(self, input_file: str, sep: str = ',', header: bool = True, skip_rows = 0, **kwargs):
         super().__init__(input_file, **kwargs)
         self.header = header
         self.sep = sep
+        self.skip_rows = skip_rows
 
     def iter(self):
         try:
@@ -99,8 +100,10 @@ class CSV(Text):
         reader = csv.reader(super().iter())
         header = None
         for index, row in enumerate(reader):
+            if self.skip_rows > 0 and index < self.skip_rows:
+                continue
             if self.header:
-                if index == 0:
+                if header is None:
                     header = row
                 else:
                     yield dict(zip(header, row))

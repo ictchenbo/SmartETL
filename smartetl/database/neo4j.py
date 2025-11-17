@@ -38,19 +38,28 @@ class Neo4j(Database):
     def scroll(self, label: str = None,
                cypher: str = None,
                where: dict = None,
-               fetch_size: str = None,
-               batch_size: int = 1000, **kwargs):
+               fetch_size: int = None,
+               batch_size: int = 1000,
+               element_type: str = 'node',
+               **kwargs):
         skip = 0
         params = {
             'limit': batch_size
         }
+        slabel = ''
+        if label:
+            slabel = ':' + label
         if not cypher:
-            if where:
-                cypher = f"MATCH (n:{label} $where) SKIP $skip LIMIT $limit return n"
-                params['where'] = where
+            if element_type == 'node':
+                if where:
+                    cypher = f"MATCH (n{slabel} $where) SKIP $skip LIMIT $limit return n"
+                    params['where'] = where
+                else:
+                    cypher = f"MATCH (n{slabel}) SKIP $skip LIMIT $limit return n"
             else:
-                cypher = f"MATCH (n:{label}) SKIP $skip LIMIT $limit return n"
+                cypher = f"MATCH (n)-[r{slabel}]->(n2) SKIP $skip LIMIT $limit return r"
         while True:
+            print(f'Batch {skip}')
             params['skip'] = skip
             batch_counter = 0
             with self.client.session() as session:
@@ -94,3 +103,4 @@ class Neo4j(Database):
                     session.run(cypher, nodes=to_update)
 
         return {'updated_count': len(to_update), 'inserted_count': len(to_insert)}
+

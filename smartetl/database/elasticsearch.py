@@ -13,7 +13,8 @@ headers = {
 
 class ES(Database):
     """
-    读取ES指定索引全部数据，支持提供查询条件
+    基于RESTFul API的ES数据库组件，提供ES检索、扫描、获取指定记录、获取索引列表、写入数据、删除数据等操作。
+    根据参数自动创建索引
     """
     def __init__(self, host: str = "localhost",
                  port: int = 9200,
@@ -24,6 +25,16 @@ class ES(Database):
                  auto_create: bool = False,
                  index_config: dict = None,
                  **kwargs):
+        """
+        :param host ES节点主机名（暂不支持多节点） 默认本机
+        :param port ES HTTP端口，默认值9200
+        :param username 用户名
+        :param password 用户密码 如果为空则表示不需要验证
+        :param index 默认操作的索引 支持在具体方法中指定不同索引
+        :param secure 是否为HTTPS协议 默认false
+        :param auto_create 是否自动创建索引 默认false
+        :param index_config 索引配置 如果需要显式创建索引则需要提供
+        """
         self.url = f"{'https' if secure else 'http'}://{host}:{port}"
         if password:
             self.auth = HTTPBasicAuth(username, password)
@@ -35,6 +46,7 @@ class ES(Database):
                 print('index created: ', index)
 
     def index_exists(self, index: str = None):
+        """检查索引是否存在"""
         index = index or self.index
         res = requests.head(f'{self.url}/{index}', auth=self.auth)
         if res.status_code == 200:
@@ -45,6 +57,7 @@ class ES(Database):
         return False
 
     def index_create(self, config: dict, index: str = None):
+        """创建索引"""
         index = index or self.index
         res = requests.put(f'{self.url}/{index}', auth=self.auth, json=config)
         if res.status_code == 200:
@@ -59,6 +72,12 @@ class ES(Database):
                fetch_size: int = 10,
                index: str = None,
                **kwargs):
+        """搜索
+        :param query 检索查询对象 对应 GET /_search  -d '{"query": xxx}'
+        :param query_body 检索整体对象 对应 GET /_search -d `xxx` 默认为None
+        :param fetch_size 指定返回数据条数 对应 size参数 默认为10
+        :param index 指定索引 默认为None表示使用当前组件默认索引
+        """
         index = index or self.index
         query_body = query_body or {}
         if query:
@@ -188,6 +207,14 @@ class ES(Database):
                index: str = None,
                _scroll: str = "1m",
                **kwargs):
+        """滚动方式进行查询，方便对数据进行导出
+        :param query 检索查询对象 对应 GET /_search  -d '{"query": xxx}'
+        :param query_body 检索整体对象 对应 GET /_search -d `xxx` 默认为None
+        :param batch_size 每个批次返回数据量 对应size参数 默认10
+        :param fetch_size 指定返回的全部数据条数
+        :param index 指定索引 默认为None表示使用当前组件默认索引
+        :param _scroll 指定_scroll参数，会影响scroll会话保持时间 默认为1m，表示1分钟
+        """
         index = index or self.index
         query_body = query_body or {}
         if query:
@@ -239,6 +266,7 @@ class ES(Database):
             requests.delete(url, auth=self.auth, json={'scroll_id': scroll_id})
 
     def exists(self, _id, index: str = None, **kwargs):
+        """判断指定_id数据是否存在"""
         index = index or self.index
         if isinstance(_id, dict):
             _id = _id.get("_id") or _id.get("id")
@@ -249,6 +277,7 @@ class ES(Database):
         return False
 
     def get(self, _id, index: str = None, **kwargs):
+        """获取指定_id数据"""
         index = index or self.index
         if isinstance(_id, dict):
             _id = _id.get("_id") or _id.get("id")
@@ -262,6 +291,7 @@ class ES(Database):
         return None
 
     def delete(self, _id, index: str = None, **kwargs):
+        """删除指定_id数据"""
         index = index or self.index
         if isinstance(_id, dict):
             _id = _id.get("_id") or _id.get("id")
@@ -270,6 +300,7 @@ class ES(Database):
         return res.status_code == 200
 
     def upsert(self, items: dict or list, index: str = None, **kwargs):
+        """插入或更新数据，基于bulk方式提交 支持批量"""
         index = index or self.index
         header = {
             "Content-Type": "application/json"
