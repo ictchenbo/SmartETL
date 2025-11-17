@@ -9,7 +9,8 @@ consts:
     all: .jsonl
 
 nodes:
-  es: util.database.elasticsearch.ES(**es1, index='arxiv-meta')
+  es_config: util.files.json('config/es-mappings/arxiv-meta.json')
+  es: util.database.elasticsearch.ES(**es1, index='arxiv-meta', auto_create=True, index_config=es_config)
 
   select: SelectVal('data')
   rename: RenameFields(id='_id')

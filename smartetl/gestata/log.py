@@ -1,3 +1,3 @@
 def test(name: str):
-    info(name)
+    info(f'Processing {name}')
     return 'LOG:' + name
