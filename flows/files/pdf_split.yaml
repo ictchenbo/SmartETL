@@ -1,0 +1,8 @@
+name: pdf_split
+
+nodes:
+  split_pdf: Map('gestata.pdf.split', key=('filename', 'filepath'), target_key=None, output_dir=arg2, pages_per_file=1)
+
+loader: Directory(arg1, '.pdf', recursive=False, filename_only=True)
+
+processor: Chain(split_pdf, Flat(), Print())

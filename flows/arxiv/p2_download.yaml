@@ -22,12 +22,10 @@ nodes:
   download_pdf: Map('util.http.content', key='url_pdf', target_key='pdf_content', most_times=3, ignore_error=True)
   #保存pdf文件
   save_pdf_file: WriteFiles('data/arxiv_pdf', name_key='id',content_key='pdf_content', suffix='.pdf')
-  #记录处理了多少个数据
-  write_count: gestata.arxiv.WriteCount('data/arxiv_download_count2.txt')
   chain1: Chain(search, download, save_file)
   chain2: Chain(search_pdf,download_pdf,save_pdf_file)
   #并行执行两个流程
   fork: Fork(chain1, chain2)
 
-#processor: Chain(Print("id"),write_count, fork)
-processor: Chain(Print("id"),write_count,write_kafka,search_pdf,download_pdf,save_pdf_file)
+#processor: Chain(Print("id"), fork)
+processor: Chain(Print("id"),write_kafka,search_pdf,download_pdf,save_pdf_file)

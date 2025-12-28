@@ -49,7 +49,7 @@ class Text(TextBase):
     """输出文本文件的每一行"""
     def iter(self):
         for line in self.instream:
-            yield line
+            yield line.strip()
 
 
 class JsonLine(Text):

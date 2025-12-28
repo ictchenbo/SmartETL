@@ -18,11 +18,9 @@ nodes:
 
   writer_es: Function('wikidata_filter.gestata.dbops.upsert', db_es)
   search: Map('gestata.arxiv.url4html',key='id', target_key='url_html')
-  write_count: gestata.arxiv.WriteCount('data/arxiv_kafka_pro.txt')
   download: Map('util.http.content', key='url_html', target_key='content', most_times=3, ignore_error=True)
   save_file: WriteFiles('data/arxiv_html', name_key='id', suffix='.html')
   pdf_extract: Map('gestata.arxiv.extract', target_key='paper')
-  arxiv_pro: gestata.arxiv.ArxivProcess(bge_large_zh, qdrant,es_config)
+  arxiv_pro: gestata.arxiv_processor.ArxivProcess(bge_large_zh, qdrant,es_config)
 
-processor: Chain(Print("id"),writer_es,search,download,save_file,pdf_extract,arxiv_pro,write_count)
-
+processor: Chain(Print("id"),writer_es,search,download,save_file,pdf_extract,arxiv_pro)

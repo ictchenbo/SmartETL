@@ -21,11 +21,11 @@ class ComponentManager:
     @staticmethod
     def fullname(cls_name: str, label: str = None):
         """
-        基于对象短名生成全限定名 如`database.mongodb.MongoLoader` -> `wikidata_filter.loader.database.mongodb.MongoLoader`
-        如果该对象在模块中引入，则可以简化，如`database.MongoLoader` -> `wikidata_filter.loader.database.MongoLoader`
+        基于对象短名生成全限定名 如`database.mongodb.MongoLoader` -> `smartetl.loader.database.mongodb.MongoLoader`
+        如果该对象在模块中引入，则可以简化，如`database.MongoLoader` -> `smartetl.loader.database.MongoLoader`
 
         如果指定了label参数，则从对应的子模块（如loader、iterator、util）查找 否则根据cls_name查找
-        如果cls_name包含模块路径，则尝试从`wikidata_filter.`开始查找
+        如果cls_name包含模块路径，则尝试从`smartetl.`开始查找
         否则从在iterator模块下查找
 
         如果label未指定，则根据cls_name查找对应iterator的写法
@@ -95,6 +95,7 @@ class ComponentManager:
 
         # 构造全名
         class_name_full = self.fullname(constructor, label=label)
+        # print("Full name: ", class_name_full)
 
         # get short class name from constructor
         # Python语法限制，必须使用组件短名 如`wikidata_filter.loader.Text('a.txt')`是无效的

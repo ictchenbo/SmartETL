@@ -1,0 +1,14 @@
+from: local/db_envs.yaml
+name: kafka_admin
+
+consts:
+  kafka_host: 10.208.57.21:9092
+
+nodes:
+  # kafka1: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_html_0911', auto_create=True)
+  kafka2: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_pdf_1117', auto_create=True)
+
+  op: "=kafka2.delete_topics()"
+
+loader: Random(10)
+processor: Print

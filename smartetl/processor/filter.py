@@ -127,6 +127,26 @@ class SkipN(Filter):
         return self.i > self.n
 
 
+class Limit(Filter):
+    """限制数据条数，语法 Limit(n) 或 Limit(skip, n)，等于SkipN+TakeN"""
+    def __init__(self, skip: int = 0, n: int = None):
+        super().__init__(self)
+        self.i = 0
+        if n is not None and n > 0:
+            self.skip = max(skip, 0)
+            self.n = n
+        else:
+            self.skip = 0
+            self.n = skip
+
+    def __call__(self, *args, **kwargs):
+        self.i += 1
+        if self.skip > 0:
+            if self.i <= self.skip:
+                return False
+        return self.i <= self.skip + self.n
+
+
 class FieldsExist(Filter):
     """存在指定字段的过滤器"""
     def __init__(self, *keys):

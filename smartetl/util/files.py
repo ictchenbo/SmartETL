@@ -3,13 +3,13 @@ import io
 import json as JSON
 
 
-def content(filename: str):
+def content(filename: str) -> bytes:
     """读取文件字节内容"""
     with open(filename, "rb") as fin:
         return fin.read()
 
 
-def text(filename: str, encoding="utf8", **kwargs):
+def text(filename: str, encoding="utf8", **kwargs) -> str:
     """读取文本文件"""
     with open(filename, encoding=encoding, **kwargs) as fin:
         return fin.read()
@@ -93,18 +93,25 @@ def exists(filename: str) -> bool:
     return os.path.exists(filename)
 
 
-def basename(filename: str):
+def basename(filename: str) -> str:
     """获取文件路径的文件名"""
     return os.path.basename(filename)
 
 
-def dirname(filename: str):
+def dirname(filename: str) -> str:
     """获取文件路径的文件夹名"""
     return os.path.dirname(filename)
 
 
-def filesize(filename: str):
+def filesize(filename: str) -> int:
+    """获取文件大小 返回文件字节数"""
     return os.stat(filename).st_size
+
+
+def mkdirs(path: str) -> str:
+    """创建指定路径的文件夹 包括中间文件夹，如果文件夹已存在也不会报错"""
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 if __name__ == '__main__':

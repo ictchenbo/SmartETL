@@ -1,0 +1,31 @@
+name: repo download
+description: 根据paper-with-code项目数据集(https://huggingface.co/datasets/pwc-archive/links-between-paper-and-code)，下载论文对应代码。仅处理来自arXiv的论文数据，基于paper_arxiv_id构造文件夹。仅支持对repo_url为github的代码进行下载。
+
+consts:
+  task_path: data/paperwithcode/train-00000-of-00001.parquet
+  save_path_base: data/paperwithcode/data/
+  request_args:
+#    most_times: 1
+#    ignore_error: yes
+    verify: no
+    timeout: 60
+    headers:
+      User-Agent: SmartETL v3 developed by chenbo01@ict.ac.cn
+
+limit: 1000
+
+loader: parquet.Parquet(task_path)
+
+nodes:
+  filter_arxiv: FieldsNonEmpty('paper_arxiv_id')
+
+  mk_save_path: Chain(ConcatFields('save_path', 'paper_arxiv_id', prefix=save_path_base, suffix='/'), Map('util.files.mkdirs', key='save_path'))
+
+  code_url: Chain(Map('gestata.github.code_url', key='repo_url', target_key='code_url'), FieldsNonEmpty('code_url'))
+
+  code_file: Chain(Map('gestata.github.code_filename', key='code_url', target_key='code_file'), ConcatFields('code_file', 'save_path', 'code_file', separator=''))
+  not_exists: Not('util.files.exists', key='code_file')
+  
+  download_code: Map('util.http.download', key=('code_url', 'code_file'), target_key='status', **request_args)
+
+processor: Chain(filter_arxiv, mk_save_path, code_url, code_file, Count(10), not_exists, Print('code_url', 'code_file'), download_code, Sleep(3,7))

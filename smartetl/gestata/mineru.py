@@ -1,3 +1,4 @@
+import os
 import requests
 import traceback
 from random import randrange
@@ -29,13 +30,17 @@ def extract(row: dict,
     content = row[data_key]
     assert isinstance(content, bytes) or isinstance(content, str), f"content field `{data_key}`must be bytes or str"
 
-    filename = row.get(name_key, 'auto_file')
+    filename = row.get(name_key)
 
     if isinstance(content, bytes):
         files = {'file': (filename, content)}
     else:
+        if not filename:
+            filename = os.path.basename(content)
         with open(content, 'rb') as reader:
             files = {'file': (filename, reader.read())}
+    
+    filename = filename or 'auto_file'
 
     data = {
         'method': method,

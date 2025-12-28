@@ -1,0 +1,17 @@
+from: local/db_envs.yaml
+
+name: load pdf reports
+
+consts:
+  kafka_host: 10.208.57.21:9092
+
+nodes:
+  kafka: util.database.kafka.Kafka(host=kafka_host, topic='osint_2511', auto_create=True)
+
+  split_pdf: Map('gestata.pdf.split', key=('filename', 'filepath'), target_key=None, output_dir=arg2, pages_per_file=3)
+  kafka_pdf: Map('gestata.dbops.upsert', kafka)
+
+# 扫描文件夹 获取全部html/pdf文件 输出文件名
+loader: Directory(arg1, '.pdf', recursive=True, filename_only=True)
+
+processor: Chain(split_pdf, kafka_pdf)

@@ -1,0 +1,16 @@
+from: local/db_envs.yaml
+
+name: vectorize
+description: 加载数据进行向量化，并写入向量库
+
+loader: Json('data/event-topic/tw.json')
+
+nodes:
+  qd: database.qdrant.Qdrant(**qdrant, collection='event-news-2512', auto_create=True, size=1024)
+
+  flat: Flat(flat_mode='value')
+  rename: RenameFields(_key='_id', Title='title', Text='content')
+  vector: Map("gestata.embedding.text_v2", key='content', target_key='vector')
+  writer: Map('gestata.dbops.upsert', qd)
+
+processor: Chain(flat, rename, vector, Print('_id', 'title'), writer, Count())
