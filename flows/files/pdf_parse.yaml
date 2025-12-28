@@ -1,0 +1,15 @@
+name: PDF extract based on MinerU
+description: 基于MinerU服务加载器读取PDF文件，保存成markdown文件
+arguments: 0
+
+consts:
+  service: http://10.208.62.156:6209/api/file/_extract
+
+nodes:
+  append_ext: ConcatFields('_id', 'filename', suffix='.md')
+  extract_pdf: Map('gestata.mineru.extract', api_base=service, name_key='filename', data_key='filepath', md_key='md')
+  writer: WriteFiles(arg1, name_key='_id', content_key='md')
+
+loader: Directory(arg2, '.pdf', recursive=False, filename_only=True)
+
+processor: Chain(append_ext, extract_pdf, Print(), writer, Count())

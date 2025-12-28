@@ -1,0 +1,14 @@
+name: gz File Loader
+description: 读取网页黑名单 https://dsi.ut-capitole.fr/blacklists/
+
+consts:
+  type_mapping:
+    all: .txt
+
+loader: ar.Tar(arg1, 'all', type_mapping=type_mapping, inner_file='blacklists/adult/urls')
+
+nodes:
+  print: Print
+  count: Count
+
+processor: Chain(Print(), Count())

@@ -23,7 +23,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - [OpenSanctions全球制裁实体名单或涉政治、犯罪与经济重点人物、公司](flows/opensanctions_peps.yaml) [样例数据](test_data/opensanctions-entities.ftm.json)
    - [联合国教科文组织项目数据](flows/unesco-projects.yaml)
    - [FourSqure全球POI数据](flows/files/file_parquet.yaml)
-   - [Common Crawl网页存档数据](flows/cc.yaml)
+   - [Common Crawl网页存档数据](flows/cc.yaml) [blacklist](flows/web/blacklist.yaml)
    - [论文数据](flows/paper/uni_process.yaml) [arXiv论文](flows/arxiv/p2_html4all.yaml)
    - [新闻图片数据](flows/news/index_image.yaml)
    - [通用网站采集](flows/crawler/gen1.yaml)
@@ -33,8 +33,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - txt
    - csv
    - html
-   - [Markdown](flows/files/file_markdown.yaml)（支持识别内容层级，支持提取表格、图片）
-   - [pdf](flows/files/file_pdf.yaml) 
+   - [Markdown](flows/files/markdown.yaml)（支持识别内容层级，支持提取表格、图片）
+   - [pdf](flows/files/pdf.yaml) 
    - [docx](flows/files/file_docx.yaml)(doc, docx)
    - [eml](flows/files/file_eml.yaml)
    - Excel(xls, xlsx)
@@ -42,10 +42,10 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
    - PST
    - OST
    - OMG
-   - [json](flows/files/file_json.yaml)(支持json json-line, json-array, json-free多种格式)
+   - [json](flows/files/json.yaml)(支持json json-line, json-array, json-free多种格式)
    - [yaml](flows/nl2poc/nuclei_http_poc_desc.yaml)
-   - [parquet](flows/files/file_parquet.yaml)
-   - zip
+   - [parquet](flows/files/parquet.yaml)
+   - [zip](flows/files/ar.yaml)
    - rar
    - 7zip
    - tar(.gz|.bz2|.xz)
@@ -76,9 +76,28 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 数据分析：针对Excel、Parquet等表格数据的转换、过滤、去重、统计等。参考[项目数据统计1](flows/unesco-projects.yaml) [项目数据统计2](flows/unesco-projects-aggs.yaml)
 - 数据库管理/DBA：数据库备份、同步、查询分析等。参考[ClickHouse导出](flows/dba/db_ck_export.yaml) [MongoDB数据迁移](flows/dba/db_mongo_transfer.yaml)
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
-- 科研数据处理：对论文数据（arXiv）进行预处理，建立全文索引/向量索引，形成统一论文库
+- 科研数据处理：论文数据采集及处理（arXiv）；论文PDF解析、建立全文索引/向量索引，形成统一论文库；论文相关github代码下载
+
+## 算子统计结果（截至2025.12.28）
+| 算子类型       | 所在模块 | 数量        |
+|------------|------|--------------|
+| loader       | smartetl/loader   | 48        |
+| processor      | smartetl/processor   | 119         |
+| database       | smartetl/database   |16         |
+| util      | smartetl/util   | 78|
+| gestata      | smartetl/gestata   | 178 |
+| 合计      |  -     |  439  |
+
+TIPS: 统计方法 `python main_flow.py --loader "JsonArray(arg1)" --processor "Count" - data/metadata/loader.json`
 
 ## New！
+- 2025.12.28
+1. 实现项目类算子（loader+processor+database）和函数式算子（util+gestata）统计  `python analyze_class.py -o data/metadata/database.json smartetl smartetl.database `实现类算子统计；`python analyze_function.py -o data/metadata/util.json smartetl/util` 实现函数式算子统计
+
+- 2025.12.25
+1. 实现`paperwithcode`数据集论文关联代码下载，[查看](flows/paperwithcode/repo_download.yaml)
+
+
 - 2025.9.14
 1. 完善`gestata.mineru`算子
 2. 新增`apps.pdf_parser_parallel`，搭配mineru的并行化部署，实现大规模PDF解析

@@ -10,9 +10,10 @@ from .directory import Directory
 
 class Archive(Directory):
     """读取压缩文件 对指定后缀的文件按照默认参数进行读取 返回 (filename, data_row)"""
-    def __init__(self, path: str, *suffix, type_mapping: dict = None, password: str = None, **kwargs):
+    def __init__(self, path: str, *suffix, type_mapping: dict = None, password: str = None, inner_file: str = None, **kwargs):
         super().__init__(path, *suffix, type_mapping=type_mapping, **kwargs)
         self.password = password.encode('utf8') if password else None
+        self.inner_file = inner_file
 
     def generate(self, filename, file_stream):
         print("processing", filename)
@@ -70,11 +71,17 @@ class Tar(Archive):
             elif one.endswith('.xz'):
                 mode = 'r:xz'
             with tarfile.open(one, mode) as tar:
-                for filename in tar.getnames():
-                    if not self.match_file(filename):
+                if self.inner_file:
+                    yield from self.generate(self.inner_file, tar.extractfile(self.inner_file))
+                    continue
+                for member in tar.getmembers():
+                    if not member.isfile() or not self.match_file(member.name):
                         continue
-                    with tar.open(filename) as f:
-                        yield from self.generate(filename, f)
+                    f = tar.extractfile(member)
+                    if f is None:
+                        continue  # 目录 / 特殊文件
+                    with f:
+                        yield from self.generate(member.name, f)
 
 
 class SevenZip(Archive):

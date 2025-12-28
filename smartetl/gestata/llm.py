@@ -37,7 +37,9 @@ def invoke_v2(data: str or dict,
               model: str = "Qwen2.5-32B-Instruct",
               api_key: str = None,
               stream: bool = False,
-              remove_think: bool = False, **kwargs):
+              remove_think: bool = False, 
+              extra_args: dict = None,
+              **kwargs):
     """兼容OpenAI接口的大模型服务调用
     :param data 待处理的数据
     :param api_base 服务地址，必须
@@ -45,10 +47,11 @@ def invoke_v2(data: str or dict,
     :param prompt 提示模板
     :param variables 提示模板中的变量列表 根据这个变量列表进行替换
     :param model 模型名称
-    :param api_key
-    :param stream
-    :param remove_think
-    :param kwargs 其他参数 请参考具体模型平台文档
+    :param api_key API KEY
+    :param stream 是否流式 默认False
+    :param remove_think 是否移除思考内容
+    :param extra_args 大模型额外参数 请参考具体模型平台文档
+    :param kwargs 其他参数
     """
     query_temp = template(prompt, variables=variables)
     query = query_temp(data)
@@ -63,7 +66,8 @@ def invoke_v2(data: str or dict,
         ]
     }
     # other parameters
-    data.update(kwargs)
+    if extra_args:
+        data.update(extra_args)
     headers = {
         'content-type': 'application/json'
     }

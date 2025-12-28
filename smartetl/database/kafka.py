@@ -12,6 +12,13 @@ except:
 from .base import Database
 
 
+default_topic_config = {
+    'retention.ms': '604800000',  # 7天
+    'cleanup.policy': 'delete',
+    'compression.type': 'producer'
+}
+
+
 def delivery_report(err, msg):
     """回调函数，用于确认消息是否成功发送"""
     if err is not None:
@@ -36,6 +43,7 @@ class Kafka(Database):
                  max_bytes: int = 10485760,
                  auto_create: bool = False,
                  partitions: int = 3,
+                 topic_config: dict = None,
                  **kwargs):
         """
         Kafka数据库工具
@@ -44,26 +52,29 @@ class Kafka(Database):
         :param group_id 消费者组
         :param max_bytes 定义写入消息的最大字节数 默认10M
         :param auto_create 是否自动创建主题 （主要用于写数据）
-
+        :param partitions 新建主题的分区数
+        :param topic_config 新建主题的配置
         """
         self.host = host
         self.topic = topic
         self.group_id = group_id
         self.max_bytes = max_bytes
+        self.producer = None
         if auto_create and topic is not None and topic not in self.list_topics():
-            self.create_topic(topic, partitions=partitions)
+            self.create_topic(topic, partitions=partitions, config=topic_config)
 
-    def create_topic(self, name: str, partitions: int = 3, replication_factor = 1):
+    def create_topic(self, name: str, partitions: int = 3, replication_factor: int = 1, config: dict = None):
+        if not config:
+            this_config = default_topic_config
+        else:
+            this_config = dict(**default_topic_config)
+            this_config.update(config)
+
         new_topic = NewTopic(
             topic=name,
             num_partitions=partitions,
             replication_factor=replication_factor,
-            # 可选：设置 Topic 配置
-            config={
-                'retention.ms': '604800000',  # 7天
-                'cleanup.policy': 'delete',
-                'compression.type': 'producer'
-            }
+            config=this_config
         )
         conf = {
             'bootstrap.servers': self.host
@@ -89,6 +100,15 @@ class Kafka(Database):
             if not topic_name.startswith('__'):
                 ret.append(topic_name)
         return ret
+    
+    def delete_topics(self, topics: list = None):
+        conf = {
+            'bootstrap.servers': self.host,
+            'request.timeout.ms': 10000
+        }
+        admin_client = AdminClient(conf)
+        admin_client.delete_topics(topics or [self.topic])
+        return True
 
     def scroll(self, topic: str = None, auto_commit: bool = False, **kwargs):
         conf = {
@@ -128,10 +148,8 @@ class Kafka(Database):
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
-
-    def upsert(self, items: dict or list, topic: str = None, **kwargs):
-        if isinstance(items, dict):
-            items = [items]
+    
+    def create_producer(self):
         conf = {
             'bootstrap.servers': self.host,
             'client.id': 'python-producer',
@@ -139,8 +157,16 @@ class Kafka(Database):
             'api.version.request': 'true',
             'message.max.bytes': self.max_bytes
         }
+        self.producer = Producer(conf)
+
+    def upsert(self, items: dict or list, topic: str = None, **kwargs):
+        if isinstance(items, dict):
+            items = [items]
+
+        if not self.producer:
+            self.create_producer()
+
         topic = topic or self.topic
-        producer = Producer(conf)
         try:
             for row in items:
                 # 确保所有 bytes 数据被转换为字符串
@@ -150,18 +176,26 @@ class Kafka(Database):
                         processed_row[key] = value.decode('utf-8')
                     else:
                         processed_row[key] = value
-                id = row['id']
-                producer.produce(
-                    topic,
-                    key=str(id),
-                    value=json.dumps(processed_row),
-                    callback=delivery_report
-                )
 
-            # 触发任何待处理的交付报告回调
-            producer.poll(0)
+                id = row.get('_id') or row.get('id')
+
+                while True:
+                    try:
+                        self.producer.produce(
+                            topic,
+                            key=str(id),
+                            value=json.dumps(processed_row),
+                            callback=delivery_report
+                        )
+                        break
+                    except BufferError:
+                        self.producer.poll(0.1)
+
+                # 触发任何待处理的交付报告回调
+                self.producer.poll(0)
             # 等待所有消息被发送
-            producer.flush()
+            self.producer.flush(5)
+            self.producer.poll(0)
         except KeyboardInterrupt:
             print("\nProducer interrupted")
         finally:

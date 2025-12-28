@@ -221,7 +221,7 @@ class ReduceBase(Processor):
 
 
 class Wait(Processor):
-    """延时处理"""
+    """固定时间延时：Wait(n) 等待n秒"""
     def __init__(self, seconds: int = 1):
         self.seconds = seconds
 
@@ -231,8 +231,25 @@ class Wait(Processor):
         return data
 
 
+class Sleep(Processor):
+    """给定范围内随机延时，支持Sleep(n)固定延时n秒和 Sleep(n1, n2) 随机延时n1~n2秒"""
+    def __init__(self, seconds: int = 1, max_seconds: int = None):
+        self.seconds = seconds
+        self.max_seconds = max_seconds
+
+    def on_data(self, data: Any, *args):
+        import time
+        if self.max_seconds is not None and self.max_seconds > self.seconds:
+            import random
+            real_sleep_time = random.random() * (self.max_seconds - self.seconds) + self.seconds
+            time.sleep(real_sleep_time)
+        else:
+            time.sleep(self.seconds)
+        return data
+
+
 class WriteQueue(Processor):
-    """写入队列"""
+    """写入队列 将数据写入提供的队列，方便其他任务读取：WriteQueue(queue)"""
     def __init__(self, queue):
         self.queue = queue
 

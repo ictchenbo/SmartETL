@@ -1,0 +1,51 @@
+from: local/db_envs.yaml
+
+name: vectorize
+description: 加载数据进行向量化，并写入向量库
+
+consts:
+  qwen3_api_base: http://10.208.62.156:8002/v1
+  qwen3_mode: Qwen3-32B
+  llm_args:
+    max_tokens: 8192
+    temperature: 0.7
+    top_p: 0.8
+    presence_penalty: 1.5
+    extra_body: 
+      top_k: 20
+      chat_template_kwargs: 
+        enable_thinking: true
+
+loader: Json('data/event-topic/tw.json')
+
+nodes:
+  prompt_trans: util.files.text('data/event-topic/prompt/translate.txt')
+  prompt_single_day_event: util.files.text('data/event-topic/prompt/single_day_event.txt')
+  qd: database.qdrant.Qdrant(**qdrant, collection='event-news-2512', auto_create=True, size=1024)
+  llm_result_filter1: "=lambda v: '是' in v"
+
+  flat: Flat(flat_mode='value')
+
+  rename: RenameFields(_key='_id', Title='title_raw', Text='content_raw')
+
+  # 过滤 title/content/date_code不存在或为空
+  filter_doc: FieldsNonEmpty('title_raw', 'content_raw', 'date_code')
+
+  # 基于标题进行去重 TODO：采用更加复杂的相似度去重或语义去重
+  dedup_title: Distinct(key='title_raw')
+
+  # 翻译标题
+  trans_title: Map('gestata.llm.invoke_v2', key='title_raw', target_key='title', prompt=prompt_trans, api_base=qwen3_api_base, api_key='EMPTY', extra_args=llm_args)
+
+  # 基于大模型 对标题判断，是是否为单日事件
+  llm1: Map('gestata.llm.invoke_v2', key='title', target_key='title_single_day_event', prompt=prompt_single_day_event, api_base=qwen3_api_base, api_key='EMPTY', extra_args=llm_args)
+  filter_by_single_day_event: Filter(llm_result_filter1, key='title_single_day_event')
+
+  # 对内容向量化
+  vector: Map('gestata.embedding.text_v2', key='content_raw', target_key='vector')
+
+  # 翻译正文  
+  trans_content: Map('gestata.llm.invoke_v2', key='content_raw', target_key='content', 'prompt=prompt_trans, api_base=qwen3_api_base, api_key='EMPTY', extra_args=llm_args)
+  writer: Map('gestata.dbops.upsert', qd)
+
+processor: Chain(flat, rename, filter_doc, dedup_title, trans_title, llm1, filter_by_single_day_event, vector, trans_content, Print('_id', 'title'), writer, Count())

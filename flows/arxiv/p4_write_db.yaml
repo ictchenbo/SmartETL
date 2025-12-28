@@ -15,6 +15,6 @@ loader: Function('wikidata_filter.gestata.dbops.scroll', kafka1)
 nodes:
   kafka1: util.database.kafka.Kafka(host=kafka_host, topic='arxiv_parse')
   # 入库处理
-  write: gestata.arxiv.ArxivProcess(bge_large, qd_config=qd_config, es_config=es_config)
+  write: gestata.arxiv_processor.ArxivProcess(bge_large, qd_config=qd_config, es_config=es_config)
 
 processor: write

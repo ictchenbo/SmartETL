@@ -1,0 +1,11 @@
+name: Parquet File Loader
+description: 读取Parquet文件
+
+loader: parquet.Parquet(arg1)
+
+limit: 10
+nodes:
+  print: Print
+  count: Count
+
+processor: Chain(print, count)
