@@ -6,7 +6,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 项目内置100+常用流程、400+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
 
 系统架构图：
-![系统架构](docs/arch.png)
+![系统架构](docs/archv3.png)
 
 ## 项目特色
 1. 灵活可配的**YAML**流程定义：通过YAML文件**低/无代码**组装流程，快速响应数据处理需求
@@ -108,7 +108,7 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 可以在[这里](flows)找到很多开箱即用的流程。[查看Yaml定义规范](docs/yaml-flow.md)
 
 - 方式三：基于**Python代码**运行：
-以下示例与([test.yaml](flows/test.yaml)等价：
+以下示例与[test.yaml](flows/test.yaml)等价：
 
 ```python
 from smartetl.flow_engine import run
@@ -233,7 +233,7 @@ processor: Fork(chain_entity, chain_property)
 | gestata      | smartetl/gestata   | 182 |
 | 合计      |  -     |  443  |
 
-TIPS: 统计方法 `python main_flow.py --loader "JsonArray(arg1)" --processor "Count" - data/metadata/loader.json`
+TIPS: 统计方法 `python main_flow.py flows/scan_py.yaml`
 
 
 ## 流程统计（截至2025.12.28）
