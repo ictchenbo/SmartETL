@@ -1,0 +1,27 @@
+name: python code scan
+description: 扫描python代码，进行代码分析，获取类算子和函数式算子相关信息保存为json文件；对算子数量统计，生成csv文件
+
+loader: Directory('smartetl', '.py', recursive=True, filename_only=True)
+
+nodes:
+  filter1: Filter('gestata.python.normal', key='filepath')
+  uni_path: "Map(lambda f:  f.replace('\\\\', '/').replace('./', ''), key='filepath', target_key='module')"
+
+  build_ast: Map('gestata.python.build_ast', key='filepath', target_key='tree')
+
+  get_loader: Map('gestata.python.analyze_classes', key=('tree', 'filepath'), target_key=None, prefix='smartetl.loader')
+  get_processor: Map('gestata.python.analyze_classes', key=('tree', 'filepath'), target_key=None, prefix='smartetl.processor')
+  get_database: Map('gestata.python.analyze_classes', key=('tree', 'filepath'), target_key=None, prefix='smartetl.database')
+
+  analyze_classes: Fork(Chain(get_loader, Flat(), Count(label='loader')), Chain(get_processor, Flat(), Count(label='processor')), Chain(get_database, Flat(), Count(label='database')))
+  
+  get_util: Map('gestata.python.analyze_functions', key=('tree', 'filepath'), target_key=None, prefix='smartetl.util')
+  get_gestata: Map('gestata.python.analyze_functions', key=('tree', 'filepath'), target_key=None, prefix='smartetl.gestata')
+
+  analyze_functions: Fork(Chain(get_util, Flat(), Count(label='util')), Chain(get_gestata, Flat(), Count(label='gestata')))
+
+  # to_json: WriteJson('data/metadata/flow.json')
+
+  # to_csv: WriteCSV('data/metadata/flow.stat.csv', 'key', 'values')
+
+processor: Chain(filter1, uni_path, build_ast, Fork(analyze_classes, analyze_functions))

@@ -1,0 +1,23 @@
+name: flow scan
+description: 扫描flow文件，基于第一层文件夹名字作为标签，生成json数据集；按照标签进行统计，结果生成csv文件
+
+loader: Directory('flows', '.yaml', recursive=True, filename_only=True)
+
+nodes:
+  uni_path: "Map(lambda f:  f.replace('\\\\', '/').replace('./', ''), key='filepath', target_key='filepath1')"
+
+  path1: "Map(lambda f: f.split('/'), key='filepath1', target_key='tags')"
+
+  make_tags: "Map(lambda f: f[1] if len(f) > 2 else '', key='tags')"
+
+  read_file: Map('util.files.read', key='filepath', target_key='content', loader='.yml')
+
+  to_json: WriteJson('data/metadata/flow.json')
+
+  group: Group(by='tags', emit_fast=False)
+
+  count: aggs.Count()
+
+  to_csv: WriteCSV('data/metadata/flow.stat.csv', 'key', 'values')
+
+processor: Chain(uni_path, path1, make_tags, read_file, to_json, Count(), group, count, to_csv)

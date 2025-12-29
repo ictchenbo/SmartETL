@@ -1,6 +1,22 @@
 import os
 import io
 import json as JSON
+import traceback
+
+
+def filetype(file_path: str, type_mapping: dict):
+    """根据文件路径和指定的类型映射规则，获取文件类型"""
+    if 'all' in type_mapping:
+        return type_mapping['all']
+    filename = os.path.split(file_path)[1]
+    if '.' not in filename:
+        return ''
+    suffix = filename[filename.rfind('.'):]
+    if suffix in type_mapping:
+        return type_mapping[suffix]
+    if 'other' in type_mapping:
+        return type_mapping['other']
+    return suffix
 
 
 def content(filename: str) -> bytes:
@@ -25,6 +41,22 @@ def json_lines(filename: str, encoding="utf8", **kwargs):
     """读取每行并加载为json"""
     for line in get_lines(filename, encoding=encoding):
         yield JSON.loads(line)
+
+
+def read(filename: str, loader: str = "auto", type_mapping: dict = None, **extra_args):
+    """利用指定的文件加载器读取文件内容 如果loader为'auto'，则根据文件名后缀自动判断加载器类型"""
+    if loader == 'auto':
+        loader = filetype(filename, type_mapping or {})
+    from smartetl.loader.file_loaders import get_file_loader
+    cls = get_file_loader(loader)
+    try:
+        for row in cls(filename, **extra_args)():
+            return row
+    except:
+        print("Error occur when opening file:", filename)
+        traceback.print_exc()
+    
+    return None
 
 
 def get_lines(filename: str, encoding="utf8", **kwargs):
