@@ -3,7 +3,7 @@
 SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理（ETL）框架，提供**Wikidata** / **Wikipedia** / **GDELT**等多种开源情报数据的处理流程；
 支持**大模型**、**API**、常见文件、数据库等多种输入输出及转换处理，支撑各类数据集成接入、大数据处理、离线分析计算、AI智能分析、知识图谱构建等任务。
 
-项目内置50+常用流程、200+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
+项目内置100+常用流程、400+常用ETL算子、10+领域特色数据处理流程，覆盖常见数据处理需求，快来尝试一下吧~~~
 
 系统架构图：
 ![系统架构](docs/arch.png)
@@ -77,74 +77,8 @@ SmartETL：一个简单实用、灵活可配、开箱即用的Python数据处理
 - 数据库管理/DBA：数据库备份、同步、查询分析等。参考[ClickHouse导出](flows/dba/db_ck_export.yaml) [MongoDB数据迁移](flows/dba/db_mongo_transfer.yaml)
 - 服务监测：定时轮询API/服务状态等。参考[数据监测](flows/api_monitor.yaml)
 - 科研数据处理：论文数据采集及处理（arXiv）；论文PDF解析、建立全文索引/向量索引，形成统一论文库；论文相关github代码下载
+- 代码分析：基于`ast`对python代码进行分析，对类和函数进行统计 
 
-## 算子统计结果（截至2025.12.28）
-| 算子类型       | 所在模块 | 数量        |
-|------------|------|--------------|
-| loader       | smartetl/loader   | 48        |
-| processor      | smartetl/processor   | 119         |
-| database       | smartetl/database   |16         |
-| util      | smartetl/util   | 78|
-| gestata      | smartetl/gestata   | 178 |
-| 合计      |  -     |  439  |
-
-TIPS: 统计方法 `python main_flow.py --loader "JsonArray(arg1)" --processor "Count" - data/metadata/loader.json`
-
-## New！
-- 2025.12.28
-1. 实现项目类算子（loader+processor+database）和函数式算子（util+gestata）统计  `python analyze_class.py -o data/metadata/database.json smartetl smartetl.database `实现类算子统计；`python analyze_function.py -o data/metadata/util.json smartetl/util` 实现函数式算子统计
-
-- 2025.12.25
-1. 实现`paperwithcode`数据集论文关联代码下载，[查看](flows/paperwithcode/repo_download.yaml)
-
-
-- 2025.9.14
-1. 完善`gestata.mineru`算子
-2. 新增`apps.pdf_parser_parallel`，搭配mineru的并行化部署，实现大规模PDF解析
-3. **arXiv**相关处理流程优化
-
-- 2025.8.21 
-1. 完善论文处理流程 
-2. 完善新的gdelt处理流程 
-3. 新增微信公众号文章采集流程
-
-- 2025.8.14 **启动V3版本开发**
-
-- 2025.8.13
-1. 更新[**GDELT**解析入库流程](flows/gdelt_parse.yaml)
-2. 实现日志机制，通过YAML中配置`logging`，全局注入`debug` `info` `warning` `error`函数，方便组件使用；也支持替换`print`。查看[示例](flows/demos/logging.yaml)
-
-- 2025.8.12
-1. `Map`支持多个位置参数 #37
-2. **GDELT**流程拆分为[下载](flows/gdelt_download.yaml)和[解析](flows/gdelt_parse.yaml)
-3. 论文重建向量索引[流程](flows/paper/reindex_vector.yaml)
-4. 实现大文件下载 `util.http.download` #36
-
-- 2025.7.22
-1. 新增`neo4j`数据库组件以及[neo4j读取示例](flows/kg/read_neo4j.yaml)
-
-- 2025.7.21
-1. 新增组合Collect算子
-2. 完善[`deepsearch`流程](flows/agent/deepsearch-v2.yaml)
-
-- 2025.7.15
-1. YAML文件`consts`支持表达式定义，语法：`var: eval(<expr>)`
-
-- 2025.7.13
-1. 数据库组件全部移动到`util.database`模块下 `Kafka`包括两个：`kafka`和`kafka_rest`
-2. 部分原有`loader`组件、`iterator`组件移动到`gestata`模块下
-
-- 2025.7.1
-1. 完善[统一arXiv下载流程](flows/arxiv/task_download_v4.yaml)
-2. 新增基于自动机的关键词过滤组件 `KeywordFilterV2` 有效处理较大规模关键词的过滤场景（例如构建规则处理引擎/CEP）
-
-## 核心概念
-- Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
-- Provider/Loader：数据加载节点（对应flume的`source`） 
-- Processor/Iterator：数据处理节点，用于表示各种各样的处理逻辑，包括数据输出与写入数据库（对应flume的`sink`）
-- Engine：按照Flow的定义进行执行。简单Engine只支持单线程执行。高级Engine支持并发执行，并发机制通用有多线程、多进程等
-- gestata：数据处理的函数式组件
-- database：数据库组件（基于数据库SDK/API的统一接口封装）
 
 ## 快速使用
 1. 安装基本依赖
@@ -288,6 +222,110 @@ nodes:
 
 processor: Fork(chain_entity, chain_property)
 ```
+
+## 算子统计结果（截至2025.12.28）
+| 算子类型       | 所在模块 | 数量        |
+|------------|------|--------------|
+| loader       | smartetl/loader   | 48        |
+| processor      | smartetl/processor   | 119         |
+| database       | smartetl/database   |16         |
+| util      | smartetl/util   | 80 |
+| gestata      | smartetl/gestata   | 182 |
+| 合计      |  -     |  443  |
+
+TIPS: 统计方法 `python main_flow.py --loader "JsonArray(arg1)" --processor "Count" - data/metadata/loader.json`
+
+
+## 流程统计（截至2025.12.28）
+| 分类          | 数量 |
+|--------------|--------|
+| arxiv        | 27     |
+| news         | 19     |
+| dba          | 17     |
+| wikidata     | 16     |
+| paper        | 14     |
+| files        | 13     |
+| nl2poc       | 12     |
+| kg           | 11     |
+| demos        | 7      |
+| llm          | 6      |
+| crawler      | 4      |
+| web          | 4      |
+| agent        | 2      |
+| event        | 2      |
+| osint        | 1      |
+| paperwithcode| 1      |
+| wikipedia    | 1      |
+| work-eval    | 1      |
+|     其他         | 15     |
+| 合计        |  173   |
+
+TIPS：统计方法 `python main_flow.py flows/scan_flow.yaml`
+
+## New！
+- 2025.12.29
+修改算子统计方法，设计为 `gestata.python`模块
+统计方法：`python main_flow.py flows/scan_py.yaml`
+
+
+- 2025.12.28
+1. 实现项目类算子（loader+processor+database）和函数式算子（util+gestata）统计  `python analyze_class.py -o data/metadata/database.json smartetl smartetl.database `实现类算子统计；`python analyze_function.py -o data/metadata/util.json smartetl/util` 实现函数式算子统计
+2. 实现[流程统计流程](flows/scan_flow.yaml)
+3. 将文件加载器进行统一管理
+4. 新增`util.files.read`实现各种类型文件读取
+
+- 2025.12.25
+1. 实现`paperwithcode`数据集论文关联代码下载，[查看](flows/paperwithcode/repo_download.yaml)
+
+
+- 2025.9.14
+1. 完善`gestata.mineru`算子
+2. 新增`apps.pdf_parser_parallel`，搭配mineru的并行化部署，实现大规模PDF解析
+3. **arXiv**相关处理流程优化
+
+- 2025.8.21 
+1. 完善论文处理流程 
+2. 完善新的gdelt处理流程 
+3. 新增微信公众号文章采集流程
+
+- 2025.8.14 **启动V3版本开发**
+
+- 2025.8.13
+1. 更新[**GDELT**解析入库流程](flows/gdelt_parse.yaml)
+2. 实现日志机制，通过YAML中配置`logging`，全局注入`debug` `info` `warning` `error`函数，方便组件使用；也支持替换`print`。查看[示例](flows/demos/logging.yaml)
+
+- 2025.8.12
+1. `Map`支持多个位置参数 #37
+2. **GDELT**流程拆分为[下载](flows/gdelt_download.yaml)和[解析](flows/gdelt_parse.yaml)
+3. 论文重建向量索引[流程](flows/paper/reindex_vector.yaml)
+4. 实现大文件下载 `util.http.download` #36
+
+- 2025.7.22
+1. 新增`neo4j`数据库组件以及[neo4j读取示例](flows/kg/read_neo4j.yaml)
+
+- 2025.7.21
+1. 新增组合Collect算子
+2. 完善[`deepsearch`流程](flows/agent/deepsearch-v2.yaml)
+
+- 2025.7.15
+1. YAML文件`consts`支持表达式定义，语法：`var: eval(<expr>)`
+
+- 2025.7.13
+1. 数据库组件全部移动到`util.database`模块下 `Kafka`包括两个：`kafka`和`kafka_rest`
+2. 部分原有`loader`组件、`iterator`组件移动到`gestata`模块下
+
+- 2025.7.1
+1. 完善[统一arXiv下载流程](flows/arxiv/task_download_v4.yaml)
+2. 新增基于自动机的关键词过滤组件 `KeywordFilterV2` 有效处理较大规模关键词的过滤场景（例如构建规则处理引擎/CEP）
+
+## 核心概念
+- Flow: 处理流程，实现数据载入（或生成）、处理、输出的过程，通过`yaml`文件定义
+- Provider/Loader：数据加载节点（对应flume的`source`） 
+- Processor/Iterator：数据处理节点，用于表示各种各样的处理逻辑，包括数据输出与写入数据库（对应flume的`sink`）
+- Engine：按照Flow的定义进行执行。简单Engine只支持单线程执行。高级Engine支持并发执行，并发机制通用有多线程、多进程等
+- gestata：数据处理的函数式组件
+- database：数据库组件（基于数据库SDK/API的统一接口封装）
+
 
 ## 使用者文档 User Guide
 

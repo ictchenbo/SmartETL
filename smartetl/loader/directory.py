@@ -2,29 +2,9 @@ import os
 import traceback
 from typing import Iterable, Any
 
-from smartetl.base import ROOT, LOADER_MODULE
-from smartetl.util.mod_util import load_cls
-
+from smartetl.util.files import filetype as get_filetype
 from .base import Loader
-from .file import BinaryFile
-from .text import Text, CSV, Json, JsonLine, JsonArray, JsonFree, Yaml, TextPlain
-from .file_entry import ALL_LOADERS
-
-
-LOADERS = {
-    '.raw': BinaryFile,
-    '.txt': Text,
-    '.csv': CSV,
-    '.yaml': Yaml,
-    '.yml': Yaml,
-    '.json': Json,
-    '.jsonl': JsonLine,
-    '.jsona': JsonArray,
-    '.jsonf': JsonFree,
-    '.html': TextPlain,
-    '.plain': TextPlain,
-    '.md': TextPlain
-}
+from .file_loaders import get_file_loader
 
 
 class Directory(Loader):
@@ -65,27 +45,6 @@ class Directory(Loader):
                 return True
         return False
 
-    def get_filetype(self, file_path: str):
-        if 'all' in self.type_mapping:
-            return self.type_mapping['all']
-        filename = os.path.split(file_path)[1]
-        if '.' not in filename:
-            return ''
-        suffix = filename[filename.rfind('.'):]
-        if suffix in self.type_mapping:
-            return self.type_mapping[suffix]
-        if 'other' in self.type_mapping:
-            return self.type_mapping['other']
-        return suffix
-
-    def mk_builder(self, _type: str, *args, **kwargs):
-        assert _type in LOADERS or _type in ALL_LOADERS, f"{_type} file not supported"
-        if _type in LOADERS:
-            return LOADERS[_type]
-        loader = load_cls(f'{ROOT}.{LOADER_MODULE}.{ALL_LOADERS[_type]}')[0]
-        LOADERS[_type] = loader
-        return loader
-
     def gen_doc(self, file_path):
         print("processing", file_path)
         filename = os.path.split(file_path)[1]
@@ -97,8 +56,8 @@ class Directory(Loader):
             }
             return
         # 加载文件
-        filetype = self.get_filetype(file_path)
-        cls = self.mk_builder(filetype)
+        filetype = get_filetype(file_path, self.type_mapping)
+        cls = get_file_loader(filetype)
         try:
             for row in cls(file_path, **self.extra_args)():
                 yield {

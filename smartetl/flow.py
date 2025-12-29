@@ -128,6 +128,10 @@ class Flow:
             label = None
             if k.startswith("loader"):
                 label = LOADER_MODULE
+            elif k.startswith("processor"):
+                label = PROCESSOR_MODULE
+            elif k.startswith("database"):
+                label = "database"
 
             node = self.comp_mgr.init_node(expr, label=label)
             self.comp_mgr.register_var(k, node)

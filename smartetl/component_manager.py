@@ -24,17 +24,17 @@ class ComponentManager:
         基于对象短名生成全限定名 如`database.mongodb.MongoLoader` -> `smartetl.loader.database.mongodb.MongoLoader`
         如果该对象在模块中引入，则可以简化，如`database.MongoLoader` -> `smartetl.loader.database.MongoLoader`
 
-        如果指定了label参数，则从对应的子模块（如loader、iterator、util）查找 否则根据cls_name查找
+        如果指定了label参数，则从对应的子模块（如loader、processor、util）查找 否则根据cls_name查找
         如果cls_name包含模块路径，则尝试从`smartetl.`开始查找
-        否则从在iterator模块下查找
+        否则从在processor模块下查找
 
-        如果label未指定，则根据cls_name查找对应iterator的写法
+        如果label未指定，则根据cls_name查找对应processor的写法
 
         :param cls_name 算子构造器名字（类名或函数名）
-        :param label 指定子模块的标签（loader/iterator/matcher）
+        :param label 指定子模块的标签（loader/processor）
         """
         if label is not None:
-            # 兼容两种情况 loader/iterator
+            # 兼容两种情况 loader/processor
             if cls_name.startswith(f'{label}.'):
                 return f'{ROOT}.{cls_name}'
             return f'{ROOT}.{label}.{cls_name}'
@@ -46,7 +46,7 @@ class ComponentManager:
                 if cls_name.startswith('util.database.'):
                     cls_name = cls_name[5:]
                 return f'{ROOT}.{cls_name}'
-        # 默认模块下 -> wikidata_filter/iterator/__init__
+        # 默认模块下 -> wikidata_filter/processor/__init__
         return f'{ROOT}.{PROCESSOR_MODULE}.{cls_name}'
 
     def find_cls(self, full_name: str):
